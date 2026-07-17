@@ -551,8 +551,9 @@ velt-comment-dialog-thread-card-internal:last-of-type .hw-rail-line {
 /* Page-mode composer: the dark visibility banner (rounded top, square bottom)
    and the white input sit flush as one card. Square the input's top corners so
    it meets the banner cleanly instead of showing a notch at the seam, and round
-   its bottom to 12px to mirror the banner's top. */
-.velt-comment-dialog--page-mode-composer .hw-composer {
+   its bottom to 12px to mirror the banner's top. Gated on the banner actually
+   rendering — without it the composer keeps its own symmetric radius. */
+.velt-comment-dialog--page-mode-composer:has(.velt-visibility-banner-wrapper) .hw-composer {
   border-top-left-radius: 0 !important;
   border-top-right-radius: 0 !important;
   border-top-color: transparent !important;
