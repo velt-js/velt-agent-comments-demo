@@ -78,6 +78,15 @@ function Panel({ open }: { open: boolean }) {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, []);
 
+  const veltButtonClickEventData = useVeltEventCallback('veltButtonClick');
+    useEffect(() => {
+    if (veltButtonClickEventData) {
+        if (veltButtonClickEventData.buttonContext?.clickedButtonId === 'custom-button') {
+            console.log('custom button clicked');
+        }
+    }
+    }, [veltButtonClickEventData]);
+
   return (
     <div
       className="hw-rail"

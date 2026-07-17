@@ -551,8 +551,9 @@ velt-comment-dialog-thread-card-internal:last-of-type .hw-rail-line {
 /* Page-mode composer: the dark visibility banner (rounded top, square bottom)
    and the white input sit flush as one card. Square the input's top corners so
    it meets the banner cleanly instead of showing a notch at the seam, and round
-   its bottom to 12px to mirror the banner's top. */
-.velt-comment-dialog--page-mode-composer .hw-composer {
+   its bottom to 12px to mirror the banner's top. Gated on the banner actually
+   rendering — without it the composer keeps its own symmetric radius. */
+.velt-comment-dialog--page-mode-composer:has(.velt-visibility-banner-wrapper) .hw-composer {
   border-top-left-radius: 0 !important;
   border-top-right-radius: 0 !important;
   border-top-color: transparent !important;
@@ -1030,6 +1031,257 @@ velt-comment-dialog-thread-card-draft-internal {
 
 .velt-composer--submit-button:not([disabled]) .velt-composer--input-button::after {
   background-color: #ffffff;
+}
+
+/* ---------- Agent suggestion card ----------
+   The SDK renders this layout INSTEAD of the normal dialog when
+   annotation.agent && (type === 'suggestion' || commentType === 'suggestion')
+   (comment-dialog isAgentComment gate). Card chrome comes from the shared
+   .velt-comment-dialog rules; this block owns the inner layout. */
+
+/* The wireframe's top-level VeltIf branches clone into the dialog as app-if
+   wrappers sitting between .velt-comment-dialog and the card content. Collapse
+   them out of layout so the flex/width chain reaches the cards directly. */
+app-if.hw-agent-suggestion,
+app-if.hw-normal-comment,
+.velt-comment-dialog > app-if {
+  display: contents;
+}
+
+.hw-agent-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  font-family: var(--hw-font);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--hw-text);
+}
+
+/* ----- Header: agent avatar + name · timestamp · kebab menu ----- */
+
+.hw-agent-card .velt-agent-suggestion__header {
+  gap: 7px;
+}
+
+.hw-agent-card .velt-agent-suggestion__identity {
+  gap: 7px;
+}
+
+.hw-agent-card .velt-agent-suggestion__avatar {
+  width: 20px !important;
+  height: 20px !important;
+  border-radius: 4px !important;
+  background: #161513 !important;
+  color: #ffffff !important;
+  font-size: 10px !important;
+  box-shadow: 0 0 0 1px var(--hw-border-strong);
+}
+
+/* Fallback agent glyph ships as an 18×18 svg — 14×14 fits the 20px circle */
+.hw-agent-card .velt-agent-suggestion__avatar svg {
+  width: 14px !important;
+  height: 14px !important;
+}
+
+.hw-agent-card .velt-agent-suggestion__name {
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  line-height: 20px !important;
+  color: var(--hw-text) !important;
+}
+
+.hw-agent-card .velt-agent-suggestion__time {
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  line-height: 16px !important;
+  color: var(--hw-text-muted) !important;
+}
+
+.hw-agent-card .velt-agent-suggestion__menu-dots {
+  width: 24px !important;
+  height: 24px !important;
+  border-radius: 6px !important;
+  color: var(--hw-text-secondary) !important;
+}
+
+.hw-agent-card .velt-agent-suggestion__menu-dots:hover {
+  background: var(--hw-surface-pressed) !important;
+  color: var(--hw-text) !important;
+}
+
+.hw-agent-card .velt-agent-suggestion__menu-list {
+  min-width: 135px !important;
+  padding: 6px !important;
+  background: #ffffff !important;
+  border: none !important;
+  border-radius: 12px !important;
+  box-shadow: var(--hw-shadow-menu) !important;
+}
+
+.hw-agent-card .velt-agent-suggestion__menu-item {
+  gap: 12px !important;
+  padding: 8px 10px !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  line-height: 20px !important;
+  color: var(--hw-text) !important;
+}
+
+.hw-agent-card .velt-agent-suggestion__menu-item:hover {
+  background: var(--hw-surface-pressed) !important;
+}
+
+.hw-agent-card .velt-agent-suggestion__menu-item--danger {
+  color: var(--hw-danger) !important;
+}
+
+/* ----- Body: finding title + rich HTML text ----- */
+
+.hw-agent-card .velt-agent-suggestion-body__text {
+  font-size: 14px !important;
+  line-height: 20px !important;
+  color: var(--hw-text) !important;
+  word-break: break-word;
+}
+
+/* ----- Resolution banner (annotation.suggestion.status accepted/rejected) -----
+   The SDK ships it full-bleed via margin: -16px (its own card padding); rebase
+   to this card's geometry and the Altana palette. Base = flush strip (also used
+   when the banner sits at the top of the normal .hw-card after acceptance). */
+
+velt-comment-dialog-agent-suggestion-banner-internal .velt-agent-suggestion-banner {
+  margin: 0 !important;
+  padding: 8px 12px !important;
+  border-radius: 8px 8px 0 0 !important;
+  gap: 6px !important;
+  font-family: var(--hw-font) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  line-height: 16px !important;
+}
+
+/* Inside the agent card, bleed to the card edges (card padding is 12px). */
+.hw-agent-card velt-comment-dialog-agent-suggestion-banner-internal .velt-agent-suggestion-banner {
+  margin: -12px -12px 0 !important;
+}
+
+velt-comment-dialog-agent-suggestion-banner-internal .velt-agent-suggestion-banner--accepted {
+  background: rgba(34, 114, 119, 0.08) !important;
+  color: var(--hw-teal) !important;
+}
+
+velt-comment-dialog-agent-suggestion-banner-internal .velt-agent-suggestion-banner--rejected {
+  background: rgba(215, 40, 48, 0.08) !important;
+  color: var(--hw-danger) !important;
+}
+
+.velt-agent-suggestion-banner__label,
+.velt-agent-suggestion-banner__resolver-name {
+  font-weight: 500 !important;
+}
+
+/* ----- Footer row: "Open comment" left, accept/reject bottom-right ----- */
+
+/* The SDK's own footer wrapper hosts our row — let the row own the layout */
+.hw-agent-card .velt-agent-suggestion__footer {
+  margin-top: 0 !important;
+}
+
+.hw-agent-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.hw-agent-footer velt-comment-dialog-agent-suggestion-actions-internal {
+  margin-left: auto;
+}
+
+.hw-agent-footer .velt-agent-suggestion__open-comment {
+  font-family: var(--hw-font) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  line-height: 16px !important;
+  color: var(--hw-text-secondary) !important;
+}
+
+.hw-agent-footer .velt-agent-suggestion__open-comment:hover {
+  color: var(--hw-text) !important;
+  text-decoration: none !important;
+}
+
+.hw-suggestion-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* Custom action (VeltButtonWireframe #custom-button): strip the SDK button
+   chrome — .custom-button owns the look, matching the 24px action row. */
+.hw-suggestion-actions app-button .velt-button {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  min-width: 0 !important;
+  height: auto !important;
+}
+
+.custom-button {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: var(--hw-surface-pressed);
+  color: var(--hw-text);
+  font-family: var(--hw-font);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.custom-button:hover {
+  background: var(--hw-border-strong);
+}
+
+/* The Accept/Reject internals ship 28px green/red buttons — retheme to the
+   Altana palette: filled teal accept, pressed-surface reject with danger glyph. */
+.hw-suggestion-actions .velt-agent-suggestion-action-accept__button,
+.hw-suggestion-actions .velt-agent-suggestion-action-reject__button {
+  width: 24px !important;
+  height: 24px !important;
+  border-radius: 6px !important;
+  transition: background 0.12s ease;
+}
+
+.hw-suggestion-actions .velt-agent-suggestion-action-accept__button {
+  background: var(--hw-teal) !important;
+  color: #ffffff !important;
+}
+
+.hw-suggestion-actions .velt-agent-suggestion-action-accept__button:hover {
+  background: #1b5d61 !important;
+}
+
+.hw-suggestion-actions .velt-agent-suggestion-action-reject__button {
+  background: var(--hw-surface-pressed) !important;
+  color: var(--hw-danger) !important;
+}
+
+.hw-suggestion-actions .velt-agent-suggestion-action-reject__button:hover {
+  background: var(--hw-border-strong) !important;
+}
+
+.hw-suggestion-actions .velt-agent-suggestion-action-accept__icon,
+.hw-suggestion-actions .velt-agent-suggestion-action-reject__icon {
+  width: 14px !important;
+  height: 14px !important;
 }
 
 /* Hide composer extras not in the design */
