@@ -1,7 +1,7 @@
 "use client";
 
 import type { User } from "@veltdev/types";
-import { useVeltClient, VeltNotificationsTool } from "@veltdev/react";
+// import { useVeltClient, VeltNotificationsTool } from "@veltdev/react";
 import { PanelToggleIcon } from "./icons";
 import { users, setDocumentsConfigByUserId } from "./velt/users";
 
@@ -22,18 +22,15 @@ export function Header({
   sidebarOpen,
   setSidebarOpen,
 }: HeaderProps) {
-  const { client } = useVeltClient();
+  // const { client } = useVeltClient();
 
-  // [Velt] Sign the Velt session out *before* clearing the local userId.
-  // Otherwise the SDK's underlying auth session (and any open subscriptions)
-  // outlives the React state change and may leak into the next sign-in.
   const handleLogout = async () => {
-    if (client) {
-      try {
-        await client.signOutUser();
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (err) {}
-    }
+    // if (client) {
+    //   try {
+    //     await client.signOutUser();
+    //     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    //   } catch (err) {}
+    // }
     setCurrentUserId(null);
   };
 
@@ -94,7 +91,7 @@ export function Header({
             </select>
           </div>
         )}
-        <VeltNotificationsTool enableCrossOrganization={true} />
+        {/* <VeltNotificationsTool enableCrossOrganization={true} /> */}
         <button
           type="button"
           className={`hw-sidebar-toggle${sidebarOpen ? " hw-sidebar-toggle--active" : ""}`}
