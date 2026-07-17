@@ -54,10 +54,6 @@ export const AGENT_COMMENT_FINDING_IDS = [
 export const AGENT_COMMENT_SEEDS = [
   {
     type: "suggestion",
-    location: {
-      id: "altana-doc-page",
-      locationName: "Side Letter",
-    },
     targetElement: {
       targetText: QUALITY_AGREEMENT_TARGET,
       occurrence: 1,
@@ -104,10 +100,6 @@ export const AGENT_COMMENT_SEEDS = [
   },
   {
     type: "suggestion",
-    location: {
-      id: "altana-doc-page",
-      locationName: "Side Letter",
-    },
     targetElement: {
       targetText: ANTI_PHGF_TARGET,
       occurrence: 1,
