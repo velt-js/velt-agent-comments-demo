@@ -1,0 +1,1396 @@
+/* ============================================================
+   Altana comments panel — PURE WIREFRAMES build (v1 sidebar).
+   Tokens + measurements taken 1:1 from Figma (node 1-3398):
+   fg-base #1a1917 · fg-subtle #6a6660 · fg-muted #848079
+   border-base #f1efec · border-strong #e4e1dd · mention #227277
+   card ring rgba(26,25,23,.08) · pressed #f1efec · resolved #f7f6f4
+   ============================================================ */
+
+:root {
+  --hw-text: #1a1917;
+  --hw-text-secondary: #6a6660;
+  --hw-text-muted: #848079;
+  --hw-border: #f1efec;
+  --hw-border-strong: #e4e1dd;
+  --hw-border-interactive: #1a1917;
+  --hw-surface: #f7f6f4;
+  --hw-surface-pressed: #f1efec;
+  --hw-teal: #227277;
+  --hw-danger: #d72830;
+  --hw-card-ring: inset 0 0 0 1px rgba(26, 25, 23, 0.08);
+  --hw-shadow-menu: 0 8px 20px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(26, 25, 23, 0.1);
+  --hw-font: var(--font-inter), -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
+}
+
+/* ---------- Panel shell (354px, px-16 py-12, 24px section gap) ---------- */
+
+.hw-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background: #ffffff;
+  color: var(--hw-text);
+  font-family: var(--hw-font);
+  position: relative;
+}
+
+.hw-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px 0;
+  min-height: 32px;
+}
+
+.hw-panel-header h2 {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  letter-spacing: 0;
+  margin: 0;
+}
+
+.hw-panel-composer {
+  margin-top: 20px;
+  padding: 0 16px;
+}
+
+/* The SDK renders the .Panel slot as a plain block <app-comment-sidebar-panel>
+   between .hw-panel and .hw-panel-body. Without this, that block wrapper breaks
+   the flex chain, so .hw-panel-body's flex:1 never resolves, the list grows to
+   its full content height, and the panel stops scrolling. Make the wrapper a
+   height-filling flex column to restore the scroll chain. */
+.hw-panel > app-comment-sidebar-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.hw-panel-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 24px 16px 16px;
+}
+
+/* ---------- Icon buttons (24px, radius 6, 12–16px glyphs) ---------- */
+
+.hw-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: var(--hw-text-secondary);
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.hw-icon-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.hw-icon-btn:hover {
+  background: var(--hw-surface-pressed);
+}
+
+/* ---------- Filter menu (anchored dropdown, 14px rows, check gutter) ---------- */
+
+.hw-filter-menu {
+  display: flex;
+  flex-direction: column;
+  /* Figma is 232px (one line in AltanaSans); keep that as the floor and let it
+     flex so the wider Inter substitute still keeps each row on one line. */
+  width: max-content;
+  min-width: 232px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: var(--hw-shadow-menu);
+  padding: 6px;
+}
+
+.hw-filter-row {
+  white-space: nowrap;
+}
+
+.hw-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  margin: 0 6px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--hw-text);
+  cursor: pointer;
+}
+
+.hw-filter-row:hover {
+  background: var(--hw-surface-pressed);
+}
+
+.hw-filter-label {
+  flex: 1;
+  font-weight: 400;
+}
+
+.hw-filter-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  flex-shrink: 0;
+  color: var(--hw-text);
+  visibility: hidden;
+}
+
+.hw-filter-check svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Native MinimalFilterDropdown items mark selection on their wrapper */
+.velt-comment-sidebar-minimal-filter-content-item--selected .hw-filter-check {
+  visibility: visible;
+}
+
+.hw-menu-divider {
+  height: 1px;
+  background: rgba(50, 33, 0, 0.12);
+  margin: 6px 0;
+}
+
+/* Native MinimalFilterDropdown shell: the template's .hw-filter-menu owns
+   the chrome, so the SDK's 150px outlined popover box is neutralized */
+.velt-status-dropdown--content {
+  width: max-content !important;
+  outline: none !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+  top: calc(100% + 4px) !important;
+  right: 0 !important;
+}
+
+.velt-comment-sidebar-minimal-filter-content-item {
+  width: 100%;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+/* ---------- Skeleton (loading) ---------- */
+
+.hw-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px 16px;
+}
+
+.hw-skeleton-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: var(--hw-card-ring);
+}
+
+.hw-skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hw-skeleton-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--hw-surface-pressed);
+  animation: hw-pulse 1.4s ease-in-out infinite;
+}
+
+.hw-skeleton-bar {
+  height: 10px;
+  border-radius: 5px;
+  background: var(--hw-surface-pressed);
+  animation: hw-pulse 1.4s ease-in-out infinite;
+}
+
+.hw-skeleton-bar--name {
+  width: 88px;
+}
+
+.hw-skeleton-bar--time {
+  width: 28px;
+  opacity: 0.7;
+}
+
+.hw-skeleton-bar--line1 {
+  margin-left: 28px;
+  width: 80%;
+}
+
+.hw-skeleton-bar--line2 {
+  margin-left: 28px;
+  width: 55%;
+}
+
+@keyframes hw-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* While the skeleton is up, the empty placeholder stays hidden */
+.hw-panel:has(.hw-skeleton) .hw-empty {
+  display: none;
+}
+
+/* ---------- Empty state ---------- */
+
+.hw-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 4px;
+  padding: 120px 24px 80px;
+}
+
+/* VeltIf wraps each message branch in a processed <app-if>; let its children
+   flow as direct items of the centered column instead of a nested flex box. */
+.hw-empty app-if {
+  display: contents;
+}
+
+.hw-empty h3 {
+  margin: 10px 0 0;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 26px;
+  letter-spacing: -0.4px;
+  color: #000000;
+}
+
+.hw-empty p {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: var(--hw-text-muted);
+  max-width: 323px;
+}
+
+.hw-empty kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 21px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 5px;
+  background: var(--hw-surface-pressed);
+  color: var(--hw-text-secondary);
+  font-family: inherit;
+  font-size: 13px;
+}
+
+/* ---------- Thread card (radius 8, ring border, 12px padding) ---------- */
+
+.hw-card {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--hw-font);
+}
+
+.hw-comment {
+  display: flex;
+  gap: 8px;
+}
+
+.hw-comment-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  align-self: stretch;
+  width: 20px;
+}
+
+.hw-rail-line {
+  flex: 1;
+  width: 1px;
+  background: var(--hw-border-strong);
+  margin-bottom: -12px;
+}
+
+.hw-comment-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.hw-comment-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 20px;
+}
+
+/* VeltIf renders an app-if flex wrapper — keep it inline inside the actions */
+.hw-comment-actions app-if {
+  display: flex !important;
+  align-items: center;
+  gap: 4px;
+}
+
+.hw-comment-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+  align-self: center;
+  height: 20px;
+}
+
+/* 24px hit-targets without stretching the 20px header row */
+.hw-comment-actions .hw-icon-btn {
+  margin-top: -2px;
+  margin-bottom: -2px;
+}
+
+.hw-comment-actions .hw-icon-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ---------- Kebab menu content (14px rows) ---------- */
+
+.hw-menu {
+  display: flex;
+  flex-direction: column;
+  min-width: 135px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: var(--hw-shadow-menu);
+  padding: 6px;
+  font-family: var(--hw-font);
+}
+
+.hw-menu-row {
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--hw-text);
+}
+
+.hw-menu-row svg {
+  flex-shrink: 0;
+  color: inherit;
+}
+
+.hw-menu-row span {
+  font-size: 14px;
+  line-height: 20px;
+  color: inherit;
+}
+
+.hw-menu .hw-menu-danger,
+.hw-menu .hw-menu-danger svg,
+.hw-menu .hw-menu-danger span {
+  color: var(--hw-danger);
+}
+
+/* ---------- Reply affordance (ToggleReply → static "↩ Reply") ---------- */
+
+/* Always just the arrow + "Reply" (count/text slots omitted in the template);
+   the "Show N replies…" expand control is the MoreReply divider above. */
+.hw-reply {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  padding-left: 28px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--hw-text);
+  cursor: pointer;
+}
+
+.hw-reply svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Velt hover tooltips have no place inside menus */
+.hw-menu .s-tooltip-text,
+.hw-menu [class*='tooltip-text'],
+.hw-menu [class*='tooltip--text'] {
+  display: none !important;
+}
+
+/* MoreReply divider (collapsed-replies-preview): the SDK renders "N more
+   replies" between the first and last comment. Style it as the design's
+   "Show N replies…" with the grabber icon, indented to the message column. */
+/* Only the populated divider (has .velt-hidden-count) is styled/shown — empty
+   more-reply hosts (≤2 comments) must stay collapsed, not show a lone chevron. */
+velt-comment-dialog-more-reply-internal:has(.velt-hidden-count) {
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin: 8px 0;
+  padding-left: 28px;
+  cursor: pointer;
+  font: 400 12px/16px var(--hw-font);
+}
+
+/* "Show N replies…" — composed from the MoreReply Count/Text sub-slots. The
+   cloner unwraps the wrapper span into .velt-hidden-count, so style that. */
+velt-comment-dialog-more-reply-internal:has(.velt-hidden-count) .velt-hidden-count {
+  color: var(--hw-text-secondary);
+  white-space: nowrap;
+  /* cloned text node is " Show " (leading space) — the message column has no
+     leading space, so pull the first line left by one space to align "Show". */
+  text-indent: -0.25em;
+}
+
+/* The Count/Text internals carry their own lighter token — force the divider
+   color so the whole "Show 4 replies" reads uniformly at #6a6660. */
+velt-comment-dialog-more-reply-internal .velt-hidden-count velt-comment-dialog-more-reply-count-internal,
+velt-comment-dialog-more-reply-internal .velt-hidden-count velt-comment-dialog-more-reply-text-internal {
+  color: var(--hw-text-secondary) !important;
+}
+
+/* Trailing ellipsis: the cloner drops every node after the last velt element,
+   so append it via ::after on the (surviving) Text internal — inline, so it
+   sizes into the line rather than overflowing the block and wrapping. */
+velt-comment-dialog-more-reply-internal .velt-hidden-count velt-comment-dialog-more-reply-text-internal::after {
+  content: '…';
+  /* the Text internal renders " replies " (trailing space) — pull "…" snug */
+  margin-left: -0.25em;
+}
+
+/* Little rail line below the grabber, on the x=22px rail axis. Floats with
+   equal gaps to the chevron above and the next avatar below (per Figma). */
+velt-comment-dialog-more-reply-internal:has(.velt-hidden-count)::after {
+  content: '';
+  position: absolute;
+  left: 9.5px;
+  top: calc(50% + 12px);
+  width: 1px;
+  height: 10px;
+  background: var(--hw-border-strong);
+}
+
+velt-comment-dialog-more-reply-internal:has(.velt-hidden-count)::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  background-color: var(--hw-text-secondary);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='12'%20height='12'%20viewBox='0%200%2012%2012'%20fill='none'%3E%3Cpath%20d='M3.5%204.5%206%202l2.5%202.5M3.5%207.5%206%2010l2.5-2.5'%20stroke='black'%20stroke-width='1.3'%20stroke-linecap='round'%20stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='12'%20height='12'%20viewBox='0%200%2012%2012'%20fill='none'%3E%3Cpath%20d='M3.5%204.5%206%202l2.5%202.5M3.5%207.5%206%2010l2.5-2.5'%20stroke='black'%20stroke-width='1.3'%20stroke-linecap='round'%20stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* Text is the SDK's native "N more replies" (count is SDK-controlled and its
+   internal node positioning resists CSS rewording — see SDK-LIMITATIONS.md). */
+
+/* Rail line: none on a card's last visible comment; kept on a collapsed
+   root that still has hidden replies. */
+velt-comment-dialog-thread-card-internal:last-of-type .hw-rail-line {
+  display: none;
+}
+
+.velt-comment-dialog--sidebar-mode:has(velt-comment-dialog-toggle-reply-count-internal:not(:empty))
+  velt-comment-dialog-thread-card-internal:last-of-type
+  .hw-rail-line {
+  display: block;
+}
+
+/* ---------- Composer (radius 8, border-base idle → interactive focus) ---------- */
+
+.hw-composer {
+  border: 1px solid var(--hw-border);
+  border-radius: 8px;
+  background: #ffffff;
+  /* 9px top/bottom + 20px line + 1px border each side = 40px (Figma). */
+  padding: 9px 10px;
+  transition: border-color 0.12s ease;
+  position: relative;
+  /* Figma Elevation/2 - Small: 0.08 ring + soft drop (atop the 1px border). */
+  box-shadow: 0 0 0 1px rgba(26, 25, 23, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.hw-composer:focus-within,
+.velt-composer-open .hw-composer {
+  border-color: var(--hw-border-interactive);
+  background: #ffffff;
+}
+
+/* Page-mode composer: the dark visibility banner (rounded top, square bottom)
+   and the white input sit flush as one card. Square the input's top corners so
+   it meets the banner cleanly instead of showing a notch at the seam, and round
+   its bottom to 12px to mirror the banner's top. */
+.velt-comment-dialog--page-mode-composer .hw-composer {
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+  border-top-color: transparent !important;
+  border-bottom-left-radius: 12px !important;
+  border-bottom-right-radius: 12px !important;
+}
+
+.hw-composer-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding-right: 34px;
+}
+
+/* Native composer avatar (SDK 5.0.2-beta.35+). The SDK renders it at 32px;
+   resize to the design's 20px. Both the avatar and the input's first line are
+   20px and the row is flex-start, so they align at the top (no offset). */
+.hw-composer-row velt-comment-dialog-composer-avatar-internal {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.hw-composer-row velt-comment-dialog-composer-avatar-internal .s-user-avatar-container,
+.hw-composer-row velt-comment-dialog-composer-avatar-internal .s-user-avatar-container img {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  border-radius: 50%;
+}
+
+/* Input chain fills the row */
+.hw-composer-row velt-comment-dialog-composer-input-internal {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.hw-composer-row .velt-composer-input,
+.hw-composer-row .velt-composer-input--container,
+.hw-composer-row .velt-composer-input--message {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+/* Velt gives the input 8px top/bottom padding → 36px tall, inflating the
+   composer to 54px. Zero it so a single line is 20px and the composer is 40px. */
+.hw-composer-row .velt-composer-input--message {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.hw-composer-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.hw-composer-actions app-button {
+  display: none;
+}
+
+.hw-composer-cancel {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--hw-text-secondary);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.hw-composer-cancel:hover {
+  background: var(--hw-surface-pressed);
+}
+
+.velt-composer-open .hw-composer-row {
+  padding-right: 0;
+}
+
+.velt-composer-open .hw-composer-actions {
+  position: static;
+  transform: none;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+
+.velt-composer-open .hw-composer-actions app-button {
+  display: inline-flex;
+}
+
+.hw-composer-actions app-button .velt-button {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+/* Long-comment edge case: no resize handle, cap height, scroll inside */
+.hw-composer textarea,
+.velt-composer-input,
+.velt-composer-input--message {
+  resize: none !important;
+}
+
+.velt-composer-input--message {
+  max-height: 140px !important;
+  overflow-y: auto !important;
+}
+
+/* ============================================================
+   Velt internal overrides
+   ============================================================ */
+
+velt-comments-sidebar {
+  height: 100% !important;
+  display: block !important;
+}
+
+.velt-sidebar--container,
+.velt-sidebar--panel {
+  background: #ffffff !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+.velt-sidebar-container {
+  padding: 0 !important;
+}
+
+.velt-sidebar--comments-hr {
+  display: none !important;
+}
+
+.velt-sidebar--comments {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  padding: 0 !important;
+}
+
+app-comment-sidebar-comments,
+app-comment-sidebar-list,
+.velt-sidebar--comments-block {
+  padding: 0 !important;
+}
+
+app-comment-sidebar-page-mode-composer {
+  padding: 0 !important;
+}
+
+.velt-sidebar-page-mode-composer {
+  padding: 0 !important;
+}
+
+/* Card chrome: radius 8, ring border (no solid border) */
+.velt-comment-dialog {
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 8px !important;
+  box-shadow: var(--hw-card-ring) !important;
+  background: #ffffff !important;
+}
+
+velt-comment-dialog-body-internal {
+  width: 100% !important;
+  padding: 12px !important;
+  box-sizing: border-box !important;
+}
+
+.velt-comment-dialog--page-mode-composer .velt-comment-dialog,
+.velt-comment-dialog--page-mode-composer.velt-comment-dialog {
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+/* ---------- Avatars (20px, 1px border-strong ring) ---------- */
+
+snippyly-user-avatar {
+  --legacy-velt-user-avatar-height: 20px !important;
+  --legacy-velt-user-avatar-width: 20px !important;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--hw-border-strong);
+}
+
+/* Mention-chip tooltip: its icon slot is 32px — let the avatar fill it
+   (the global 20px override left a dark crescent behind the image) */
+.velt-autocomplete-chip-tooltip--icon snippyly-user-avatar {
+  --legacy-velt-user-avatar-height: 32px !important;
+  --legacy-velt-user-avatar-width: 32px !important;
+}
+
+.velt-autocomplete-chip-tooltip {
+  font-family: var(--hw-font) !important;
+}
+
+.velt-autocomplete-chip-tooltip--name {
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: var(--hw-text) !important;
+}
+
+.velt-autocomplete-chip-tooltip--description {
+  font-size: 12px !important;
+  color: var(--hw-text-muted) !important;
+}
+
+.s-user-avatar-initial {
+  font-size: 11px !important;
+}
+
+/* ---------- Thread card internals ---------- */
+
+.velt-thread-card--name {
+  color: var(--hw-text) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  line-height: 20px !important;
+  letter-spacing: 0 !important;
+  font-family: var(--hw-font) !important;
+}
+
+.velt-thread-card--time {
+  color: var(--hw-text-muted) !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  line-height: 16px !important;
+  font-family: var(--hw-font) !important;
+}
+
+.velt-thread-card--message {
+  padding: 0 !important;
+  margin: 4px 0 0 !important;
+  color: var(--hw-text) !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  line-height: 20px !important;
+  font-family: var(--hw-font) !important;
+  word-break: break-word !important;
+  background: transparent !important;
+  font-style: normal !important;
+  border-radius: 0 !important;
+}
+
+.velt-thread-card--message * {
+  font-style: normal !important;
+}
+
+/* Mentions → teal medium text (Figma #227277) */
+mark.velt-autocomplete--contact-chip,
+.velt-mention,
+.velt-mention--name {
+  background: transparent !important;
+  color: var(--hw-teal) !important;
+  padding: 0 !important;
+  font-weight: 500 !important;
+  text-decoration: none !important;
+}
+
+/* Cards grow with content — the panel scrolls, not the card (Velt caps
+   threads at 230px with an inner scroll; the rail-line's -12px bleed was
+   also adding phantom overflow) */
+velt-comment-dialog-threads-internal {
+  gap: 12px !important;
+  max-height: none !important;
+  overflow: visible !important;
+  scrollbar-width: none !important;
+}
+
+/* Velt's .velt-body caps the dialog at 250px — cards must grow instead */
+.velt-comment-dialog--sidebar-mode .velt-body {
+  max-height: none !important;
+  height: auto !important;
+}
+
+.hw-comment:hover .hw-comment-actions,
+.hw-comment-actions:focus-within {
+  opacity: 1;
+}
+
+/* ---------- Edited / Draft / Unread indicators ---------- */
+
+.velt-thread-card--edited,
+velt-comment-dialog-thread-card-edited-internal {
+  font-size: 12px !important;
+  line-height: 16px !important;
+  color: var(--hw-text-muted) !important;
+  font-family: var(--hw-font) !important;
+  text-transform: lowercase !important;
+}
+
+.velt-thread-card--draft,
+velt-comment-dialog-thread-card-draft-internal,
+velt-comment-dialog-thread-card-draft-internal > *,
+.hw-comment-header [class*='draft'] {
+  font-size: 10px !important;
+  line-height: 14px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.04em !important;
+  color: var(--hw-text-secondary) !important;
+  background: var(--hw-surface-pressed) !important;
+  border-radius: 4px !important;
+  padding: 0 5px !important;
+  font-family: var(--hw-font) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  height: 16px !important;
+  box-sizing: border-box !important;
+}
+
+/* avoid double-boxing wrapper + inner */
+velt-comment-dialog-thread-card-draft-internal {
+  background: transparent !important;
+  padding: 0 !important;
+  height: auto !important;
+}
+
+/* Velt also tags the draft comment's message body with .velt-thread-card--draft,
+   so the chip styling above leaks onto it (gray pill, 10px text). Reset it back
+   to a normal comment body — only the "DRAFT" label keeps the chip look. */
+.velt-thread-card--message.velt-thread-card--draft {
+  font-size: 14px !important;
+  line-height: 20px !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  color: var(--hw-text) !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  height: auto !important;
+  display: block !important;
+}
+
+.velt-thread-card--name--unread {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+  background: var(--hw-teal) !important;
+  /* SDK adds a 4px left margin on top of the header's 7px flex gap — drop it so
+     the dot tucks next to the timestamp. */
+  margin-left: 0 !important;
+}
+
+/* The empty draft slot (Angular leaves comment-only nodes) still counts as a
+   flex item, so its 7px gaps on both sides shove the unread dot ~20px off the
+   timestamp. Collapse it when there's no actual draft. */
+.hw-comment-header velt-comment-dialog-thread-card-draft-internal:empty {
+  display: none !important;
+}
+
+/* Figma hover: whole card tints */
+.velt-comment-dialog--sidebar-mode:hover {
+  background: var(--hw-surface) !important;
+}
+
+/* Figma selected (replying) card: solid #e4e1dd border */
+.velt-comment-dialog--sidebar-mode.velt-comment-dialog--selected {
+  box-shadow: inset 0 0 0 1px var(--hw-border-strong) !important;
+}
+
+/* In-card reply composer (Figma node 1-4014): white field with the black
+   interactive border, radius 8, avatar inside, arrow inline right — no
+   Cancel row. Margins align it with the card's 12px content padding. */
+.velt-comment-dialog--sidebar-mode .hw-composer,
+.velt-comment-dialog--sidebar-mode .hw-composer:focus-within {
+  border: 1px solid var(--hw-border-interactive) !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+  border-radius: 8px;
+  padding: 9px 10px;
+  margin: 4px 12px 12px;
+}
+
+/* Floating reply composer (dialog-mode, but not the standalone page-mode
+   new-comment box) is flush to the card edges — inset it to align with the
+   body's 12px content padding, matching the sidebar composer. */
+.velt-comment-dialog--dialog-mode:not(.velt-comment-dialog--sidebar-mode):not(.velt-comment-dialog--page-mode-composer)
+  .hw-composer {
+  margin: 4px 12px 12px !important;
+}
+
+/* Idle reply field: arrow inline at the right, no Cancel. Once Velt marks
+   the composer active (.velt-composer-open on focus/typing, cleared on
+   submit/Escape) the generic expanded layout takes over — actions drop to a
+   row below with Cancel + arrow, same as the page-mode composer. */
+.velt-comment-dialog--sidebar-mode .velt-comment-dialog-composer:not(.velt-composer-open) .hw-composer-row {
+  padding-right: 34px !important;
+}
+
+.velt-comment-dialog--sidebar-mode .velt-comment-dialog-composer:not(.velt-composer-open) .hw-composer-actions {
+  position: absolute !important;
+  right: 8px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  margin: 0 !important;
+}
+
+.velt-comment-dialog--sidebar-mode .velt-comment-dialog-composer:not(.velt-composer-open) .hw-composer-actions app-button {
+  display: none !important;
+}
+
+.velt-comment-dialog--sidebar-mode .velt-comment-dialog-composer,
+.velt-comment-dialog--sidebar-mode velt-comment-dialog-composer-internal {
+  background: transparent !important;
+}
+
+/* Edit-in-place composer: no avatar (the comment row above already shows it) */
+.velt-thread-card--edit-mode .hw-composer-row::before,
+.velt-comment-dialog--sidebar-mode:has(.velt-thread-card--edit-mode) .hw-composer-row::before {
+  display: none !important;
+}
+
+/* ---------- Resolved state (Figma #f7f6f4, muted text, no reply) ---------- */
+
+.velt-comment-dialog--sidebar-mode:has(velt-comment-dialog-unresolve-button-internal .hw-icon-btn) {
+  background: var(--hw-surface) !important;
+  box-shadow: none !important;
+}
+
+.velt-comment-dialog--sidebar-mode:has(velt-comment-dialog-unresolve-button-internal .hw-icon-btn) .velt-thread-card--name,
+.velt-comment-dialog--sidebar-mode:has(velt-comment-dialog-unresolve-button-internal .hw-icon-btn) .velt-thread-card--message,
+.velt-comment-dialog--sidebar-mode:has(velt-comment-dialog-unresolve-button-internal .hw-icon-btn) .velt-thread-card--message * {
+  color: var(--hw-text-muted) !important;
+}
+
+.velt-comment-dialog--sidebar-mode:has(velt-comment-dialog-unresolve-button-internal .hw-icon-btn) velt-comment-dialog-toggle-reply-internal,
+.velt-comment-dialog--sidebar-mode:has(velt-comment-dialog-unresolve-button-internal .hw-icon-btn) .hw-composer {
+  display: none !important;
+}
+
+/* ---------- Composer input text ---------- */
+
+.velt-composer-input--message,
+.velt-composer-input--message * {
+  font-size: 14px !important;
+  line-height: 20px !important;
+  color: var(--hw-text) !important;
+  font-family: var(--hw-font) !important;
+}
+
+/* ---------- Send button (24px, radius 6; idle disabled → dark enabled) ---------- */
+
+.velt-composer--input-button {
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  border-radius: 6px !important;
+  background: var(--hw-surface-pressed) !important;
+  /* Figma disabled send button = opacity 0.5 (bg-disabled #f1efec). */
+  opacity: 0.5 !important;
+}
+
+.velt-composer--input-button svg {
+  display: none !important;
+}
+
+.velt-composer--input-button::after {
+  content: '';
+  width: 12px;
+  height: 12px;
+  display: block;
+  margin: auto;
+  mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2012%2012%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M6%209.5v-7M2.8%205.5%206%202.3l3.2%203.2%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E") no-repeat center / contain;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2012%2012%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M6%209.5v-7M2.8%205.5%206%202.3l3.2%203.2%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E") no-repeat center / contain;
+  background-color: #a8a49d;
+}
+
+.velt-composer--submit-button:not([disabled]) .velt-composer--input-button {
+  background: #1a1917 !important;
+  opacity: 1;
+}
+
+.velt-composer--submit-button:not([disabled]) .velt-composer--input-button::after {
+  background-color: #ffffff;
+}
+
+/* Hide composer extras not in the design */
+velt-autocomplete-tool-internal,
+velt-comment-dialog-custom-annotation-dropdown-internal,
+velt-comment-dialog-composer-assign-user-internal {
+  display: none !important;
+}
+
+/* ---------- Autocomplete (mention) panel — Figma: 185px, r12, 14px rows ---------- */
+
+.velt-autocomplete-panel--autocomplete.mat-mdc-autocomplete-panel {
+  border-radius: 12px !important;
+  border: none !important;
+  box-shadow: var(--hw-shadow-menu) !important;
+  padding: 6px !important;
+  background: #ffffff !important;
+  width: max-content !important;
+  min-width: 185px !important;
+  max-width: 260px !important;
+}
+
+.velt-autocomplete-panel--autocomplete.mat-mdc-autocomplete-panel .mat-mdc-option.mdc-list-item {
+  padding: 8px 10px !important;
+  border-radius: 8px !important;
+  min-height: 0 !important;
+}
+
+.velt-autocomplete-panel--autocomplete.mat-mdc-autocomplete-panel .mat-mdc-option.mdc-list-item:hover,
+.velt-autocomplete-panel--autocomplete.mat-mdc-autocomplete-panel .mat-mdc-option-active {
+  background: var(--hw-surface-pressed) !important;
+}
+
+.velt-autocomplete-option-name {
+  font-size: 14px !important;
+  line-height: 20px !important;
+  color: var(--hw-text) !important;
+  font-family: var(--hw-font) !important;
+  font-weight: 400 !important;
+}
+
+velt-autocomplete-option-description-internal {
+  display: none !important;
+}
+
+/* Option avatars ship at 36px — Figma spec is 20px (rows become 36px tall) */
+.velt-autocomplete-option-icon,
+.velt-autocomplete-option-icon img,
+.velt-autocomplete-panel--autocomplete .mat-mdc-option snippyly-user-avatar,
+.velt-autocomplete-panel--autocomplete .mat-mdc-option img {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  min-height: 20px !important;
+  border-radius: 50% !important;
+}
+
+.velt-autocomplete-panel--autocomplete .mat-mdc-option snippyly-user-avatar {
+  --legacy-velt-user-avatar-height: 20px !important;
+  --legacy-velt-user-avatar-width: 20px !important;
+}
+
+.velt-autocomplete-option--container {
+  gap: 12px !important;
+}
+
+/* ---------- Options dropdown overlay ---------- */
+
+velt-comment-dialog-options-dropdown-content-internal,
+velt-comment-dialog-options-dropdown-content-internal > div:not(.hw-menu),
+div:has(> velt-comment-dialog-options-dropdown-content-internal) {
+  width: max-content !important;
+  min-width: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+/* The menu card itself (direct child of the dropdown shell) keeps its chrome */
+velt-comment-dialog-options-dropdown-content-internal > .hw-menu {
+  width: max-content;
+  min-width: 135px;
+}
+
+.hw-menu velt-comment-dialog-options-dropdown-content-edit-internal > div,
+.hw-menu velt-comment-dialog-options-dropdown-content-delete-internal > div,
+.hw-menu velt-comment-dialog-copy-link-internal .velt-tooltip-button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  min-height: 36px !important;
+  padding: 8px 10px !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  background: transparent !important;
+}
+
+/* Velt's hover tooltips are CSS pseudo-elements on .s-tooltip — kill them
+   inside menus (they leaked as "Edit comment"/"Delete thread" bubbles) */
+.hw-menu .s-tooltip::before,
+.hw-menu .s-tooltip::after,
+.hw-menu [class*='s-tooltip']::before,
+.hw-menu [class*='s-tooltip']::after {
+  display: none !important;
+  content: none !important;
+}
+
+.hw-menu velt-comment-dialog-options-dropdown-content-edit-internal > div:hover,
+.hw-menu velt-comment-dialog-options-dropdown-content-delete-internal > div:hover,
+.hw-menu velt-comment-dialog-copy-link-internal .velt-tooltip-button:hover {
+  background: var(--hw-surface-pressed) !important;
+}
+
+.velt-comment-dialog-options-dropdown-content-item {
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+/* ---------- Confirm dialog (delete thread/comment) — theme match ---------- */
+
+.velt-confirm-dialog {
+  font-family: var(--hw-font) !important;
+  border-radius: 12px !important;
+  padding: 20px !important;
+  background: #ffffff !important;
+  box-shadow: var(--hw-shadow-menu) !important;
+}
+
+.velt-confirm-dialog .velt-confirm-dialog-title {
+  font-family: var(--hw-font) !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  line-height: 24px !important;
+  color: var(--hw-text) !important;
+  margin: 0 0 6px !important;
+  padding: 0 !important;
+}
+
+.velt-confirm-dialog .velt-confirm-dialog-message,
+.velt-confirm-dialog .velt-confirm-dialog-message * {
+  font-family: var(--hw-font) !important;
+  font-size: 14px !important;
+  line-height: 20px !important;
+  color: var(--hw-text-secondary) !important;
+  padding: 0 !important;
+}
+
+.velt-confirm-dialog .velt-confirm-dialog-actions {
+  padding: 16px 0 0 !important;
+  gap: 8px !important;
+  min-height: 0 !important;
+}
+
+.velt-confirm-dialog button.velt-confirm-dialog--reject,
+.velt-confirm-dialog button.velt-confirm-dialog--approve {
+  font-family: var(--hw-font) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  height: 34px !important;
+  border-radius: 8px !important;
+  border: none !important;
+  cursor: pointer !important;
+}
+
+.velt-confirm-dialog button.velt-confirm-dialog--reject {
+  background: var(--hw-surface-pressed) !important;
+  color: var(--hw-text) !important;
+}
+
+.velt-confirm-dialog button.velt-confirm-dialog--approve {
+  background: var(--hw-danger) !important;
+  color: #ffffff !important;
+}
+
+/* ---------- Visibility banner (Figma node 14955-235188) ----------
+   Dark #181f21 header, compact py-4/px-16, white label text, and a
+   rgba(255,255,255,.08) pill (radius 32) holding the audience + chevron.
+   Icon glyph is left as the SDK lock (open=public / closed=restricted);
+   only its size/colour are CSS-controllable. */
+
+.velt-visibility-banner-wrapper {
+  background: #181f21 !important;
+  padding: 4px 16px !important;
+  gap: 4px !important;
+}
+
+/* Outer flex carries a 4px gap (text↔pill in Figma); add 4px on the icon to
+   restore the 8px icon↔label gap without regrouping the SDK's flat children. */
+.velt-visibility-banner-wrapper
+  > velt-comment-dialog-visibility-banner-icon-internal {
+  margin-right: 4px !important;
+}
+
+.velt-visibility-banner-icon svg {
+  width: 14px !important;
+  height: 14px !important;
+}
+
+.velt-visibility-banner-text {
+  color: #ffffff !important;
+  font-family: var(--hw-font) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  line-height: 20px !important;
+}
+
+.velt-visibility-banner-dropdown-trigger {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-radius: 32px !important;
+  padding: 4px 8px 4px 10px !important;
+  gap: 4px !important;
+}
+
+.velt-visibility-banner-dropdown-trigger
+  velt-comment-dialog-visibility-banner-dropdown-trigger-label-internal,
+.velt-visibility-banner-dropdown-trigger
+  velt-comment-dialog-visibility-banner-dropdown-trigger-label-internal * {
+  color: #ffffff !important;
+  font-family: var(--hw-font) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+}
+
+/* Kill the SDK's indigo border/ring on the chip while the menu is open (the
+   chevron already signals the open state). ID-scoped to beat Velt's runtime
+   rule; the bare class covers the same chip in the floating dialog. */
+#velt-dropdown-trigger-visibility .velt-visibility-banner-dropdown-trigger,
+.velt-visibility-banner-dropdown-trigger {
+  border-color: transparent !important;
+}
+
+#velt-dropdown-trigger-visibility:focus-visible,
+#velt-dropdown-trigger-visibility .velt-visibility-banner-dropdown-trigger:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* ---------- Visibility dropdowns (no Figma — themed to match Altana) --------
+   Three popovers hang off the audience chip: the audience-type menu, the user
+   picker, and the team picker. The SDK ships them dark-navy / white with indigo
+   accents; retheme to the light Altana menu — white surface, --hw-shadow-menu,
+   12px radius, Inter, dark text, and teal (--hw-teal) replacing the indigo. */
+
+/* ===== Audience-type menu (Me / Selected People / Selected Teams / Everyone) */
+/* Anchored on .cdk-overlay-pane to out-specify Velt's runtime-injected navy
+   surface rule (equal specificity but injected after this static sheet). */
+.cdk-overlay-pane
+  .velt-comment-visibility-banner-dropdown-container
+  .mat-mdc-menu-content {
+  background: #ffffff !important;
+  border-radius: 12px !important;
+  box-shadow: var(--hw-shadow-menu) !important;
+  padding: 6px !important;
+  font-family: var(--hw-font) !important;
+}
+
+.velt-comment-visibility-banner-dropdown-container
+  .velt-comment-dialog-visibility-banner-dropdown-content-item {
+  border-radius: 8px !important;
+  padding: 8px 10px !important;
+}
+
+.velt-comment-visibility-banner-dropdown-container .velt-option-text {
+  color: var(--hw-text) !important;
+  font-family: var(--hw-font) !important;
+  font-size: 14px !important;
+  line-height: 20px !important;
+}
+
+.velt-comment-visibility-banner-dropdown-container
+  .velt-comment-dialog-visibility-banner-dropdown-content-item:hover {
+  background: var(--hw-surface-pressed) !important;
+}
+
+.velt-comment-visibility-banner-dropdown-container
+  .velt-comment-dialog-visibility-banner-dropdown-content-item.selected {
+  background: rgba(34, 114, 119, 0.08) !important;
+}
+
+.velt-comment-visibility-banner-dropdown-container
+  .velt-comment-dialog-visibility-banner-dropdown-content-item.selected
+  .velt-option-text {
+  color: var(--hw-teal) !important;
+}
+
+/* Leading glyph (e.g. the Everyone lock) reads as body text… */
+.velt-comment-visibility-banner-dropdown-container
+  velt-comment-dialog-visibility-banner-dropdown-content-item-icon-internal svg,
+.velt-comment-visibility-banner-dropdown-container
+  velt-comment-dialog-visibility-banner-dropdown-content-item-icon-internal svg path {
+  stroke: var(--hw-text) !important;
+  color: var(--hw-text) !important;
+}
+
+/* …the selected row's check (and a selected leading glyph) goes teal. */
+.velt-comment-visibility-banner-dropdown-container
+  .velt-comment-dialog-visibility-banner-dropdown-content-item.selected svg,
+.velt-comment-visibility-banner-dropdown-container
+  .velt-comment-dialog-visibility-banner-dropdown-content-item.selected svg path {
+  stroke: var(--hw-teal) !important;
+  color: var(--hw-teal) !important;
+}
+
+.velt-comment-visibility-banner-dropdown-container .velt-visibility-separator {
+  background: var(--hw-border-strong) !important;
+}
+
+/* ===== User picker + Team picker (shared velt-autocomplete-* internals) ===== */
+.velt-org-picker-overlay,
+.velt-user-picker-overlay {
+  border-radius: 12px !important;
+  box-shadow: var(--hw-shadow-menu) !important;
+  font-family: var(--hw-font) !important;
+}
+
+.velt-org-picker-overlay input,
+.velt-user-picker-overlay input {
+  font-family: var(--hw-font) !important;
+  font-size: 14px !important;
+  color: var(--hw-text) !important;
+}
+
+.velt-autocomplete-panel {
+  font-family: var(--hw-font) !important;
+}
+
+.velt-autocomplete-panel--selected-count {
+  color: var(--hw-text-muted) !important;
+  font-size: 12px !important;
+}
+
+.velt-autocomplete-panel--unselect-all {
+  color: var(--hw-teal) !important;
+}
+
+.velt-autocomplete-option--container,
+.velt-autocomplete-inline-option {
+  border-radius: 8px !important;
+}
+
+.velt-autocomplete-inline-option:hover {
+  background: var(--hw-surface-pressed) !important;
+}
+
+.velt-autocomplete-inline-option.selected,
+.velt-autocomplete-inline-option[aria-selected="true"] {
+  background: var(--hw-surface) !important;
+}
+
+.velt-autocomplete-option--check {
+  background: rgba(34, 114, 119, 0.08) !important;
+  color: var(--hw-teal) !important;
+}
+
+.velt-autocomplete-option--check svg,
+.velt-autocomplete-option--check svg path {
+  stroke: var(--hw-teal) !important;
+  color: var(--hw-teal) !important;
+}

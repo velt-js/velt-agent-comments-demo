@@ -1,0 +1,33 @@
+{
+  "name": "altana-demo-next",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "predev": "test -d app/api/velt/backend/venv || npm run setup:backend",
+    "dev": "concurrently -n next,django -c blue,green --kill-others-on-fail \"next dev\" \"npm run dev:backend\"",
+    "dev:next": "next dev",
+    "dev:backend": "cd app/api/velt/backend && venv/bin/python manage.py runserver",
+    "setup:backend": "cd app/api/velt/backend && python3 -m venv venv && venv/bin/pip install --quiet --upgrade pip && venv/bin/pip install --quiet -r requirements.txt",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@veltdev/react": "^5.0.4",
+    "next": "16.2.6",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@veltdev/types": "^5.0.4",
+    "concurrently": "^9.2.1",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.6",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
