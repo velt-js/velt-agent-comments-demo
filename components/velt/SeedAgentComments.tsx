@@ -44,6 +44,11 @@ export default function SeedAgentComments() {
         const organizationId =
           userConfig.organizationId ?? userRecord.organizationId;
         const documentId = primaryDocument.id;
+
+        if (!organizationId || !documentId) {
+          return;
+        }
+
         const sessionKey = buildSeedSessionKey(organizationId, documentId);
 
         if (sessionStorage.getItem(sessionKey) === "done") {
