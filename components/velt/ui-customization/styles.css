@@ -1071,7 +1071,7 @@ app-if.hw-normal-comment,
 .hw-agent-card .velt-agent-suggestion__avatar {
   width: 20px !important;
   height: 20px !important;
-  border-radius: 50% !important;
+  border-radius: 4px !important;
   background: #161513 !important;
   color: #ffffff !important;
   font-size: 10px !important;

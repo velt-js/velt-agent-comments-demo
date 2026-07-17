@@ -43,7 +43,7 @@ export function VeltCommentDialogWf() {
                                 <VeltCommentDialogWireframe.AgentSuggestion.Actions>
                                     <div className="hw-suggestion-actions">
                                         <VeltButtonWireframe id="custom-button" type="button">
-                                            <div className="custom-button">Custom</div>
+                                            <div className="custom-button">Log</div>
                                         </VeltButtonWireframe>
                                         <VeltCommentDialogWireframe.AgentSuggestion.Actions.Accept />
                                         <VeltCommentDialogWireframe.AgentSuggestion.Actions.Reject />
