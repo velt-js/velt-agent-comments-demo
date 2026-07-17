@@ -12,8 +12,8 @@
 
 import type { NextRequest } from "next/server";
 import {
+  AGENT_COMMENT_FINDING_IDS,
   AGENT_COMMENT_SEEDS,
-  AGENT_COMMENT_SEED_COUNT,
   SEED_DOCUMENT_ID,
   SEED_ORGANIZATION_ID,
 } from "@/lib/velt/agentCommentSeeds";
@@ -62,7 +62,7 @@ function getVeltCredentials(): VeltCredentials | null {
 }
 
 /**
- * Returns true when the document already has enough agent comment annotations.
+ * Returns true when the document already has the current demo text findings.
  */
 async function hasExistingAgentComments(
   credentials: VeltCredentials,
@@ -95,14 +95,34 @@ async function hasExistingAgentComments(
       return false;
     }
 
-    const agentSuggestionCount = annotations.filter(
-      (annotation) =>
-        typeof annotation === "object" &&
-        annotation !== null &&
-        (annotation as { type?: string }).type === "suggestion",
-    ).length;
+    const findingIds = new Set<string>();
 
-    return agentSuggestionCount >= AGENT_COMMENT_SEED_COUNT;
+    for (const annotation of annotations) {
+      if (typeof annotation !== "object" || annotation === null) {
+        continue;
+      }
+
+      const record = annotation as {
+        agent?: { reason?: { findingId?: string } };
+        comments?: Array<{ agent?: { reason?: { findingId?: string } } }>;
+      };
+
+      const rootFindingId = record.agent?.reason?.findingId;
+      if (rootFindingId) {
+        findingIds.add(rootFindingId);
+      }
+
+      for (const comment of record.comments ?? []) {
+        const commentFindingId = comment.agent?.reason?.findingId;
+        if (commentFindingId) {
+          findingIds.add(commentFindingId);
+        }
+      }
+    }
+
+    return AGENT_COMMENT_FINDING_IDS.every((findingId) =>
+      findingIds.has(findingId),
+    );
   } catch {
     return false;
   }

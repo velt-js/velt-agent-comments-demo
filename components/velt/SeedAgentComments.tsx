@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useCurrentUser } from "@veltdev/react";
 import { setDocumentsConfigByUserId, users } from "./users";
+import { SEED_VERSION } from "@/lib/velt/agentCommentSeeds";
 
 const AGENT_COMMENTS_ENDPOINT = "/api/velt/agent-comments";
 
@@ -13,7 +14,7 @@ function buildSeedSessionKey(
   organizationId: string,
   documentId: string,
 ): string {
-  return `velt-agent-seeds:v2:${organizationId}:${documentId}`;
+  return `velt-agent-seeds:${SEED_VERSION}:${organizationId}:${documentId}`;
 }
 
 /**
