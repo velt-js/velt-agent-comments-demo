@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
@@ -22,15 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={inter.variable}>
-      <body>
-        {children}
-        <Script
-          id="superflowToolbarScript"
-          src="https://cdn.velt.dev/lib/superflow.js?apiKey=aU1MxKP0rca2UXwKi8bl&projectId=710116242699950"
-          strategy="afterInteractive"
-          data-sf-platform="other-manual"
-        />
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
