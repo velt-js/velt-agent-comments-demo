@@ -24,9 +24,7 @@ export const AGENT_COMMENT_SEEDS = [
       {
         commentText:
           "Section 2.2 defines “Anti-PHGF Antigen” as a PDGF-based growth factor — the acronyms don't match. Confirm whether the defined term should be “Anti-PDGF Antigen”.",
-        from: { userId: DEMO_AGENT.agentId },
-        isCommentResolverUsed: true,
-        isCommentTextAvailable: true,
+        from: { userId: DEMO_AGENT.agentId, name: DEMO_AGENT.agentName },
         agent: {
           ...DEMO_AGENT,
           executionId: "run_demo_001",
@@ -47,9 +45,7 @@ export const AGENT_COMMENT_SEEDS = [
       {
         commentText:
           'Section 1 incorporates the “Quality Agreement (as defined below)”, but no definition of “Quality Agreement” appears in Section 2. Add the definition or a cross-reference.',
-        from: { userId: DEMO_AGENT.agentId },
-        isCommentResolverUsed: true,
-        isCommentTextAvailable: true,
+        from: { userId: DEMO_AGENT.agentId, name: DEMO_AGENT.agentName },
         agent: {
           ...DEMO_AGENT,
           executionId: "run_demo_002",

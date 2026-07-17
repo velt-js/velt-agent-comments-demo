@@ -19,6 +19,20 @@ import { Header } from "@/components/Header";
 import { Body } from "@/components/Body";
 
 const VELT_API_KEY = process.env.NEXT_PUBLIC_VELT_API_KEY ?? "";
+const SELF_HOSTING_BASE_URL =
+  process.env.NEXT_PUBLIC_SELF_HOSTING_BASE_URL ?? "";
+
+// Only wire data providers when self-hosting is configured. With an empty base URL
+// the SDK would call relative paths like /comments/get on this app (404) instead
+// of reading comments from Velt cloud — agent REST API seeds would never appear.
+const dataProviders = SELF_HOSTING_BASE_URL
+  ? {
+      comment: commentDataProvider,
+      reaction: reactionDataProvider,
+      user: userDataProvider,
+      attachment: attachmentDataProvider,
+    }
+  : undefined;
 
 // [Velt] Real-time Permission Provider config.
 //
@@ -62,12 +76,7 @@ export default function Home() {
       apiKey={VELT_API_KEY}
       authProvider={authProvider}
       permissionProvider={permissionProvider}
-      dataProviders={{
-        comment: commentDataProvider,
-        reaction: reactionDataProvider,
-        user: userDataProvider,
-        attachment: attachmentDataProvider,
-      }}
+      dataProviders={dataProviders}
     >
       <div className="hw-app">
         <Header

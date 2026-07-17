@@ -13,7 +13,7 @@ function buildSeedSessionKey(
   organizationId: string,
   documentId: string,
 ): string {
-  return `velt-agent-seeds:${organizationId}:${documentId}`;
+  return `velt-agent-seeds:v2:${organizationId}:${documentId}`;
 }
 
 /**

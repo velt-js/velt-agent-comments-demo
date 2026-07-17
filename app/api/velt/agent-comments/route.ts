@@ -26,6 +26,7 @@ const VELT_GET_ANNOTATIONS_URL =
 interface SeedRequestBody {
   organizationId?: string;
   documentId?: string;
+  force?: boolean;
 }
 
 interface VeltCredentials {
@@ -150,20 +151,24 @@ export async function POST(request: NextRequest) {
 
     let organizationId = SEED_ORGANIZATION_ID;
     let documentId = SEED_DOCUMENT_ID;
+    let force = false;
 
     try {
       const payload = (await request.json()) as SeedRequestBody;
       organizationId = payload.organizationId ?? organizationId;
       documentId = payload.documentId ?? documentId;
+      force = payload.force ?? false;
     } catch {
       // Empty body is fine — defaults apply.
     }
 
-    const alreadySeeded = await hasExistingAgentComments(
-      credentials,
-      organizationId,
-      documentId,
-    );
+    const alreadySeeded =
+      !force &&
+      (await hasExistingAgentComments(
+        credentials,
+        organizationId,
+        documentId,
+      ));
 
     if (alreadySeeded) {
       return Response.json({
