@@ -13,51 +13,52 @@ import { ThreadCardWf } from "./ThreadCardWf";
 // the sidebar threads.
 //
 // The dialog has TWO mutually exclusive layouts, switched by the SDK itself
-// (comment-dialog isAgentComment() → shouldShowAgentSuggestion):
+// (comment-dialog isSuggestionComment() → shouldShowSuggestion; since the
+// 2026-07 SDK rename+gate change the card renders for ANY suggestion-typed
+// annotation, agent-authored or human-authored — annotation.agent is no
+// longer required):
 //
-//   annotation.agent && (annotation.type === 'suggestion' ||
-//                        annotation.commentType === 'suggestion')
+//   annotation.type === 'suggestion' || annotation.commentType === 'suggestion'
 //
-// TRUE  → only the <AgentSuggestion> subtree renders (agent comment card).
+// TRUE  → only the <Suggestion> subtree renders (suggestion card).
 // FALSE → only the normal layout renders (thread cards + composer).
 //
 // No VeltIf is needed — the gate is native. If a manual condition were ever
 // needed on another slot, the equivalent VeltIf string is:
-//   "{annotation.agent} && ({annotation.type} == 'suggestion' ||
-//    {annotation.commentType} == 'suggestion')"
+//   "{annotation.type} == 'suggestion' || {annotation.commentType} == 'suggestion'"
 // ({annotation} resolves to componentConfigSignal.data.annotation).
 export function VeltCommentDialogWf() {
     return (
         <VeltCommentDialogWireframe>
             <VeltIf className="hw-agent-suggestion" condition="{annotation.type} === 'suggestion'">
                 {/* ── Agent comment: suggestion card ── */}
-                <VeltCommentDialogWireframe.AgentSuggestion>
+                <VeltCommentDialogWireframe.Suggestion>
                     <div className="hw-agent-card">
                         {/* Resolution banner — SDK shows it only once accepted/rejected */}
-                        <VeltCommentDialogWireframe.AgentSuggestion.Banner />
-                        <VeltCommentDialogWireframe.AgentSuggestion.Header />
-                        <VeltCommentDialogWireframe.AgentSuggestion.Body />
-                        <VeltCommentDialogWireframe.AgentSuggestion.Footer>
+                        <VeltCommentDialogWireframe.Suggestion.Banner />
+                        <VeltCommentDialogWireframe.Suggestion.Header />
+                        <VeltCommentDialogWireframe.Suggestion.Body />
+                        <VeltCommentDialogWireframe.Suggestion.Footer>
                             <div className="hw-agent-footer">
-                                <VeltCommentDialogWireframe.AgentSuggestion.Footer.OpenComment />
-                                <VeltCommentDialogWireframe.AgentSuggestion.Actions>
+                                <VeltCommentDialogWireframe.Suggestion.Footer.OpenComment />
+                                <VeltCommentDialogWireframe.Suggestion.Actions>
                                     <div className="hw-suggestion-actions">
                                         <VeltButtonWireframe id="custom-button" type="button">
                                             <div className="custom-button">Log</div>
                                         </VeltButtonWireframe>
-                                        <VeltCommentDialogWireframe.AgentSuggestion.Actions.Accept />
-                                        <VeltCommentDialogWireframe.AgentSuggestion.Actions.Reject />
+                                        <VeltCommentDialogWireframe.Suggestion.Actions.Accept />
+                                        <VeltCommentDialogWireframe.Suggestion.Actions.Reject />
                                     </div>
-                                </VeltCommentDialogWireframe.AgentSuggestion.Actions>
+                                </VeltCommentDialogWireframe.Suggestion.Actions>
                             </div>
-                        </VeltCommentDialogWireframe.AgentSuggestion.Footer>
+                        </VeltCommentDialogWireframe.Suggestion.Footer>
                     </div>
-                </VeltCommentDialogWireframe.AgentSuggestion>
+                </VeltCommentDialogWireframe.Suggestion>
             </VeltIf>
             <VeltIf className="hw-normal-comment" condition="{annotation.type} !== 'suggestion'">
                 {/* ── Normal comment: thread cards + composer ── */}
                 <div className="hw-card">
-                    <VeltCommentDialogWireframe.AgentSuggestion.Banner />
+                    <VeltCommentDialogWireframe.Suggestion.Banner />
                     <VeltCommentDialogWireframe.VisibilityBanner />
                     <VeltCommentDialogWireframe.Body>
                         <VeltCommentDialogWireframe.Threads>

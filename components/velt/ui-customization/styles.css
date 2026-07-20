@@ -1061,15 +1061,15 @@ app-if.hw-normal-comment,
 
 /* ----- Header: agent avatar + name · timestamp · kebab menu ----- */
 
-.hw-agent-card .velt-agent-suggestion__header {
+.hw-agent-card .velt-suggestion__header {
   gap: 7px;
 }
 
-.hw-agent-card .velt-agent-suggestion__identity {
+.hw-agent-card .velt-suggestion__identity {
   gap: 7px;
 }
 
-.hw-agent-card .velt-agent-suggestion__avatar {
+.hw-agent-card .velt-suggestion__avatar {
   width: 20px !important;
   height: 20px !important;
   border-radius: 4px !important;
@@ -1080,38 +1080,38 @@ app-if.hw-normal-comment,
 }
 
 /* Fallback agent glyph ships as an 18×18 svg — 14×14 fits the 20px circle */
-.hw-agent-card .velt-agent-suggestion__avatar svg {
+.hw-agent-card .velt-suggestion__avatar svg {
   width: 14px !important;
   height: 14px !important;
 }
 
-.hw-agent-card .velt-agent-suggestion__name {
+.hw-agent-card .velt-suggestion__name {
   font-size: 14px !important;
   font-weight: 500 !important;
   line-height: 20px !important;
   color: var(--hw-text) !important;
 }
 
-.hw-agent-card .velt-agent-suggestion__time {
+.hw-agent-card .velt-suggestion__time {
   font-size: 12px !important;
   font-weight: 400 !important;
   line-height: 16px !important;
   color: var(--hw-text-muted) !important;
 }
 
-.hw-agent-card .velt-agent-suggestion__menu-dots {
+.hw-agent-card .velt-suggestion__menu-dots {
   width: 24px !important;
   height: 24px !important;
   border-radius: 6px !important;
   color: var(--hw-text-secondary) !important;
 }
 
-.hw-agent-card .velt-agent-suggestion__menu-dots:hover {
+.hw-agent-card .velt-suggestion__menu-dots:hover {
   background: var(--hw-surface-pressed) !important;
   color: var(--hw-text) !important;
 }
 
-.hw-agent-card .velt-agent-suggestion__menu-list {
+.hw-agent-card .velt-suggestion__menu-list {
   min-width: 135px !important;
   padding: 6px !important;
   background: #ffffff !important;
@@ -1120,7 +1120,7 @@ app-if.hw-normal-comment,
   box-shadow: var(--hw-shadow-menu) !important;
 }
 
-.hw-agent-card .velt-agent-suggestion__menu-item {
+.hw-agent-card .velt-suggestion__menu-item {
   gap: 12px !important;
   padding: 8px 10px !important;
   border-radius: 8px !important;
@@ -1129,17 +1129,17 @@ app-if.hw-normal-comment,
   color: var(--hw-text) !important;
 }
 
-.hw-agent-card .velt-agent-suggestion__menu-item:hover {
+.hw-agent-card .velt-suggestion__menu-item:hover {
   background: var(--hw-surface-pressed) !important;
 }
 
-.hw-agent-card .velt-agent-suggestion__menu-item--danger {
+.hw-agent-card .velt-suggestion__menu-item--danger {
   color: var(--hw-danger) !important;
 }
 
 /* ----- Body: finding title + rich HTML text ----- */
 
-.hw-agent-card .velt-agent-suggestion-body__text {
+.hw-agent-card .velt-suggestion-body__text {
   font-size: 14px !important;
   line-height: 20px !important;
   color: var(--hw-text) !important;
@@ -1151,7 +1151,7 @@ app-if.hw-normal-comment,
    to this card's geometry and the Altana palette. Base = flush strip (also used
    when the banner sits at the top of the normal .hw-card after acceptance). */
 
-velt-comment-dialog-agent-suggestion-banner-internal .velt-agent-suggestion-banner {
+velt-comment-dialog-suggestion-banner-internal .velt-suggestion-banner {
   margin: 0 !important;
   padding: 8px 12px !important;
   border-radius: 8px 8px 0 0 !important;
@@ -1163,29 +1163,29 @@ velt-comment-dialog-agent-suggestion-banner-internal .velt-agent-suggestion-bann
 }
 
 /* Inside the agent card, bleed to the card edges (card padding is 12px). */
-.hw-agent-card velt-comment-dialog-agent-suggestion-banner-internal .velt-agent-suggestion-banner {
+.hw-agent-card velt-comment-dialog-suggestion-banner-internal .velt-suggestion-banner {
   margin: -12px -12px 0 !important;
 }
 
-velt-comment-dialog-agent-suggestion-banner-internal .velt-agent-suggestion-banner--accepted {
+velt-comment-dialog-suggestion-banner-internal .velt-suggestion-banner--accepted {
   background: rgba(34, 114, 119, 0.08) !important;
   color: var(--hw-teal) !important;
 }
 
-velt-comment-dialog-agent-suggestion-banner-internal .velt-agent-suggestion-banner--rejected {
+velt-comment-dialog-suggestion-banner-internal .velt-suggestion-banner--rejected {
   background: rgba(215, 40, 48, 0.08) !important;
   color: var(--hw-danger) !important;
 }
 
-.velt-agent-suggestion-banner__label,
-.velt-agent-suggestion-banner__resolver-name {
+.velt-suggestion-banner__label,
+.velt-suggestion-banner__resolver-name {
   font-weight: 500 !important;
 }
 
 /* ----- Footer row: "Open comment" left, accept/reject bottom-right ----- */
 
 /* The SDK's own footer wrapper hosts our row — let the row own the layout */
-.hw-agent-card .velt-agent-suggestion__footer {
+.hw-agent-card .velt-suggestion__footer {
   margin-top: 0 !important;
 }
 
@@ -1196,11 +1196,11 @@ velt-comment-dialog-agent-suggestion-banner-internal .velt-agent-suggestion-bann
   width: 100%;
 }
 
-.hw-agent-footer velt-comment-dialog-agent-suggestion-actions-internal {
+.hw-agent-footer velt-comment-dialog-suggestion-actions-internal {
   margin-left: auto;
 }
 
-.hw-agent-footer .velt-agent-suggestion__open-comment {
+.hw-agent-footer .velt-suggestion__open-comment {
   font-family: var(--hw-font) !important;
   font-size: 12px !important;
   font-weight: 500 !important;
@@ -1208,7 +1208,7 @@ velt-comment-dialog-agent-suggestion-banner-internal .velt-agent-suggestion-bann
   color: var(--hw-text-secondary) !important;
 }
 
-.hw-agent-footer .velt-agent-suggestion__open-comment:hover {
+.hw-agent-footer .velt-suggestion__open-comment:hover {
   color: var(--hw-text) !important;
   text-decoration: none !important;
 }
@@ -1252,34 +1252,34 @@ velt-comment-dialog-agent-suggestion-banner-internal .velt-agent-suggestion-bann
 
 /* The Accept/Reject internals ship 28px green/red buttons — retheme to the
    Altana palette: filled teal accept, pressed-surface reject with danger glyph. */
-.hw-suggestion-actions .velt-agent-suggestion-action-accept__button,
-.hw-suggestion-actions .velt-agent-suggestion-action-reject__button {
+.hw-suggestion-actions .velt-suggestion-action-accept__button,
+.hw-suggestion-actions .velt-suggestion-action-reject__button {
   width: 24px !important;
   height: 24px !important;
   border-radius: 6px !important;
   transition: background 0.12s ease;
 }
 
-.hw-suggestion-actions .velt-agent-suggestion-action-accept__button {
+.hw-suggestion-actions .velt-suggestion-action-accept__button {
   background: var(--hw-teal) !important;
   color: #ffffff !important;
 }
 
-.hw-suggestion-actions .velt-agent-suggestion-action-accept__button:hover {
+.hw-suggestion-actions .velt-suggestion-action-accept__button:hover {
   background: #1b5d61 !important;
 }
 
-.hw-suggestion-actions .velt-agent-suggestion-action-reject__button {
+.hw-suggestion-actions .velt-suggestion-action-reject__button {
   background: var(--hw-surface-pressed) !important;
   color: var(--hw-danger) !important;
 }
 
-.hw-suggestion-actions .velt-agent-suggestion-action-reject__button:hover {
+.hw-suggestion-actions .velt-suggestion-action-reject__button:hover {
   background: var(--hw-border-strong) !important;
 }
 
-.hw-suggestion-actions .velt-agent-suggestion-action-accept__icon,
-.hw-suggestion-actions .velt-agent-suggestion-action-reject__icon {
+.hw-suggestion-actions .velt-suggestion-action-accept__icon,
+.hw-suggestion-actions .velt-suggestion-action-reject__icon {
   width: 14px !important;
   height: 14px !important;
 }
