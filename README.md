@@ -7,6 +7,10 @@ access-control configuration** — Real-Time Permission Provider + Access Contex
 (`isContextEnabled`), viewer/editor roles, folders, `organizationPrivate`, and private
 comments — so the Velt team can observe (and debug) the same behavior locally.
 
+> **New to this demo?** Read [`DEMO_WALKTHROUGH.md`](DEMO_WALKTHROUGH.md) — a plain-English
+> tour of what we added, why, and how to try every feature and reproduce both reported
+> issues step by step.
+
 ## Getting Started
 
 1. Copy environment variables:
