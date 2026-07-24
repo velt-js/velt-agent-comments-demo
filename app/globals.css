@@ -372,3 +372,188 @@ snippyly-comment-text.comment-text-highlight,
   border-bottom: none !important;
   text-decoration: none !important;
 }
+
+/* ============================================================
+   Access Context catalog picker (host DOM) — chooses the catalog
+   NEW comments are tagged with (context.access.catalogId).
+   ============================================================ */
+.hw-catalog-picker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #b9b7b1;
+  font-size: 12px;
+}
+
+.hw-catalog-picker select {
+  font: inherit;
+  color: #efeeea;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 6px;
+  padding: 3px 6px;
+}
+
+.hw-catalog-picker select option {
+  color: #161513;
+}
+
+/* ============================================================
+   Velt permissions Debug Panel (host DOM) — bottom-left overlay.
+   Live view of Permission Provider decisions + current-user grants.
+   ============================================================ */
+.hw-debug {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 60;
+  width: 380px;
+  max-width: calc(100vw - 32px);
+  font-family: var(--font-inter), system-ui, sans-serif;
+  color: #e8e6e1;
+}
+
+.hw-debug-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #1e1d1b;
+  border: 1px solid #383632;
+  color: #e8e6e1;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.hw-debug-count {
+  min-width: 18px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #383632;
+  color: #c9c7c1;
+  font-size: 11px;
+  text-align: center;
+}
+
+.hw-debug-body {
+  margin-top: 8px;
+  max-height: 60vh;
+  overflow: auto;
+  padding: 12px;
+  border-radius: 12px;
+  background: #1a1917;
+  border: 1px solid #383632;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+.hw-debug-section {
+  margin-bottom: 14px;
+}
+
+.hw-debug-section:last-child {
+  margin-bottom: 0;
+}
+
+.hw-debug-section h4 {
+  margin: 0 0 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #8a8880;
+}
+
+.hw-debug-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hw-debug-purpose {
+  font-size: 12px;
+  color: #efeeea;
+  margin-bottom: 8px;
+}
+
+.hw-debug-kv {
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.hw-debug-kv > span {
+  display: block;
+  color: #8a8880;
+  margin-bottom: 2px;
+}
+
+.hw-debug-kv ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.hw-debug code,
+.hw-debug-pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  color: #cfe3ff;
+}
+
+.hw-debug-pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 160px;
+  overflow: auto;
+  margin: 0;
+  padding: 8px;
+  border-radius: 8px;
+  background: #111010;
+  border: 1px solid #2b2a27;
+}
+
+.hw-debug-empty {
+  font-size: 12px;
+  color: #7c7a74;
+}
+
+.hw-debug-clear {
+  font-size: 11px;
+  color: #b9b7b1;
+  border: 1px solid #383632;
+  border-radius: 6px;
+  padding: 2px 8px;
+}
+
+.hw-debug-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.hw-debug-table th {
+  text-align: left;
+  color: #8a8880;
+  font-weight: 500;
+  padding: 3px 4px;
+  border-bottom: 1px solid #2b2a27;
+}
+
+.hw-debug-table td {
+  padding: 3px 4px;
+  border-bottom: 1px solid #201f1d;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hw-debug-table tr.hw-allow td:last-child {
+  color: #7ee0a8;
+}
+
+.hw-debug-table tr.hw-deny td:last-child {
+  color: #f0a3a3;
+}

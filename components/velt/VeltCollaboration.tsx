@@ -118,6 +118,14 @@ export function VeltCollaboration({ sidebarOpen }: { sidebarOpen: boolean }) {
       <SeedAgentComments />
       <CommentContextTagger />
       <ContactsRegistrar />
+      {/* [Velt] Private comments (beta).
+          `visibilityOptions` renders the visibility banner under the composer with
+          four levels — public, organization-private, restricted-self, restricted —
+          plus an inline user-picker for `restricted`. The chosen visibility is
+          stored on the annotation (visibilityConfig) and enforced on read, so a
+          private/org-private comment is hidden from users who aren't permitted.
+          The Private Comments beta must also be enabled in the Velt Console for
+          the API key (see README → Console configuration). */}
       <VeltComments
         shadowDom={false}
         commentPlaceholder="Comment or tag others with @"
