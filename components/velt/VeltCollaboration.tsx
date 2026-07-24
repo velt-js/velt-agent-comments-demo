@@ -7,6 +7,7 @@ import {
 } from "@veltdev/react";
 import VeltInitializeDocument from "./VeltInitializeDocument";
 import SeedAgentComments from "./SeedAgentComments";
+import CommentContextTagger from "./CommentContextTagger";
 import { ContactsRegistrar } from "./ContactsRegistrar";
 import { VeltCustomization } from "./ui-customization/VeltCustomization";
 
@@ -115,6 +116,7 @@ export function VeltCollaboration({ sidebarOpen }: { sidebarOpen: boolean }) {
     <>
       <VeltInitializeDocument />
       <SeedAgentComments />
+      <CommentContextTagger />
       <ContactsRegistrar />
       <VeltComments
         shadowDom={false}
