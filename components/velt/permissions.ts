@@ -1,4 +1,4 @@
-// [Velt] Shared permission policy.
+// [Velt] Shared Permission Provider policy.
 //
 // Pure, framework-agnostic evaluation of a single Velt permission query. The
 // request/response shapes are byte-identical whether the check is resolved:
@@ -7,6 +7,18 @@
 //   - server-to-server via the Real-Time Permission Provider endpoint at
 //     app/api/velt/check-permissions/route.ts — used in production.
 // Keeping the policy here means both paths stay in lockstep.
+//
+// Velt asks us about four resource types (PermissionResourceType):
+//   • organization → is the user in / granted this org? what role?
+//   • folder       → is the user granted this folder? what role?
+//   • document     → is the user granted this document? what role?
+//   • context      → (only when permissionProvider.isContextEnabled === true)
+//                    a FEATURE-LEVEL check. Velt sends one request per Access
+//                    Context value (e.g. { catalogId: "catalog-apac" }); we answer
+//                    whether the user may see that catalog's comments/notifications.
+//
+// All role + access data comes from components/velt/accessModel.ts so the JWT,
+// this policy, and setDocuments can never drift apart.
 
 import type {
   PermissionQuery,
@@ -14,43 +26,61 @@ import type {
   UserPermissionAccessRole,
 } from "@veltdev/types";
 import { users } from "./users";
-
-const ALLOWED_DOCUMENT_IDS = new Set(["altana-doc-7"]);
+import {
+  CATALOG_ACCESS_FIELD,
+  getDocumentRole,
+  getFolderRole,
+  getOrgRole,
+  hasCatalogAccess,
+} from "./accessModel";
 
 // @veltdev/types ships types only (no runtime JS), so enum members can't be
-// referenced as values — cast string literals to the enum type instead.
-const EDITOR = "editor" as UserPermissionAccessRole;
-
-// Per-user access policy. Each entry says "for this user, in this org, what
-// resource types are reachable". `organization: true` means the user has
-// access to the org itself; the document entry gates access to the specific
-// resources (still pinned to ALLOWED_DOCUMENT_IDS).
-//
-// User 1 and User 3 are full members of owner-org-1 with document access.
-// User 2 belongs to customer-org-1 and is a guest on the documents inside
-// owner-org-1. User 4 also belongs to customer-org-1 but has no document
-// access on owner-org-1.
-interface OrgPolicy {
-  organization?: boolean;
-  document?: boolean;
+// referenced as values — cast our "viewer"/"editor" literals to the enum type.
+function asAccessRole(role: "viewer" | "editor"): UserPermissionAccessRole {
+  return role as UserPermissionAccessRole;
 }
 
-const accessPolicy: Record<string, Record<string, OrgPolicy>> = {
-  user1: {
-    "owner-org-1": { organization: true, document: true },
-  },
-  user2: {
-    "customer-org-1": { organization: true },
-    "owner-org-1": { organization: false, document: true },
-  },
-  user3: {
-    "owner-org-1": { organization: true, document: true },
-  },
-  user4: {
-    "customer-org-1": { organization: true },
-    "owner-org-1": { organization: true, document: true },
-  },
-};
+/**
+ * Extract the Access Context field/value pairs from a context permission query.
+ *
+ * Velt sends the values two ways; we read whichever is present:
+ *   - resource.context.access = { catalogId: "catalog-apac" }  (preferred), or
+ *   - resource.id = '{"catalogId":"catalog-apac"}'             (JSON string fallback)
+ */
+function readContextAccess(
+  query: PermissionQuery,
+): Record<string, string | number> | null {
+  const ctx = query.resource.context as
+    | { access?: Record<string, unknown> }
+    | undefined;
+
+  if (ctx?.access && typeof ctx.access === "object") {
+    const out: Record<string, string | number> = {};
+    for (const [key, value] of Object.entries(ctx.access)) {
+      // setDocuments passes arrays, but each per-value context request carries a
+      // single scalar. Normalize a 1-element array just in case.
+      const scalar = Array.isArray(value) ? value[0] : value;
+      if (typeof scalar === "string" || typeof scalar === "number") {
+        out[key] = scalar;
+      }
+    }
+    if (Object.keys(out).length > 0) return out;
+  }
+
+  // Fallback: resource.id is the JSON-encoded context object.
+  try {
+    const parsed = JSON.parse(query.resource.id) as Record<string, unknown>;
+    const out: Record<string, string | number> = {};
+    for (const [key, value] of Object.entries(parsed)) {
+      if (typeof value === "string" || typeof value === "number") {
+        out[key] = value;
+      }
+    }
+    return Object.keys(out).length > 0 ? out : null;
+  } catch {
+    return null;
+  }
+}
 
 export function evaluatePermission(query: PermissionQuery): PermissionResult {
   const { userId, resource } = query;
@@ -63,25 +93,46 @@ export function evaluatePermission(query: PermissionQuery): PermissionResult {
     hasAccess: false,
   };
 
+  // Unknown user → deny everything.
   if (!users[userId]) return deny;
 
-  const policy = accessPolicy[userId]?.[resource.organizationId];
-  if (!policy) return deny;
-
   switch (resource.type as string) {
-    case "organization":
-      return policy.organization ? { ...deny, hasAccess: true } : deny;
+    case "organization": {
+      const role = getOrgRole(userId, resource.organizationId);
+      if (!role) return deny;
+      return { ...deny, hasAccess: true, accessRole: asAccessRole(role) };
+    }
 
-    case "document":
-      if (!policy.document) return deny;
-      if (!ALLOWED_DOCUMENT_IDS.has(resource.id)) return deny;
-      return { ...deny, hasAccess: true, accessRole: EDITOR };
+    case "folder": {
+      const role = getFolderRole(userId, resource.id);
+      if (!role) return deny;
+      return { ...deny, hasAccess: true, accessRole: asAccessRole(role) };
+    }
 
-    case "context":
-      // Access Context isn't enabled in the frontend yet
-      // (permissionProvider.isContextEnabled === false). If you flip it on,
-      // inspect resource.context here to allow/deny per field.
-      return { ...deny, hasAccess: true };
+    case "document": {
+      const role = getDocumentRole(userId, resource.id);
+      if (!role) return deny;
+      return { ...deny, hasAccess: true, accessRole: asAccessRole(role) };
+    }
+
+    case "context": {
+      // Feature-level (Access Context) check. A user must have access to ALL
+      // fields in the context to see the associated feature data. For this demo
+      // the only field is `catalogId`, but we evaluate every field generically.
+      const access = readContextAccess(query);
+      if (!access) return deny;
+
+      const allowed = Object.entries(access).every(([field, value]) => {
+        if (field === CATALOG_ACCESS_FIELD) {
+          return hasCatalogAccess(userId, String(value));
+        }
+        // Unknown context field → fail closed (deny) so we never over-grant.
+        return false;
+      });
+
+      // Context results don't carry an accessRole — just allow/deny.
+      return { ...deny, hasAccess: allowed };
+    }
 
     default:
       return deny;
