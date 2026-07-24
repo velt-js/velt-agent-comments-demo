@@ -10,7 +10,16 @@
 export const SEED_ORGANIZATION_ID = "owner-org-1";
 export const SEED_DOCUMENT_ID = "altana-doc-7";
 
-export const SEED_VERSION = "text-v3";
+// Access Context (catalog) each seeded finding is tagged with. This lets the
+// seeded agent comments demonstrate feature-level filtering: a user only sees a
+// finding if their catalogAccess (see components/velt/accessModel.ts) includes
+// its catalog. finding #1 → APAC, finding #2 → EMEA.
+export const SEED_CATALOG_FIELD = "catalogId";
+const SEED_CATALOG_APAC = "catalog-apac";
+const SEED_CATALOG_EMEA = "catalog-emea";
+
+// Bumped whenever the seed content OR its context changes so the client re-seeds.
+export const SEED_VERSION = "text-v4-context";
 
 export const DEMO_AGENT_USER = {
   userId: "altana-review-agent",
@@ -54,6 +63,12 @@ export const AGENT_COMMENT_FINDING_IDS = [
 export const AGENT_COMMENT_SEEDS = [
   {
     type: "suggestion",
+    // Access Context tag → only users with APAC catalog access see this finding.
+    context: {
+      access: {
+        [SEED_CATALOG_FIELD]: SEED_CATALOG_APAC,
+      },
+    },
     targetElement: {
       targetText: QUALITY_AGREEMENT_TARGET,
       occurrence: 1,
@@ -100,6 +115,12 @@ export const AGENT_COMMENT_SEEDS = [
   },
   {
     type: "suggestion",
+    // Access Context tag → only users with EMEA catalog access see this finding.
+    context: {
+      access: {
+        [SEED_CATALOG_FIELD]: SEED_CATALOG_EMEA,
+      },
+    },
     targetElement: {
       targetText: ANTI_PHGF_TARGET,
       occurrence: 1,

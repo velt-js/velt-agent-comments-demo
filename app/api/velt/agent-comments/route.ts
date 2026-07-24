@@ -145,6 +145,10 @@ async function seedAgentComments(
         documentId,
         createOrganizationIfNotExists: true,
         createDocumentIfNotExists: true,
+        // Each seed annotation carries an Access Context tag
+        // (context.access.catalogId) so context filtering applies to agent
+        // comments too — a user only sees a finding if their catalogAccess
+        // includes its catalog. See lib/velt/agentCommentSeeds.ts.
         commentAnnotations: AGENT_COMMENT_SEEDS,
       },
     }),

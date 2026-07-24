@@ -10,13 +10,14 @@
 //   https://console.velt.dev/dashboard/config/general
 //
 // SECURITY NOTE: this demo trusts whatever userId the client posts because
-// there is no real auth here — the UI lets you pick Michael/Jim/Pam directly.
-// In production, derive the userId from your server-side session (cookies,
-// headers, OAuth, etc.) and IGNORE the client-provided value, otherwise
-// anyone can mint a token for any user.
+// there is no real auth here — the header "Sign in as" picker sends the userId
+// directly (User 1–5). In production, derive the userId from your server-side
+// session (cookies, headers, OAuth, etc.) and IGNORE the client-provided value,
+// otherwise anyone can mint a token for any user.
 
 import type { NextRequest } from 'next/server';
 import { users } from '@/components/velt/users';
+import { getJwtResources } from '@/components/velt/accessModel';
 
 const VELT_GENERATE_TOKEN_URL = 'https://api.velt.dev/v2/auth/generate_token';
 
@@ -52,9 +53,22 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: `Unknown userId: ${userId}` }, { status: 404 });
   }
 
-  // Mint a JWT against Velt's API. We only assert identity here; resource
-  // permissions are evaluated separately by the Real-Time Permission Provider
-  // at /api/velt/check-permissions.
+  // Per-user JWT resources come from the access model (single source of truth).
+  // This is where viewer/editor roles are assigned. Each user exercises a
+  // different shape of the customer's configuration — see components/velt/accessModel.ts.
+  //
+  // NOTE (reproduction of reported failure #1): user4's `resources` is a SINGLE
+  // organization entry with accessRole "viewer" and nothing else — the exact
+  // "org-wide viewer-only" token the customer said identify() rejects with
+  // "Invalid user token" (POST /v2/core/a → 400). We mint it verbatim so the
+  // team can observe the behavior here. user3 ("viewer + folder") is the shape
+  // the customer said works; user1/user2/user5 are editors.
+  const resources = getJwtResources(user.userId);
+
+  // Mint a JWT against Velt's API. We assert identity (userProperties) plus the
+  // per-resource roles above; finer-grained + feature-level (context) checks
+  // still flow through the Real-Time Permission Provider at
+  // /api/velt/check-permissions (and the browser dev resolver in app/page.tsx).
   const veltRes = await fetch(VELT_GENERATE_TOKEN_URL, {
     method: 'POST',
     headers: {
@@ -69,11 +83,9 @@ export async function POST(request: NextRequest) {
     // unwrapped returns `INVALID_ARGUMENT`.
     //
     // - userProperties = identity-only (name/email/isAdmin)
-    // - permissions.resources[] = where roles are assigned
-    //
-    // We grant `editor` on the org here so the user can act inside it;
-    // finer-grained per-document checks still flow through the
-    // Real-Time Permission Provider at /api/velt/check-permissions.
+    // - permissions.resources[] = where roles (viewer/editor) are assigned, per
+    //   resource type (organization / folder / document). `organizationId` is
+    //   required by the API for folder/document resources.
     body: JSON.stringify({
       data: {
         userId: user.userId,
@@ -83,13 +95,7 @@ export async function POST(request: NextRequest) {
           isAdmin: false,
         },
         permissions: {
-          resources: [
-            {
-              type: "organization",
-              id: user.organizationId,
-              accessRole: "editor",
-            },
-          ],
+          resources,
         },
       },
     }),

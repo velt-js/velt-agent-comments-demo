@@ -3,7 +3,9 @@
 import type { User } from "@veltdev/types";
 import { useVeltClient, VeltNotificationsTool } from "@veltdev/react";
 import { PanelToggleIcon } from "./icons";
-import { users, setDocumentsConfigByUserId } from "./velt/users";
+import { users } from "./velt/users";
+import { accessModel } from "./velt/accessModel";
+import { CATALOGS, useActiveCatalog } from "./velt/CatalogContext";
 
 interface HeaderProps {
   user: User | undefined;
@@ -23,6 +25,7 @@ export function Header({
   setSidebarOpen,
 }: HeaderProps) {
   const { client } = useVeltClient();
+  const { activeCatalogId, setActiveCatalogId } = useActiveCatalog();
 
   // [Velt] Sign the Velt session out *before* clearing the local userId.
   // Otherwise the SDK's underlying auth session (and any open subscriptions)
@@ -56,6 +59,24 @@ export function Header({
           Export
         </button>
 
+        {/* Access Context authoring: choose which catalog NEW comments get tagged
+            with (context.access.catalogId). Which comments a user can READ is
+            governed separately by their catalogAccess + the Permission Provider. */}
+        <div className="hw-catalog-picker">
+          <label htmlFor="hw-catalog-select">New comments →</label>
+          <select
+            id="hw-catalog-select"
+            value={activeCatalogId}
+            onChange={(e) => setActiveCatalogId(e.target.value)}
+          >
+            {CATALOGS.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
         {user ? (
           <div className="hw-user-switcher">
             <label>Viewing as</label>
@@ -78,16 +99,12 @@ export function Header({
                 Select user
               </option>
               {Object.values(users).map((u) => {
-                const settingOrg =
-                  setDocumentsConfigByUserId[u.userId]?.organizationId ??
-                  u.organizationId;
-                const isCrossOrg = settingOrg !== u.organizationId;
-                const label = `${u.name} — member of ${u.organizationId}, viewing ${settingOrg}${
-                  isCrossOrg ? " (cross-org)" : ""
-                }`;
+                // Surface each user's purpose (from the access model) so the
+                // reproduction subjects are obvious in the picker.
+                const purpose = accessModel[u.userId]?.purpose ?? "";
                 return (
                   <option key={u.userId} value={u.userId}>
-                    {label}
+                    {`${u.name} — ${purpose}`}
                   </option>
                 );
               })}
