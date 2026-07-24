@@ -10,10 +10,10 @@
 //   https://console.velt.dev/dashboard/config/general
 //
 // SECURITY NOTE: this demo trusts whatever userId the client posts because
-// there is no real auth here — the UI lets you pick Michael/Jim/Pam directly.
-// In production, derive the userId from your server-side session (cookies,
-// headers, OAuth, etc.) and IGNORE the client-provided value, otherwise
-// anyone can mint a token for any user.
+// there is no real auth here — the header "Sign in as" picker sends the userId
+// directly (User 1–5). In production, derive the userId from your server-side
+// session (cookies, headers, OAuth, etc.) and IGNORE the client-provided value,
+// otherwise anyone can mint a token for any user.
 
 import type { NextRequest } from 'next/server';
 import { users } from '@/components/velt/users';

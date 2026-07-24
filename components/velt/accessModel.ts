@@ -117,7 +117,11 @@ export interface UserAccess {
   folderRoles: Record<string, AccessRole>;
   /** Document roles the Permission Provider should report. */
   documentRoles: Record<string, AccessRole>;
-  /** Access Context values (catalogIds) this user may see. */
+  /**
+   * Access Context values (catalogIds) this user is ALLOWED to see. This is the
+   * Permission Provider's answer for `type: "context"` checks — the authority on
+   * visibility. It is deliberately separate from what we *subscribe* to below.
+   */
   catalogAccess: string[];
   /** What we subscribe to via setDocuments for this user. */
   setDocuments: {
@@ -126,13 +130,27 @@ export interface UserAccess {
     folderId?: string;
     /** Optional org override (used for cross-org subscriptions). */
     organizationId?: string;
-    /** Catalog values passed as `context.access.catalogId` (arrays → 1 request each). */
+    /**
+     * Catalog values passed as `context.access.catalogId` (arrays → 1 request
+     * each). We subscribe to ALL catalogs whose comments live in the document
+     * (see DOCUMENT_CATALOG_IDS) for EVERY user, then let the Permission Provider
+     * authorize which the user actually sees via `catalogAccess`. This mirrors
+     * the customer's model ("we tag comments with a catalogId and rely on
+     * isContextEnabled so Velt calls our Permission Provider to authorize") and
+     * makes per-catalog allow/deny decisions visible in the Debug Panel for every
+     * user — including the no-access users (User 4 / User 5).
+     */
     catalogs: string[];
   };
 }
 
 const APAC = CATALOGS[0].id; // catalog-apac
 const EMEA = CATALOGS[1].id; // catalog-emea
+
+// The catalogs whose comments live in the demo document. Every user subscribes
+// to all of these; the Permission Provider (via each user's catalogAccess)
+// decides which are actually visible.
+export const DOCUMENT_CATALOG_IDS: string[] = [APAC, EMEA];
 
 // ---------------------------------------------------------------------------
 // The user matrix.
@@ -187,7 +205,7 @@ export const accessModel: Record<string, UserAccess> = {
     setDocuments: {
       documents: [SIDE_LETTER],
       folderId: FOLDERS.MANUFACTURING,
-      catalogs: [APAC, EMEA],
+      catalogs: DOCUMENT_CATALOG_IDS,
     },
   },
 
@@ -213,7 +231,7 @@ export const accessModel: Record<string, UserAccess> = {
       documents: [SIDE_LETTER],
       folderId: FOLDERS.MANUFACTURING,
       organizationId: ORGS.OWNER,
-      catalogs: [APAC],
+      catalogs: DOCUMENT_CATALOG_IDS,
     },
   },
 
@@ -240,7 +258,7 @@ export const accessModel: Record<string, UserAccess> = {
     setDocuments: {
       documents: [SIDE_LETTER],
       folderId: FOLDERS.MANUFACTURING,
-      catalogs: [EMEA],
+      catalogs: DOCUMENT_CATALOG_IDS,
     },
   },
 
@@ -258,11 +276,13 @@ export const accessModel: Record<string, UserAccess> = {
     folderRoles: {},
     documentRoles: { [SIDE_LETTER.id]: "viewer" },
     // No catalog access granted — an org-wide viewer with no feature-level grants.
+    // We still SUBSCRIBE to both catalogs so the Permission Provider is asked and
+    // the deny decisions are visible in the Debug Panel.
     catalogAccess: [],
     setDocuments: {
       documents: [SIDE_LETTER],
       organizationId: ORGS.OWNER,
-      catalogs: [],
+      catalogs: DOCUMENT_CATALOG_IDS,
     },
   },
 
@@ -287,11 +307,13 @@ export const accessModel: Record<string, UserAccess> = {
       [SIDE_LETTER.id]: "editor",
       [LEGAL_MEMO.id]: "editor",
     },
+    // Subscribes to both catalogs, but the Permission Provider denies both
+    // (empty catalogAccess) → sees no catalog-tagged comments/notifications.
     catalogAccess: [],
     setDocuments: {
       documents: [SIDE_LETTER],
       folderId: FOLDERS.MANUFACTURING,
-      catalogs: [],
+      catalogs: DOCUMENT_CATALOG_IDS,
     },
   },
 };
