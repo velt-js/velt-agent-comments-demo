@@ -45,7 +45,7 @@ export interface UserSetDocumentsConfig {
 }
 
 const ALTANA_DOCUMENTS: UserDocument[] = [
-  { id: "altana-doc-7", name: "Altana Doc 7" },
+  { id: "altana-doc-100", name: "Altana Doc 100" },
 ];
 
 export const setDocumentsConfigByUserId: Record<

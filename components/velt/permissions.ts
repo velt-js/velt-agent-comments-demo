@@ -15,7 +15,7 @@ import type {
 } from "@veltdev/types";
 import { users } from "./users";
 
-const ALLOWED_DOCUMENT_IDS = new Set(["altana-doc-7"]);
+const ALLOWED_DOCUMENT_IDS = new Set(["altana-doc-100"]);
 
 // @veltdev/types ships types only (no runtime JS), so enum members can't be
 // referenced as values — cast string literals to the enum type instead.

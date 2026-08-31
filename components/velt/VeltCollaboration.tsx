@@ -7,6 +7,7 @@ import {
 } from "@veltdev/react";
 import VeltInitializeDocument from "./VeltInitializeDocument";
 import SeedAgentComments from "./SeedAgentComments";
+import { AgentRunController } from "./AgentRunController";
 import { ContactsRegistrar } from "./ContactsRegistrar";
 import { VeltCustomization } from "./ui-customization/VeltCustomization";
 
@@ -78,15 +79,6 @@ function Panel({ open }: { open: boolean }) {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  const veltButtonClickEventData = useVeltEventCallback('veltButtonClick');
-    useEffect(() => {
-    if (veltButtonClickEventData) {
-        if (veltButtonClickEventData.buttonContext?.clickedButtonId === 'custom-button') {
-            console.log('custom button clicked');
-        }
-    }
-    }, [veltButtonClickEventData]);
-
   return (
     <div
       className="hw-rail"
@@ -115,6 +107,8 @@ export function VeltCollaboration({ sidebarOpen }: { sidebarOpen: boolean }) {
     <>
       <VeltInitializeDocument />
       <SeedAgentComments />
+      {/* Turns `commentActionClicked` into real backend writes (progress + actions demo). */}
+      <AgentRunController />
       <ContactsRegistrar />
       <VeltComments
         shadowDom={false}
