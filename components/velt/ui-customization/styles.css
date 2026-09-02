@@ -314,6 +314,32 @@
   display: flex;
   flex-direction: column;
   font-family: var(--hw-font);
+  /* Long threads must scroll INSIDE the card, not spill out of it.
+     The SDK's own dialog gives its body `flex-grow:1; min-height:0;
+     overflow:scroll` (comment-dialog.component.scss). This wireframe replaces
+     that markup wholesale, so it has to reapply the same treatment — without it
+     the card takes a constrained height from the CDK overlay pane while its
+     content keeps its natural height, and the overflow paints over the page.
+     `min-height: 0` is the load-bearing half: a flex child defaults to
+     `min-height: auto`, which refuses to shrink below its content and is why
+     `overflow` alone does nothing here. */
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* The scrolling region: threads scroll, the composer stays pinned. */
+.hw-card velt-comment-dialog-body-internal {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  /* Hide the scrollbar chrome to match the rest of the panel; the region is
+     still scrollable by wheel, trackpad and keyboard. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.hw-card velt-comment-dialog-body-internal::-webkit-scrollbar {
+  display: none;
 }
 
 .hw-comment {
@@ -1191,13 +1217,20 @@ velt-comment-dialog-suggestion-banner-internal .velt-suggestion-banner--rejected
 
 .hw-agent-footer {
   display: flex;
-  align-items: center;
+  /* Stacked, not side by side: the action chips and "Open Comment" were sharing a
+     row, which left the link ~90px wide and wrapping onto two lines as soon as a
+     card declared three custom actions. Source order is visual order here — the
+     JSX renders Actions first, then OpenComment. */
+  flex-direction: column;
+  align-items: flex-start;
   gap: 8px;
   width: 100%;
 }
 
 .hw-agent-footer velt-comment-dialog-suggestion-actions-internal {
-  margin-left: auto;
+  /* No margin-left:auto — that pushed the chips to the right end of the old row
+     and does nothing useful in a column. */
+  width: 100%;
 }
 
 .hw-agent-footer .velt-suggestion__open-comment {
@@ -1645,4 +1678,102 @@ velt-comment-dialog-options-dropdown-content-internal > .hw-menu {
 .velt-autocomplete-option--check svg path {
   stroke: var(--hw-teal) !important;
   color: var(--hw-teal) !important;
+}
+
+/* ---------------------------------------------------------------
+   Comment progress + customer-defined action chips (SDK 6.0.8+)
+
+   These primitives render the SDK's DEFAULT templates (unlike everything
+   else in this panel, which is wireframed), so they arrive with Velt's
+   own styling and are restyled here to match the Altana comment card.
+
+   COLOUR CONTEXT — read before changing anything. The rail is dark but the
+   COMMENT CARDS ARE WHITE (`.hw-card { background: #ffffff !important }`).
+   An earlier revision of this block styled the chips for the dark rail
+   (`color: #ededed` on `rgba(255,255,255,.07)`), which rendered near-white
+   text on a white card at roughly 1.1:1 — invisible. It passed review because
+   the chip's own computed colour was checked without checking what was
+   BEHIND it. Any change here must be judged against #ffffff.
+
+   SPECIFICITY — Angular's emulated encapsulation emits
+   `.velt-action-chip[_ngcontent-ng-cNNN]` (0,2,0) and injects it into <head>
+   at RUNTIME, after this file. A single class (0,1,0) loses; doubling the
+   class (0,2,0) TIES and still loses on order. Scoping under the SDK's own
+   custom-element tag gives 0,2,1 and wins without !important.
+   --------------------------------------------------------------- */
+
+/* --- action chips ------------------------------------------------ */
+
+velt-comment-dialog-actions-internal .velt-comment-actions.velt-comment-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+velt-comment-dialog-action-chip-internal .velt-action-chip.velt-action-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border: 1px solid #d8d8d8;
+  border-radius: 32px;
+  background: #f7f7f7;
+  color: #292929;            /* 12.6:1 on #ffffff */
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+velt-comment-dialog-action-chip-internal .velt-action-chip.velt-action-chip:hover:not(:disabled) {
+  background: #ededed;
+  border-color: #bdbdbd;
+  color: #000000;
+}
+
+/* The SDK adds this class on activation for pointer, Enter AND Space —
+   `:active` alone would miss Enter, which fires click without it.
+   `:not(:disabled)` is required: the SDK's own pressed rule is
+   `.velt-action-chip--pressed[_ngcontent]:not(:disabled)` (0,3,0), so the
+   plain form here loses and the press flash stays Velt-grey. */
+velt-comment-dialog-action-chip-internal .velt-action-chip.velt-action-chip--pressed:not(:disabled) {
+  background: #e3e1fd;
+  border-color: #625df5;
+  color: #1a1a1a;
+}
+
+velt-comment-dialog-action-chip-internal .velt-action-chip.velt-action-chip:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+velt-comment-dialog-action-chip-internal .velt-action-chip.velt-action-chip:focus-visible {
+  outline: 2px solid #625df5;
+  outline-offset: 2px;
+}
+
+velt-comment-dialog-action-chip-internal .velt-action-chip .velt-action-chip__label {
+  color: inherit;
+}
+
+velt-comment-dialog-action-chip-internal .velt-action-chip .velt-action-chip__icon {
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+}
+
+/* --- progress row ------------------------------------------------ */
+
+/* Chips under a live run indent to line up with the label rather than the
+   dots — the same relationship a comment's actions have to its body. */
+velt-comment-dialog-progress-internal .velt-progress__actions {
+  display: block;
+  padding-left: 36px;
+}
+
+velt-comment-dialog-progress-internal .velt-progress__actions .velt-comment-actions {
+  margin-top: 4px;
 }

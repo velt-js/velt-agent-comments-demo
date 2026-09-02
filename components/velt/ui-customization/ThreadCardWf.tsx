@@ -1,4 +1,8 @@
-import { VeltCommentDialogWireframe, VeltIf } from "@veltdev/react";
+import {
+  VeltCommentDialogActionsWireframe,
+  VeltCommentDialogWireframe,
+  VeltIf,
+} from "@veltdev/react";
 import {
   ResolveIcon,
   ReopenIcon,
@@ -73,6 +77,13 @@ export function ThreadCardWf() {
             </div>
           </div>
           <VeltCommentDialogWireframe.ThreadCard.Message />
+          {/* Customer-defined action chips (`comment.actions` / `annotation.actions`).
+              This mount is REQUIRED here: the SDK renders chips from inside its own
+              thread-card template, and this wireframe replaces that template
+              wholesale — without this line the chips silently never appear.
+              Self-gating: renders nothing when a row has no actions, and never
+              falls back to accept/reject. */}
+          <VeltCommentDialogActionsWireframe />
         </div>
       </div>
     </VeltCommentDialogWireframe.ThreadCard>
