@@ -327,11 +327,18 @@ button {
   flex: 1;
   overflow: auto;
   display: flex;
-  justify-content: center;
-  padding: 24px;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  /* Extra bottom room so the floating page/zoom toolbar never covers the
+     last table row. */
+  padding: 24px 24px 76px;
 }
 
 .hv-doc-page {
+  /* flex-shrink:0 — the stage is a column flex container, so without this the
+     page and the table below it get squashed instead of scrolling. */
+  flex-shrink: 0;
   width: min(640px, 100%);
   background: #fdfdfc;
   border-radius: 4px;
@@ -371,4 +378,238 @@ snippyly-comment-text.comment-text-highlight,
   color: inherit !important;
   border-bottom: none !important;
   text-decoration: none !important;
+}
+
+/* ---------- Product review table ---------- */
+
+.hv-table-card {
+  flex-shrink: 0;
+  width: min(1000px, 100%);
+  background: #ffffff;
+  border: 1px solid #e6e4df;
+  border-radius: 8px;
+  overflow: hidden;
+  color: #1e1e1c;
+}
+
+.hv-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.hv-table th {
+  text-align: left;
+  font-weight: 500;
+  color: #6f6d67;
+  background: #faf9f7;
+  padding: 10px 14px;
+  border-bottom: 1px solid #e6e4df;
+  white-space: nowrap;
+}
+
+.hv-table td {
+  padding: 9px 14px;
+  border-bottom: 1px solid #f0eeea;
+  vertical-align: middle;
+}
+
+.hv-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.hv-table tbody tr:hover {
+  background: #faf9f7;
+}
+
+.hv-table-check {
+  width: 34px;
+  padding-right: 0;
+}
+
+.hv-table-check input {
+  width: 13px;
+  height: 13px;
+  accent-color: #3b82f6;
+  cursor: pointer;
+}
+
+.hv-table-name {
+  font-weight: 500;
+  color: #1e1e1c;
+  white-space: nowrap;
+}
+
+.hv-table-code {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 2px;
+  color: #8b8983;
+  font-size: 11px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.hv-table-code-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #dbeafe;
+  border: 1px solid #93c5fd;
+  flex-shrink: 0;
+}
+
+.hv-table-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  white-space: nowrap;
+}
+
+.hv-table-muted {
+  color: #6f6d67;
+  white-space: nowrap;
+}
+
+/* Status chip: amber for work outstanding, blue once the passport is ready. */
+.hv-status {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.hv-status--review {
+  background: #fef3c7;
+  color: #92590b;
+}
+
+.hv-status--ready {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+/* Passport review counters — one pill per non-zero category. */
+.hv-review {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hv-review-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px;
+  border-radius: 5px;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.hv-review-pill--flag {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.hv-review-pill--ai {
+  background: #ede9fe;
+  color: #7c3aed;
+}
+
+.hv-review-pill--pending {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.hv-review-pill--done {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.hv-review-pill--todo {
+  background: #f4f3f0;
+  color: #8b8983;
+}
+
+/* ---------- Name cell: kebab menu + Velt popover comment anchor ---------- */
+
+/* position:relative anchors both the dropdown and Velt's popover triangle,
+   which the SDK injects into the top-right corner of the target element. */
+.hv-cell-commentable {
+  position: relative;
+  padding-right: 34px;
+}
+
+/* The transform here creates a stacking context, so the dropdown's own z-index
+   is scoped inside it — the open menu has to be lifted above the neighbouring
+   (position:relative) cells or the row below swallows the clicks. */
+.hv-cell-menu {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  z-index: 1;
+}
+
+.hv-cell-menu--open {
+  z-index: 40;
+}
+
+.hv-cell-menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  color: #8b8983;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+
+.hv-table tbody tr:hover .hv-cell-menu-trigger,
+.hv-cell-menu-trigger:focus-visible,
+.hv-cell-menu-trigger--open {
+  opacity: 1;
+}
+
+.hv-cell-menu-trigger:hover,
+.hv-cell-menu-trigger--open {
+  background: #ebe9e4;
+  color: #1e1e1c;
+}
+
+.hv-cell-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 30;
+  min-width: 168px;
+  padding: 4px;
+  background: #ffffff;
+  border: 1px solid #e6e4df;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* The Comment Tool renders VeltCommentToolWf's row; the host element itself is
+   the click target, so it must fill the dropdown. */
+.hv-cell-dropdown velt-comment-tool {
+  display: block;
+  cursor: pointer;
+}
+
+.hv-menu-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #1e1e1c;
+  white-space: nowrap;
+}
+
+.hv-menu-row:hover {
+  background: #f4f3f0;
 }

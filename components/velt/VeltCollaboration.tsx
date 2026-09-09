@@ -112,6 +112,11 @@ export function VeltCollaboration({ sidebarOpen }: { sidebarOpen: boolean }) {
       <ContactsRegistrar />
       <VeltComments
         shadowDom={false}
+        /* Popover comments for the product table: <VeltCommentTool
+           targetElementId> pins a thread to a Name cell and Velt draws the
+           triangle indicator in that cell's top-right corner. Text comments in
+           the document stay on (textMode defaults to true). */
+        popoverMode={true}
         commentPlaceholder="Comment or tag others with @"
         replyPlaceholder="Reply..."
         collapsedComments={true}
