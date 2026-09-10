@@ -162,8 +162,15 @@ button {
 /* Fixed-width inner pinned to the right edge so the panel reveals right-to-left
    as the rail width animates, without the comments content reflowing. */
 .hw-rail-inner {
-  flex: 0 0 354px;
-  width: 354px;
+  /* 400px = the Normal Sidebar design frame (872:21663). At 354 the cards
+     rendered 321px against a 368px design — the 47px delta that blocked 5 of
+     8 blocks in pass 1. Both this and the inline width in VeltCollaboration
+     must agree; changing only one leaves the panel pinned. */
+  /* 401 = 400 content + the 1px border-left below. box-sizing is border-box
+     globally, so a flat 400 leaves 399 of content and clamps cards to 367
+     against a 368px design. */
+  flex: 0 0 401px;
+  width: 401px;
   height: 100%;
   background: #ffffff;
   border-left: 1px solid #e8e6e1;
