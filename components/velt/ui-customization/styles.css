@@ -4679,19 +4679,24 @@ app-comment-sidebar-list-item {
   padding: 0 8px !important;
   border-radius: 4px !important;
   border: 1px solid #e6e6e6 !important;
-  background: #ffffff !important;
+  /* TRANSPARENT, not #ffffff (design review, miri 8:14 PM: "Background color
+     transparent rakh sakte hai"). The chip sits on the card's own #f9f9f9, and a
+     white fill made it read as a raised button rather than a hairline pill. The
+     border stays — that is the frame's outline, and it is what the `.active`
+     state recolours. */
+  background: transparent !important;
   box-sizing: border-box !important;
   cursor: pointer !important;
 }
 
 .vc-reactions .velt-reaction-pin--default:hover {
-  background: #f7f7f7 !important;
+  background: rgba(0, 0, 0, 0.04) !important;
 }
 
 /* the one I reacted to */
 .vc-reactions .velt-reaction-pin--default.active {
   border-color: #0589ff !important;
-  background: #ffffff !important;
+  background: transparent !important;
 }
 
 /* The type goes on the HOST as well as Velt's inner div: the host
@@ -4708,13 +4713,15 @@ app-comment-sidebar-list-item {
   color: #1a1a1a !important;
 }
 
+/* 16px, up from 12 (same review: "emoji ka size thoda bada sakte hai"). The
+   chip is 24px tall, so 16 still leaves 4px of air above and below the glyph. */
 .vc-reactions .velt-reaction-pin--emoji,
 .vc-reactions .velt-reaction-pin--emoji svg,
 .vc-reactions .velt-reaction-pin--emoji img {
-  width: 12px !important;
-  height: 12px !important;
-  font-size: 12px !important;
-  line-height: 12px !important;
+  width: 16px !important;
+  height: 16px !important;
+  font-size: 16px !important;
+  line-height: 16px !important;
 }
 
 /* The trailing add button inside the chips row: same 24px box as the hover one,
@@ -6407,4 +6414,88 @@ html[data-vc-assign="figma"] .vc-card:has(.vc-assignee-row) .vc-card-inner {
 .velt-comment-pin--popover {
   --velt-accent: #0589ff !important;
   border-right-color: #0589ff !important;
+}
+
+
+/* ── THE REACTION TOOLTIP (design review: "hover pe tooltip broken hai") ──────
+   Hovering a reaction chip shows who reacted. Measured with the tooltip open,
+   EVERY node from the `.cdk-overlay-pane` down was
+   `background: rgba(0,0,0,0); padding: 0; font-size: 16px` — unstyled mode
+   strips this surface's chrome the same way it strips every other Velt one, so
+   the names and avatars painted straight onto the card underneath with nothing
+   behind them. That is the "broken" in the report: not a positioning bug, a
+   missing card.
+   It lives in the CDK overlay at `body` level, NOT inside `.vc-reactions`, so it
+   is hooked by its own classes — the same pattern the assign panel and the
+   mention tooltip already use. Values are this build's tooltip vocabulary
+   (`.velt-tooltip-content`): 1px #e6e6e6, radius 4, the 2/8/2 shadow, 13px/20
+   #1a1a1a. */
+.velt-reaction-pin-tooltip {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  padding: 6px 8px !important;
+  border-radius: 4px !important;
+  border: 1px solid #e6e6e6 !important;
+  background: #ffffff !important;
+  box-shadow: 0 2px 8px 2px #0000000f !important;
+  box-sizing: border-box !important;
+  font-family: 'Inter', var(--hw-font) !important;
+  font-size: 13px !important;
+  line-height: 20px !important;
+  color: #1a1a1a !important;
+  max-width: 240px !important;
+}
+
+.velt-reaction-pin-tooltip-users {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  min-width: 0 !important;
+}
+
+.velt-reaction-pin-tooltip-user {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 6px !important;
+  min-width: 0 !important;
+  font-family: 'Inter', var(--hw-font) !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  line-height: 20px !important;
+  color: #1a1a1a !important;
+  white-space: nowrap !important;
+}
+
+/* the 16px disc the rest of the build uses for an inline avatar in a 20px row. */
+.velt-reaction-pin-tooltip-user-avatar,
+.velt-reaction-pin-tooltip-user-avatar .velt-user-avatar,
+.velt-reaction-pin-tooltip-user-avatar .velt-user-avatar--initial-container {
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  flex: none !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
+}
+
+.velt-reaction-pin-tooltip-user-avatar .velt-user-avatar--initial {
+  font-size: 8px !important;
+  line-height: 16px !important;
+}
+
+
+/* ── THE POPOVER'S ASSIGNEE AVATAR, ALIGNED WITH THE COMMENT BELOW ───────────
+   Design review (miri 7:16 PM): "Assigned walla profile align karte hai niche
+   wale se" — the band's avatar sat 8px left of the comment author's avatar
+   underneath it. Measured in the pin dialog: dialog edge 503, comment avatar
+   520 (16px inset + the 1px border), band avatar 512 (the band's 8px padding).
+   The band was using the sidebar CARD's 8px metric on a surface whose content
+   is inset 16px. Matching the drawer's 16px puts the two avatars on one line.
+   The sidebar CARD keeps 8px on purpose: 8:28845 puts the band's row at x=8 and
+   8:28806 puts the comment's text column at x=12, so the design draws those two
+   4px apart and this rule deliberately does not touch it. */
+.vc-dialog > .vc-assignee-banner {
+  padding: 8px 16px !important;
 }
