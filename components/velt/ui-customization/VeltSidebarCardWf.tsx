@@ -8,7 +8,7 @@ import {
 } from "@veltdev/react";
 import { VcArrowBendDownRightIcon, VcSparklesIcon } from "./VcIcons";
 import { VcAssigneeBanner } from "./VcAssigneeBanner";
-import { VcCommentActions, VcEditComposer } from "./VcCommentActions";
+import { VcCommentActions, VcEditComposer, VcReactions } from "./VcCommentActions";
 import { VcDialogComposer } from "./VeltComposerWf";
 
 // ═══ fam-comment-dialog-states / surface-sidebar-card ═════════════════════════
@@ -119,6 +119,19 @@ export function VeltSidebarCardWf() {
             {/* ── Ordinary comment rows (872:21719 / 21735 / 21775) ─────────────── */}
             <VeltIf className="vc-card-normal" condition="{annotation.type} !== 'suggestion'">
                 <div className="vc-card">
+                    {/* ── REPOSITIONED (8:28804, frame "Repositioned Assignment") ──────
+                        The band used to be the card's LAST child — a #fdf1fa footer
+                        strip, which is what frame 872:21791 drew. The Design Suggestion
+                        board moves it: 8:28804 puts `Frame 427321039` (the band) at
+                        y=0 of the card and the comment body under it at y=36, and the
+                        matching drawer (8:28660) does the same thing directly under the
+                        header. So it is now the card's FIRST child.
+
+                        Position is the ONLY thing that changed — the band is the same
+                        element, self-gating on `annotation.assignedTo`, so an unassigned
+                        card still renders nothing at all. See VcAssigneeBanner for the
+                        "Assigned to you" vs "Assigned to <name>" split. */}
+                    <VcAssigneeBanner />
                     {/* NO thread-level kebab here, deliberately (R7 — omitted, never
                         display:none). None of the four collapsed frames draws one, and the
                         design routes thread-level actions somewhere specific: a row opens the
@@ -192,6 +205,12 @@ export function VeltSidebarCardWf() {
                                 </VeltIf>
                                 <VeltCommentDialogWireframe.ThreadCard.Message className="vc-message" />
                                 <VcEditComposer />
+                                {/* The reactions row, under the message — frame 4:28071.
+                                    Self-gating: Velt marks the card
+                                    `velt-reactions="0"` when there are none, and the
+                                    stylesheet collapses it, so an un-reacted comment
+                                    keeps the geometry it has today. */}
+                                <VcReactions />
                             </VeltCommentDialogWireframe.ThreadCard>
                         </VeltCommentDialogWireframe.Threads>
 
@@ -253,15 +272,6 @@ export function VeltSidebarCardWf() {
                         Same 326x32 pill as the dialog (fam-composer). */}
                     <VcDialogComposer />
 
-                    {/* AssigneeBanner is a ROOT-LEVEL sibling of Body — the card's
-                        full-bleed #fdf1fa footer band (872:21791), and LAST so it stays
-                        a footer in both card states: the collapsed frames draw it as the
-                        card's bottom edge with no composer at all, and on a selected
-                        card the composer Velt adds slots in above it rather than
-                        splitting the band off the message. Same order as the popover and
-                        the drawer. See VcAssigneeBanner for the "Assigned to you" vs
-                        "Assigned to <name>" split. */}
-                    <VcAssigneeBanner />
                         </div>
             </VeltIf>
         </VeltCommentDialogWireframe>

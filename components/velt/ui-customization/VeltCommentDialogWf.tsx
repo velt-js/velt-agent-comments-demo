@@ -7,7 +7,7 @@ import {
     VeltCommentDialogWireframe,
     VeltIf,
 } from "@veltdev/react";
-import { VcCommentActions, VcEditComposer } from "./VcCommentActions";
+import { VcCommentActions, VcEditComposer, VcReactions } from "./VcCommentActions";
 import { VcAgentCard } from "./VcAgentCard";
 import { VcAssigneeBanner } from "./VcAssigneeBanner";
 import { VcArrowBendDownRightIcon, VcSidebarSimpleIcon } from "./VcIcons";
@@ -98,6 +98,17 @@ export function VeltCommentDialogWf() {
                     </div>
                 </VeltCommentDialogWireframe.Header>
 
+                {/* ── REPOSITIONED (8:28660) ────────────────────────────────────────
+                    The band used to be this dialog's FOOTER — last child, after the
+                    composer, clipped by `.vc-dialog`'s 8px radius. The Design
+                    Suggestion board moves it to the top: frame 8:28601 draws the
+                    44px `Assigned to you` strip full-bleed between the header and
+                    the body, and the sidebar card (8:28804) does the same thing at
+                    the top of the card. Directly under `Header`, therefore — above
+                    `VisibilityBanner` so the two never interleave.
+                    Self-gating: nothing renders on an unassigned thread. */}
+                <VcAssigneeBanner />
+
                 <VeltCommentDialogWireframe.VisibilityBanner />
 
                 <VeltCommentDialogWireframe.Body className="vc-dialog-body">
@@ -158,6 +169,12 @@ export function VeltCommentDialogWf() {
                                     mounts the editor into this slot, and this wireframe replaces
                                     the thread card's default template wholesale. */}
                                 <VcEditComposer />
+                                {/* The reactions row, under the message — frame 4:28071.
+                                    Self-gating: Velt marks the card
+                                    `velt-reactions="0"` when there are none, and the
+                                    stylesheet collapses it, so an un-reacted comment
+                                    keeps the geometry it has today. */}
+                                <VcReactions />
                                 {/* Customer-defined action chips (`comment.actions`). REQUIRED
                                     here: the SDK renders chips from inside its own thread-card
                                     template and this wireframe replaces that template wholesale,
@@ -201,16 +218,6 @@ export function VeltCommentDialogWf() {
                     VeltComposerWf.tsx for the full class contract. */}
                 <VcDialogComposer />
 
-                {/* The assignee band (872:21791) is the dialog's FOOTER — last child,
-                    after the composer. It was declared only in the sidebar variant
-                    before, so the pin dialog dropped the band entirely; the first fix
-                    put it back between the thread and the composer, which cut the
-                    dialog in half with a pink strip mid-card. It is thread-level
-                    metadata about the whole thread, so it belongs under everything
-                    that acts on the thread, and `.vc-dialog`'s `overflow: hidden` +
-                    8px radius clip its bottom corners to the card's own.
-                    Self-gating: nothing renders on an unassigned thread. */}
-                <VcAssigneeBanner />
             </div>
             </VeltIf>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { VeltCommentDialogWireframe } from "@veltdev/react";
+import { VeltCommentDialogWireframe, VeltIf } from "@veltdev/react";
 import { VcDotsThreeIcon } from "./VcIcons";
 
 // ═══ per-comment hover kebab ══════════════════════════════════════════════════
@@ -11,21 +11,22 @@ import { VcDotsThreeIcon } from "./VcIcons";
 //              delete specific reply." → Imogen Todd: "I was thinking that could
 //              appear on hover!"
 //
-// ── NO REACTIONS (removed) ───────────────────────────────────────────────────
-// This file used to branch on comment ownership and show a reaction smiley on
-// other people's comments, on the strength of the `Icon / Smiley` node in the
-// card frames and the "hover, if not my comment" text layer. That was an
-// over-read of a design-system node. Checked against both sections:
+// ── REACTIONS (restored) ─────────────────────────────────────────────────────
+// This file used to carry a reaction smiley and it was REMOVED, on the reasoning
+// that the Altana sections drew no reaction pill, no count and no picker, and
+// that every `Icon / Smiley` node in them was `hidden="true"`. The hidden flag
+// was the giveaway and it was read backwards: those nodes are hidden because the
+// frame draws the RESTING state, and the affordance is a HOVER one — the design
+// file's own text layer next to it says so ("hover, if not my comment").
 //
-//   · "reaction" / "emoji" / "thumbs"     → 0 occurrences, anywhere
-//   · `Icon / Smiley`                     → 4 occurrences, ALL hidden="true"
-//   · a reaction pill / count / picker    → drawn in no frame
+// Design review closed it: "They have reaction button, missing in our wireframes"
+// (miri, 1:29 PM), with a screenshot of the smiley appearing on a comment row and
+// that same annotation arrowed at it. The Design Suggestion board added the
+// resting half too — frame `Reaction` 4:27616 draws the chips row this hover
+// affordance produces, which is what `.vc-reactions` below is built from.
 //
-// So reactions are not a requirement of this design, and everything that served
-// them is gone: the ownership `VeltIf`, `ThreadCard.ReactionTool`, the applied
-// `ThreadCard.Reactions` rows in all three dialog variants, and their CSS.
-// The hover affordance is now just the kebab, on every comment — Velt decides
-// which rows the menu offers for a comment you do not own.
+// So both halves are back: `ReactionTool` here (hover, NOT my comment) and
+// `ThreadCard.Reactions` under the message on every comment — see VcReactions.
 //
 // CLASS NAMES stay `vc-comment-*` (never `vc-options-*`): the smoke check
 // `fam-comment-dialog-options-drodpwon/affordances-once` asserts exactly ONE
@@ -75,7 +76,51 @@ export function VcCommentActions() {
                     </VeltCommentDialogWireframe.ThreadCard.Options.Content.Delete>
                 </VeltCommentDialogWireframe.ThreadCard.Options.Content>
             </VeltCommentDialogWireframe.ThreadCard.Options>
+
+            {/* ── the add-reaction smiley ──────────────────────────────────────
+                The EXACT complement of the kebab above: `Icon / Smiley` sits at
+                x=286 of the 294px text column in frame 4:28053 — the same
+                top-right corner, hidden at rest — and the annotation beside it
+                reads "hover, if not my comment". So the two affordances never
+                appear together, and neither is ever a dead control:
+                    my comment      → kebab (Edit · Delete)
+                    someone else's  → add reaction
+                `{commentObj}` is the per-COMMENT context inside a ThreadCard, so
+                this resolves per row: my reply under your comment gets the kebab,
+                your reply under mine gets the smiley.
+                Left SELF-CLOSING — the slot renders Velt's own picker trigger and
+                owns the popup; a child here would cover the button the same way
+                it did on `Composer.ActionButton`. The glyph is painted in CSS.
+
+                The `<VeltIf>` WRAPPER, not the `veltIf` attribute the kebab uses:
+                measured side by side on the same row, the attribute honours `===`
+                (the kebab correctly vanished on the agent's comment) and IGNORES
+                `!==` — the smiley showed on all 6 comments including my own, a
+                24x24 box that does nothing. The wrapper handles both. It clones in
+                as an `app-if` element, so the stylesheet gives it
+                `display: contents` to keep this a flex row. */}
+            <VeltIf condition="{commentObj.from.userId} !== {user.userId}">
+                <VeltCommentDialogWireframe.ThreadCard.ReactionTool className="vc-reaction-tool" />
+            </VeltIf>
         </div>
+    );
+}
+
+/**
+ * The reactions row itself — the chips a reaction produces, under the message.
+ *
+ * Frame 4:28071 draws it as a 24px row in the text column: `[1 👍] [3 👋] [☺]`,
+ * 4px apart, each chip white with a 1px hairline, and the chip you reacted to
+ * outlined in the design blue instead.
+ *
+ * NOT gated on authorship, unlike the tool above: other people react to MY
+ * comments too, and those chips have to show. It self-gates on emptiness — Velt
+ * marks the thread card `velt-reactions="0"` when there are none — so a comment
+ * nobody has reacted to keeps exactly the geometry it has now.
+ */
+export function VcReactions() {
+    return (
+        <VeltCommentDialogWireframe.ThreadCard.Reactions className="vc-reactions" />
     );
 }
 

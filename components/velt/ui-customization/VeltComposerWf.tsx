@@ -92,6 +92,31 @@ function SendButton() {
 }
 
 /**
+ * The `@` — `tabler-icon-at`, 24x24, first in the 56px tools group of every
+ * expanded composer frame on the Design Suggestion board (e.g. 8:28251).
+ *
+ * It is Velt's own `Composer.ActionButton` under a different `type`, not a
+ * control of ours: `type` is what selects WHICH composer action a button is, and
+ * the SDK's union for it is
+ *   userMentions | autocomplete | file | audio | video | screen | submit |
+ *   attachments | format
+ * so `userMentions` IS the @ (the send arrow above is `submit`). One line, and
+ * it stays wired to the SDK's own autocomplete. Self-closing for the same
+ * reason the send button is — markup inside this slot covers Velt's button and
+ * kills the click (that is documented on SendButton below).
+ *
+ * The glyph is painted in CSS, like the arrow.
+ */
+function MentionButton() {
+    return (
+        <VeltCommentDialogWireframe.Composer.ActionButton
+            type="userMentions"
+            className="vc-mention-btn"
+        />
+    );
+}
+
+/**
  * The pill's interior, shared verbatim by both surfaces: the Velt input on the left,
  * the send control on the right.
  *
@@ -107,7 +132,33 @@ function ComposerFieldContents({ inputClass, placeholder }: { inputClass: string
     return (
         <>
             <VeltCommentDialogWireframe.Composer.Input className={inputClass} placeholder={placeholder} />
-            <SendButton />
+            {/* ── the pill's SECOND ROW (Design Suggestion 8:28539) ─────────────
+                Four composer frames on that board draw the same thing, and all
+                four put it INSIDE the pill rather than above it:
+                    8:28235  no mention          → row is just the tools
+                    7:28165  one mention, off    → ☐ Assign on send
+                    7:28209  one mention, on     → ☑ Assign on send
+                    8:28965  many mentions       → ☑ Auto-Assign to [imogen ⌄]
+                `Frame 1707478035` is that row: 294x24 at the pill's bottom, with
+                the assign control at x=0 and a 56px tools group at x=238 (the @
+                at 0 and the send button at 32).
+
+                This supersedes Figma #10's "strip ABOVE the input" — the layout
+                Imogen picked in that thread is the one the board then drew, and
+                the board draws it on the pill's own bottom row. The old position
+                also cost a whole 26px band above every focused composer.
+
+                `.vc-composer-actions` is `display: contents` at rest, so the
+                resting pill stays the single 32px row the sidebar and drawer
+                frames measure, and only becomes a real row once the composer is
+                focused or has somebody to assign. */}
+            <div className="vc-composer-actions">
+                <AssignUser />
+                <div className="vc-composer-tools">
+                    <MentionButton />
+                    <SendButton />
+                </div>
+            </div>
         </>
     );
 }
@@ -134,6 +185,13 @@ function ComposerFieldContents({ inputClass, placeholder }: { inputClass: string
  * the composer holds a mention to assign — so on an empty composer it is 0x0 and
  * the 32px pill keeps the geometry the frames measure.
  *
+ * UPDATED (Design Suggestion 8:28539): it is no longer a sibling ABOVE the pill.
+ * The four composer frames on that board draw the control on the pill's own
+ * bottom row, left of the @ and send buttons, so it is mounted inside
+ * `.vc-composer-actions` — see ComposerFieldContents. `setAssignToType({ type:
+ * 'checkbox' })` (VeltCollaboration) is what makes Velt render it as the board's
+ * checkbox rather than the older `Assign to <user> ⌄` dropdown.
+ *
  * NOTE for the record: the repo previously carried a blocker note saying this
  * picker "never opens in 6.0.11", and shipped an `Assign to me` kebab row as a
  * workaround. The two builds Rakesh linked run the same SDK line with the picker
@@ -153,8 +211,6 @@ function AssignUser() {
 export function VcDialogComposer() {
     return (
         <VeltCommentDialogWireframe.Composer className="vc-composer">
-            {/* The assign strip sits ABOVE the pill — the layout Imogen picked in #10. */}
-            <AssignUser />
             <div className="vc-composer-field">
                 <ComposerFieldContents inputClass="vc-composer-input" />
             </div>
@@ -174,7 +230,6 @@ export function VcDialogComposer() {
 export function VeltPageModeComposerWf() {
     return (
         <VeltCommentDialogWireframe variant="pageModeComposer">
-            <AssignUser />
             <VeltCommentDialogWireframe.Composer className="vc-composer-page-field">
                 {/* placeholder — set on the SLOT, not left to the host prop.
                     LIVE-VERIFIED: `<VeltCommentsSidebar commentPlaceholder="New Comment">` does

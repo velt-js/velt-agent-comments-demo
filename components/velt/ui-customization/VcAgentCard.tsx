@@ -74,6 +74,19 @@ export function VcAgentCard({
                             Comment" underneath. */}
                         <VeltCommentDialogWireframe.Suggestion.Actions>
                             <div className="hw-suggestion-actions">
+                                {/* SELF-CLOSING — these two slots take neither children
+                                    nor a className. Measured: `<Accept className="…">
+                                    <span>Accept</span></Accept>` rendered as
+                                    `div.velt-suggestion-action-accept__button` with our
+                                    class absent and `textContent` empty, so both were
+                                    dropped by the clone.
+                                    A seed that declares its own `actions` renders labelled
+                                    pills ("Approve"/"Dismiss"/"Re-analyze"); a seed that
+                                    does not falls back to these two, which shipped as a
+                                    green tick square and a red cross square — the same
+                                    decision drawn two ways in one list. The words and the
+                                    pill chrome are therefore added in CSS instead, off the
+                                    `aria-label` the SDK already sets on each button. */}
                                 <VeltCommentDialogWireframe.Suggestion.Actions.Accept />
                                 <VeltCommentDialogWireframe.Suggestion.Actions.Reject />
                             </div>

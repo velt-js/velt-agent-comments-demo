@@ -8,7 +8,7 @@ import {
 } from "@veltdev/react";
 import { VcAgentCard } from "./VcAgentCard";
 import { VcAssigneeBanner } from "./VcAssigneeBanner";
-import { VcCommentActions, VcEditComposer } from "./VcCommentActions";
+import { VcCommentActions, VcEditComposer, VcReactions } from "./VcCommentActions";
 import {
     VcArrowCounterClockwiseIcon,
     VcCheckCircleIcon,
@@ -134,6 +134,14 @@ export function VeltFocusedThreadWf() {
                     their clicks never pass through the dialog's hit-testing. */}
                 <FocusHeader />
 
+                {/* ── REPOSITIONED (8:28601 · 8:28660) ─────────────────────────────
+                    This is the frame the whole reposition is drawn from: the drawer
+                    puts a full-bleed 400x44 `Assigned to you` strip DIRECTLY under
+                    the 48px header band and above the body, not at the bottom. The
+                    band used to be this drawer's last child, under the Reply pill.
+                    Self-gating, so an unassigned thread keeps today's geometry. */}
+                <VcAssigneeBanner />
+
                 <VeltCommentDialogWireframe.VisibilityBanner />
 
                 <VeltCommentDialogWireframe.Body className="vc-focus-body">
@@ -190,6 +198,12 @@ export function VeltFocusedThreadWf() {
                                     row disappeared with nowhere for the editor to mount — the
                                     comment simply went blank. */}
                                 <VcEditComposer />
+                                {/* The reactions row, under the message — frame 4:28071.
+                                    Self-gating: Velt marks the card
+                                    `velt-reactions="0"` when there are none, and the
+                                    stylesheet collapses it, so an un-reacted comment
+                                    keeps the geometry it has today. */}
+                                <VcReactions />
                                 <VeltCommentDialogActionsWireframe />
                             </div>
                         </VeltCommentDialogWireframe.ThreadCard>
@@ -210,10 +224,6 @@ export function VeltFocusedThreadWf() {
                     other composer (fam-composer). */}
                 <VcDialogComposer />
 
-                {/* The assignee band, last — same position it takes in the popover, so
-                    the strip never splits the thread from its reply pill. Self-gating,
-                    so the drawer's resting geometry is unchanged when unassigned. */}
-                <VcAssigneeBanner />
             </div>
             </VeltIf>
         </VeltCommentDialogWireframe>

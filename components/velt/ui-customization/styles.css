@@ -68,11 +68,44 @@
   min-height: 0;
 }
 
+/* ── the list's scrollbar belongs in the panel's CORNER ──────────────────────
+   Design review: "Everything mai scrollbar corner mai kar sakte hai toh acha
+   hoga also 'balance gutter' wala seeting ek baar enable karke dekhte hai"
+   (miri, 1:35 PM).
+
+   The scrolling element is not this box — it is Velt's own
+   `app-comment-sidebar-list` inside it, which has `overflow-y: auto` of its own.
+   This box's `padding: 24px 16px 16px` was insetting that scroller, so measured,
+   the list ran 1128..1496 inside a 1112..1512 panel and its scrollbar drew at
+   1496 — 16px short of the panel's right edge, with a dead strip beside it.
+
+   So the padding moves ONTO the scroller: the cards keep the same 368px box at
+   the same x, and the scrollbar moves out to the panel edge where the design
+   wants it. This box keeps only the flex sizing that makes the scroll chain
+   resolve, and `overflow: hidden` so there is exactly one scroller, not two
+   nested ones. */
 .hw-panel-body {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
-  padding: 24px 16px 16px;
+  overflow: hidden;
+  padding: 0;
+}
+
+.hw-panel-body app-comment-sidebar-list {
+  display: block !important;
+  height: 100% !important;
+  /* 16px on every side — 872:21416's own value, moved here from `.hw-panel-body`
+     (the rule that set it is further down, now zeroed with a pointer back). */
+  padding: 16px !important;
+  box-sizing: border-box !important;
+  /* the "balance gutter" half of the note. It reserves the scrollbar's track on
+     BOTH edges, so the cards sit in the same place whether or not the scrollbar
+     is showing. NOTE: this is a no-op on macOS, where scrollbars are overlays
+     and the gutter is already 0 — it earns its keep on Windows/Linux, where the
+     classic scrollbar would otherwise shift the whole list 15px left the moment
+     it appears. `.vc-card` is `max-width: 100%`, so the cards absorb that
+     reservation instead of overflowing. */
+  scrollbar-gutter: stable both-edges !important;
 }
 
 /* ---------- Icon buttons (24px, radius 6, 12–16px glyphs) ---------- */
@@ -99,15 +132,17 @@
 }
 
 /* ---------- (removed) MinimalFilterDropdown chrome ----------
-   The sidebar's control row no longer mounts Velt's MinimalFilterDropdown: the
-   frame draws two `For You | Everything` tab pills, and those are now real
-   action components (VeltButtonWireframe, single-select group) driving
-   `commentElement.setCommentSidebarFilters()`. See `.hw-tabs` further down.
+   The control band never mounts Velt's MinimalFilterDropdown. It was tried and
+   removed twice: it is a MULTI-THREAD COMMENT DIALOG slot (constants.d.ts names
+   it VELT_MULTI_THREAD_COMMENT_DIALOG_MINIMAL_FILTER_DROPDOWN) merely re-exported
+   on the sidebar namespace, so in this panel it renders nothing but an empty
+   shell. The real filter UI is `Filter` + `FilterButton` — see `.hw-filter`
+   further down.
    The ~85 lines of dropdown styling that used to live here — .hw-filter-menu,
-   .hw-filter-row/-label/-check, .hw-menu-divider, and the
-   .velt-status-dropdown--content / .velt-comment-sidebar-minimal-filter-content-item
-   shell neutralizers — styled markup nothing renders any more, so they are gone
-   rather than left to rot. Restore from git if the dropdown ever comes back. */
+   .hw-menu-divider, and the .velt-status-dropdown--content /
+   .velt-comment-sidebar-minimal-filter-content-item shell neutralizers — styled
+   markup nothing renders any more, so they are gone rather than left to rot.
+   Restore from git if the dropdown ever comes back. */
 
 /* ---------- Skeleton (loading) ---------- */
 
@@ -302,29 +337,14 @@ app-comment-sidebar-page-mode-composer,
   background: transparent !important;
 }
 
-/* Mention-chip tooltip: its icon slot is 32px — let the avatar fill it
-   (the global 20px avatar override left a dark crescent behind the image). */
-.velt-autocomplete-chip-tooltip--icon snippyly-user-avatar {
-  --legacy-velt-user-avatar-height: 32px !important;
-  --legacy-velt-user-avatar-width: 32px !important;
-  width: 32px !important;
-  height: 32px !important;
-}
-
-.velt-autocomplete-chip-tooltip {
-  font-family: var(--hw-font) !important;
-}
-
-.velt-autocomplete-chip-tooltip--name {
-  font-size: 14px !important;
-  font-weight: 500 !important;
-  color: var(--hw-text) !important;
-}
-
-.velt-autocomplete-chip-tooltip--description {
-  font-size: 12px !important;
-  color: var(--hw-text-muted) !important;
-}
+/* The mention-chip tooltip's font, avatar and text rows used to be styled here,
+   as four partial rules that gave it type but never a card: no background,
+   border, radius, shadow or padding, which is what "mention chip hover state
+   styling is missing" was about. They now live in one place with the rest of it,
+   next to the mention rules themselves — search `.velt-autocomplete-chip-tooltip`.
+   (The old rule forced the avatar to 32px to dodge a crescent the global 20px
+   override left behind; the replacement sizes the wrappers AND the disc to 20px
+   instead, so the avatar matches every other one in the product.) */
 
 /* ---------- Edited / Draft indicators (out-of-scope states, kept) ---------- */
 
@@ -607,10 +627,12 @@ velt-comment-dialog-suggestion-banner-internal .velt-suggestion-banner--rejected
   text-decoration: none !important;
 }
 
+/* Superseded further down by the wrapping version; kept in sync so the file has
+   one alignment answer rather than two (8:28954 draws this row flush left). */
 .hw-suggestion-actions {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 8px;
 }
 
@@ -644,39 +666,12 @@ velt-comment-dialog-suggestion-banner-internal .velt-suggestion-banner--rejected
   background: var(--hw-border-strong);
 }
 
-/* The Accept/Reject internals ship 28px green/red buttons — retheme to the
-   Altana palette: filled teal accept, pressed-surface reject with danger glyph. */
-.hw-suggestion-actions .velt-suggestion-action-accept__button,
-.hw-suggestion-actions .velt-suggestion-action-reject__button {
-  width: 24px !important;
-  height: 24px !important;
-  border-radius: 6px !important;
-  transition: background 0.12s ease;
-}
-
-.hw-suggestion-actions .velt-suggestion-action-accept__button {
-  background: var(--hw-teal) !important;
-  color: #ffffff !important;
-}
-
-.hw-suggestion-actions .velt-suggestion-action-accept__button:hover {
-  background: #1b5d61 !important;
-}
-
-.hw-suggestion-actions .velt-suggestion-action-reject__button {
-  background: var(--hw-surface-pressed) !important;
-  color: var(--hw-danger) !important;
-}
-
-.hw-suggestion-actions .velt-suggestion-action-reject__button:hover {
-  background: var(--hw-border-strong) !important;
-}
-
-.hw-suggestion-actions .velt-suggestion-action-accept__icon,
-.hw-suggestion-actions .velt-suggestion-action-reject__icon {
-  width: 14px !important;
-  height: 14px !important;
-}
+/* The Accept/Reject internals ship 28px green/red buttons. They USED to be
+   rethemed here as a filled-teal tick and a danger-red cross in 24px squares —
+   which is what made one agent card look nothing like the next. Superseded by
+   `3b · THE BUILT-IN ACCEPT / REJECT, AS THE SAME BUTTON` near the foot of this
+   file, which gives them the action chips' pill instead. Removed rather than
+   left to lose on cascade order, so the file holds one answer. */
 
 /* Hide composer extras not in the design.
    NOTE (follow-up work order): `velt-comment-dialog-composer-assign-user-internal` was
@@ -685,7 +680,14 @@ velt-comment-dialog-suggestion-banner-internal .velt-suggestion-banner--rejected
    selector matched nothing either way — it is left out rather than restored so that a
    future attempt at the native assignee picker is not silently defeated by a hide rule
    nobody remembers writing. */
-velt-autocomplete-tool-internal,
+/* `velt-autocomplete-tool-internal` USED to be on this list. It is the @ —
+   Velt's mention tool, `aria-label="Mention someone using @ symbol"` — and the
+   Design Suggestion board draws it in the tools group of every expanded composer
+   (`tabler-icon-at`, 24x24, first of the 56px group at x=238). It is hidden no
+   longer; see `.vc-mention-btn` in the Design Suggestion section at the foot of
+   this file for its chrome. The element exists in exactly one place — the
+   `Composer.ActionButton type="userMentions"` slot the composer wireframe
+   declares — so un-hiding it cannot surface an @ anywhere the design lacks one. */
 velt-comment-dialog-custom-annotation-dropdown-internal {
   display: none !important;
 }
@@ -1398,6 +1400,28 @@ snippyly-user-avatar {
   min-width:0 !important;
 }
 
+/* ── THE USERNAME'S TYPE LIVES ON `.vc-name` ITSELF ──────────────────────────
+   The rule below this one carries the design's name token but targets
+   `.vc-name .velt-thread-card--name` — Velt's OWN name element. Every surface
+   here stopped rendering that element when the name moved to `<VeltData
+   field="commentObj.from.name">` (Velt's slot abbreviates the last word, so
+   "Altana Review Agent" came out "Altana Review A."), and the token went with
+   it: measured, all 8 sidebar names rendered 16px/400 — inherited body type, a
+   size too big and a weight too light — against the token's 15px/500.
+   The token goes on `.vc-name` so it applies to whatever draws the name, and the
+   nested rule stays for the surfaces that still use Velt's element (the agent
+   card's `Header.Agent.Name`). */
+.vc-name {
+  color: #1a1a1a !important;
+  font-family: 'Inter' !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  line-height: 24px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
 /* style  spec:872:21725  blocks:state-comment-dialog-states-unread-comment-no-replies-no-mention-collpased-unselected-state,state-comment-dialog-states-unread-comment-1-reply-user-mention-collpased-unselected-state,state-comment-dialog-states-agent-comment-collpased-unselected-state,state-comment-dialog-states-unread-comment-1-reply-user-mention-assigned-collpased-unselected-state,state-comment-dialog-states-read-comment-1-reply-user-mention-expanded-selected-state */
 .vc-name .velt-thread-card--name {
   color:#1a1a1a !important;
@@ -1596,7 +1620,7 @@ velt-comment-dialog-suggestion-agent-internal {
   width:20px !important;
   height:20px !important;
   border-radius:56px !important;
-  background:#935ded !important;
+  background: var(--vc-agent-disc) !important;
   flex:none !important;
 }
 
@@ -3127,14 +3151,13 @@ app-comment-sidebar-list-item {
   cursor: text !important;
 }
 
-/* At rest the field is invisible but still the hit target. */
-.hw-search-slot:not(:focus-within) .hw-search input {
-  color: transparent !important;
-}
-
-.hw-search-slot:not(:focus-within) .hw-search input::placeholder {
-  color: transparent !important;
-}
+/* These two rules used to make the resting field TRANSPARENT — text and
+   placeholder both — because the old band collapsed search to a 32px button that
+   only revealed its input on focus. 44:22045 gives search the width of the row
+   and a permanent "Search Comments" placeholder, so hiding it now just produced
+   an empty box with a magnifier in it. Superseded by the placeholder colour in
+   the control-band block below; kept as a note so the collapsed behaviour is not
+   reintroduced by accident. */
 
 /* ── the FOCUSED THREAD drawer (872:21662 → 872:21603, 448x884) ───────────────
    Figma #3 puts this surface in scope. Three rows: a 48px header, a scrolling
@@ -3653,41 +3676,103 @@ app-comment-sidebar-list-item {
 /* 11 · The per-comment hover group's reveal was keyed to `.vc-comment` (popover)
    and `.vc-card` (sidebar row) only, so in the focused-thread drawer it stayed
    `visibility:hidden` + `pointer-events:none` — the kebab was in the DOM with a
-   box but could never be hovered or clicked. Add the drawer's row. */
+   box but could never be hovered or clicked. Add the drawer's row.
+
+   PER ROW ONLY. This rule also listed `.vc-focus:hover` and
+   `.vc-focus:focus-within` — the whole DRAWER — which made every comment's kebab
+   appear together the moment the pointer entered the panel, and kept them all
+   showing whenever anything inside had focus (the Reply composer usually does).
+   Measured in the drawer: both rows `opacity: 1, visibility: visible` with the
+   pointer nowhere near them, which is the "3 dot menu hover pe ana chaiye?"
+   design review (miri, 1:36 PM) — they were simply always on.
+   `.vc-focus-comment` is the row, and scoping to it gives the drawer the same
+   behaviour the sidebar card already has: one kebab, on the row you are
+   pointing at. */
 .vc-focus-comment:hover .vc-comment-actions,
-.vc-focus-comment:focus-within .vc-comment-actions,
-.vc-focus:hover .vc-comment-actions,
-.vc-focus:focus-within .vc-comment-actions {
+.vc-focus-comment:focus-within .vc-comment-actions {
   opacity: 1 !important;
   visibility: visible !important;
   pointer-events: auto !important;
 }
 
-/* 12 · Edit mode reuses the composer template, so the edit field inherits the
-   32px pill — and a two-line comment clipped (measured: pill 32px, input 48px).
-   Velt marks the state on its own wrapper (`.velt-composer-edit-mode`), so the
-   pill can grow only there and the reply/new-comment pills keep the frame's
-   exact 32px. */
-/* Edit mode must produce the SAME 32px pill as every other composer, and grow
-   only when the text wraps. The non-edit pill gets there with a FIXED `height:
-   32px` and 8px vertical padding that its 24px input overflows; `height: auto`
-   cannot reuse that, because then the tallest child wins — and the tallest child
-   is `.vc-send-slot` (24px button + its own 4px padding = 32), so the field came
-   out at 8+32+8+2 = 50px (measured).
-   Balancing it instead: drop the slot's padding and give the field 4px vertical
-   padding, so one line is 4+24+4 = 32 exactly, with the same 10/4 side padding
-   as the design's pill — and a second line grows the box instead of clipping. */
+/* 12 · EVERY composer grows with its text ───────────────────────────────────
+   Design review: "Multiple lines mai composer ka height change nai ho raha"
+   (miri, 1:36 PM) and, in its thread, "Scroll karne pe send button upar chala
+   jata hai".
+
+   This growth used to be scoped to `.velt-composer-edit-mode` — the edit field
+   only — on the reasoning that the frames draw the reply and new-comment pills
+   at exactly 32px. They do, but 32px is the ONE-LINE height, not a cap: measured
+   on the drawer's Reply with three lines of text, the field stayed `height: 32px`
+   while the editable inside it grew to 72px and spilled 20px ABOVE the pill's top
+   edge, and the send slot was squashed from 24x24 to 24x14 by `align-self:
+   stretch` inside the too-short box. That squash is the second report — the
+   arrow appears to climb as the text grows.
+
+   The mechanism is the one the edit field already proved. `height: auto` alone
+   does not work: the tallest child then wins, and that is `.vc-send-slot`
+   (24px button + its own 4px padding = 32), so the field came out at
+   8+32+8+2 = 50px. Balancing instead — drop the slot's padding, give the field
+   4px vertical padding — makes one line 4+24+4 = 32 exactly, the frame's pill,
+   and a second line grows the box instead of clipping. `flex-end` keeps the
+   arrow on the last line, where the caret is. */
+.vc-composer-field,
+.vc-composer-page-field,
 .velt-composer-edit-mode .vc-composer-field,
 .velt-composer-edit-mode.vc-composer-page-field {
   height: auto !important;
   min-height: 32px !important;
-  padding: 4px 4px 4px 10px !important;
+  /* 3px, not the 4px the edit-only rule used. These boxes are `border-box`, so
+     once the height comes from the content the border counts too: one line is
+     24 (the input's line box) + 6 + 2 = 32 exactly, the frame's pill. At 4px it
+     measured 34 — 2px proud on every composer in the product. */
+  padding: 3px 4px 3px 10px !important;
   align-items: center !important;
 }
 
-.velt-composer-edit-mode .vc-send-slot {
+.vc-send-slot {
   padding: 0 !important;
   align-self: flex-end !important;
+}
+
+/* …and the pill has to be allowed to size to that content. Four rules give the
+   field `flex: 1 1 0` — one per surface — from when Velt's
+   `div.velt-comment-dialog-composer` wrapper was still a ROW and the basis meant
+   WIDTH. That wrapper is a flex COLUMN now (it has to be: the assign strip sits
+   above the pill, Figma #10), so in the column the same declaration zeroes the
+   field's HEIGHT basis instead, and the pill collapsed back onto its 32px
+   min-height no matter how tall the text inside it grew. Measured: field 368x32
+   with its own input child 322x72, spilling 20px above and below the pill.
+   The wrapper is `align-items: stretch`, so the field fills the width without
+   any flex at all; `0 0 auto` hands the height back to the content. */
+.vc-card .vc-composer-field,
+.vc-dialog .vc-composer-field,
+.vc-focus .vc-composer-field,
+.vc-edit-composer .vc-composer-field,
+.vc-composer-page-field {
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* ── the composer's ACTIVE state ─────────────────────────────────────────────
+   Design review: "Focus thread mode mai blue border missing hai active state ka"
+   (miri, 1:39 PM). Measured with the caret in the drawer's Reply: the pill kept
+   its resting `1px #e6e6e6` — there was no focus state at all, on any composer.
+
+   `#0589ff` is the design's own `Background/Accent`, read off the Input / Find
+   Input component (4:27822), and it is what the Design Suggestion board's
+   `Reaction` frame draws around the focused composer.
+
+   `:focus-within`, not `:focus`: the element that actually takes focus is Velt's
+   inner contenteditable (measured, `document.activeElement` is
+   `.velt-composer-input--message`), so a `:focus` on the pill would never match.
+   Every composer gets it — the drawer is where it was noticed, but the pin
+   dialog and the page-mode composer are the same control. */
+.vc-composer-field:focus-within,
+.vc-composer-page-field:focus-within {
+  border-color: #0589ff !important;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════
@@ -3760,9 +3845,15 @@ app-comment-sidebar-list-item {
 
 /* ── sidebar body · 872:21416 ────────────────────────────────────────────────
    Cards sit at x16 / y16 with 12px between them (frame: y16→h92, y120→h116,
-   y248→h92, y352 ⇒ a flat 12px rhythm). Body padding was 24 on top. */
+   y248→h92, y352 ⇒ a flat 12px rhythm). Body padding was 24 on top.
+
+   The 16px now lives on `.hw-panel-body app-comment-sidebar-list` instead, near
+   the top of this file: the LIST is the element that scrolls, so padding here
+   inset the scroller and left its scrollbar 16px short of the panel edge
+   (measured 1128..1496 inside a 1112..1512 panel). The cards land in exactly the
+   same place either way — this only moves which box owns the inset. */
 .hw-panel-body {
-  padding: 16px !important;
+  padding: 0 !important;
 }
 
 /* ── footer composer band · 872:21490 ───────────────────────────────────────
@@ -3960,10 +4051,26 @@ app-comment-sidebar-list-item {
   justify-content: flex-start !important;
   align-items: center !important;
   height: 20px !important;
-  /* No margin correction needed: measured, the gap `.vc-card-inner` already
-     contributes above this row is the frame's 4px (message bottom → reply top),
-     matching the Text column's rhythm. A first attempt subtracted 4px on the
-     assumption the Body slot's 8px gap applied here and closed the gap to 0. */
+}
+
+/* ── the reply row needs air above it ────────────────────────────────────────
+   Design review: "Sidebar comment dialog box mai 'replies' and message ke beech
+   mai spacing thoda increase karte hai" (miri, 1:33 PM).
+
+   The note that used to sit here claimed `.vc-card-inner` already contributed
+   the frame's 4px above this row. It does not — measured on the live card, the
+   message's bottom edge and the reply row's top edge are the SAME y, a 0px gap,
+   which is why the two lines read as one block.
+
+   4px is the frame's own value, and both cards that draw a reply row agree on
+   it, whatever the message's height:
+       4:27936   message y52 h24  -> bottom 76,  reply row y80
+       8:28805   message y52 h48  -> bottom 100, reply row y104
+   Scoped to `.vc-card`: the popover's row is positioned by
+   `.vc-dialog .vc-toggle-reply` further down, which gives it its own 12px of
+   bottom air against the card edge and needs nothing here. */
+.vc-card .vc-toggle-reply {
+  margin-top: 4px !important;
 }
 
 /* neutralize Velt's block wrapper so the row stays a row */
@@ -4152,6 +4259,32 @@ app-comment-sidebar-list-item {
    class; everything scoped under `.vc-assign-user` therefore cannot leak into it
    (that is what lets the strip use a 16px avatar and the panel a 20px one). */
 
+/* ── the ASSIGN-ON-SEND checkbox (Design Suggestion, the Composer frames) ────
+   `setAssignToType({ type: 'checkbox' })` (VeltCollaboration) swaps Velt's
+   `Assign to <user> ⌄` dropdown for the checkbox the updated design draws. Velt
+   renders it into the SAME `Composer.AssignUser` slot, so only the glyph and the
+   label need resizing to the frame:
+       `Frame 1707479091` 118x20 — checkbox `Frame 1` 16x16 @0, label 96x20 @22
+       label type: Caption 2 = 12px / 500
+   The 6px between them is already what the trigger's own margins produce
+   (measured: 20px glyph at x1138, label at x1164), so only the box size changes.
+
+   The LABEL TEXT stays Velt's ("Assign to <user>"), where the frame writes
+   "Assign on Send": it is rendered inside Velt's own element with no slot to
+   pass children to, so it is not ours to set from a wireframe. Velt's wording
+   also names who gets assigned, which the frame's does not. Flagged rather than
+   faked. */
+.vc-assign-user .velt-assign-dropdown--checkbox-icon {
+  width: 16px !important;
+  height: 16px !important;
+  flex: none !important;
+}
+
+.vc-assign-user .velt-assign-dropdown--checkbox-icon svg {
+  width: 16px !important;
+  height: 16px !important;
+}
+
 /* ── the strip's trigger row ── */
 .vc-assign-user .velt-assign-dropdown,
 .vc-assign-user .velt-dropdown-container {
@@ -4225,8 +4358,11 @@ app-comment-sidebar-list-item {
 .vc-assign-user .velt-assign-dropdown--input-label {
   margin-left: 6px !important;
   font-family: 'Inter', var(--hw-font) !important;
-  font-size: 13px !important;
-  font-weight: 400 !important;
+  /* 12/500, the updated design's Caption 2 for this row (`Frame 1707479091`).
+     Was 13/400 — the old dropdown's type, set when this strip read
+     "Assign to <user> ⌄" as a sentence rather than a checkbox label. */
+  font-size: 12px !important;
+  font-weight: 500 !important;
   line-height: 20px !important;
   color: #666666 !important;
   white-space: nowrap !important;
@@ -4434,6 +4570,418 @@ app-comment-sidebar-list-item {
 }
 
 
+/* ══ REACTIONS ═══════════════════════════════════════════════════════════════
+   Design review: "They have reaction button, missing in our wireframes"
+   (miri, 1:29 PM). The resting half is frame `Reaction` 4:27616 in the Design
+   Suggestion board; every value below is measured off it — geometry from the
+   node tree, colours decoded from the exported PNG.
+
+       row            4:28071   109x24, chips 4px apart
+       chip           4:28068   37x24 — count @x9, emoji 12x12 @x16
+       chip (2nd)     4:28061   40x24
+       add button     4:28078   24x24 holding a 16x16 `Icon / Smiley`
+       count          Text/Primary #1a1a1a, Caption 2 = 12px/500
+       hairline       Border/Border #e6e6e6
+       MINE           #0589ff — decoded from the PNG, not a token: the first
+                      chip's border is the design blue where the second's is the
+                      hairline, which is the "I reacted to this" state
+       glyph          Icons/Icon Primary #333333
+
+   ── The two halves, and the switch between them
+   The affordance is a HOVER one when a comment has no reactions yet (`Icon /
+   Smiley` 4:28053 sits in the name row, `hidden="true"` because the frame draws
+   the resting state), and a PERSISTENT one once it does — `ThreadCard.Reactions`
+   renders its own trailing tool inside the chips row (verified in the live DOM:
+   `.s-emoji-block` contains a `…reaction-tool-internal`). Showing both at once
+   would put two smileys on one comment, so `velt-reactions`, the count Velt
+   stamps on the thread card, picks exactly one. */
+.velt-thread-card--container[velt-reactions="0"] .vc-reactions {
+  display: none !important;
+}
+
+.velt-thread-card--container:not([velt-reactions="0"]) .vc-reaction-tool {
+  display: none !important;
+}
+
+/* ── the hover smiley (no reactions yet) ─────────────────────────────────────
+   It lives inside `.vc-comment-actions`, so the reveal, the 4px gap and the
+   top-right placement all come from that group already — this only has to size
+   the button and paint the glyph. */
+.vc-reaction-tool,
+.vc-reaction-tool velt-reaction-tool,
+.vc-reaction-tool .v-reaction-btn-container,
+.vc-reaction-tool .action-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 24px !important;
+  height: 24px !important;
+  flex: none !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+}
+
+.vc-reaction-tool .action-btn:hover {
+  background: #f7f7f7 !important;
+}
+
+/* The ownership `<VeltIf>` around the tool clones in as an `app-if` between the
+   actions row and the button, so it has to step out of the flex row's way — the
+   same treatment `.vc-focus-actions app-if` gets. */
+.vc-comment-actions app-if,
+.vc-comment-actions velt-if {
+  display: contents !important;
+}
+
+/* Velt ships the smiley as a STROKE path and unstyled mode leaves it
+   `stroke: none`, so the button rendered as an empty 24px box — measured. */
+.vc-reaction-tool .action-btn-icon,
+.vc-reactions .action-btn-icon {
+  width: 16px !important;
+  height: 16px !important;
+  fill: none !important;
+  stroke: #333333 !important;
+}
+
+/* ── the chips row (has reactions) ───────────────────────────────────────────*/
+.vc-reactions {
+  display: flex !important;
+  align-self: stretch !important;
+}
+
+.vc-reactions .s-emoji-block {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 4px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* one chip. `padding: 0 8px` puts the count at x9 over a 1px border, which is
+   where 4:28068 draws it. */
+.vc-reactions .velt-reaction-pin--default {
+  display: flex !important;
+  /* ROW-REVERSE, because the design puts the COUNT first: 4:28068 draws the
+     count at x9 and the emoji at x16, where Velt renders emoji-then-count.
+     The children are [emoji, count], so reversing the row is enough — and it
+     keeps Velt's own DOM order, which the count's aria text depends on. */
+  flex-direction: row-reverse !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  gap: 2px !important;
+  height: 24px !important;
+  min-width: 0 !important;
+  padding: 0 8px !important;
+  border-radius: 4px !important;
+  border: 1px solid #e6e6e6 !important;
+  background: #ffffff !important;
+  box-sizing: border-box !important;
+  cursor: pointer !important;
+}
+
+.vc-reactions .velt-reaction-pin--default:hover {
+  background: #f7f7f7 !important;
+}
+
+/* the one I reacted to */
+.vc-reactions .velt-reaction-pin--default.active {
+  border-color: #0589ff !important;
+  background: #ffffff !important;
+}
+
+/* The type goes on the HOST as well as Velt's inner div: the host
+   `velt-reaction-pin-count-internal` is what actually lays the digit out
+   (measured 5x18 at 16px/400), and styling only the inner class left it there. */
+.vc-reactions velt-reaction-pin-count-internal,
+.vc-reactions .velt-reaction-pin--count {
+  display: flex !important;
+  align-items: center !important;
+  font-family: 'Inter' !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  line-height: 18px !important;
+  color: #1a1a1a !important;
+}
+
+.vc-reactions .velt-reaction-pin--emoji,
+.vc-reactions .velt-reaction-pin--emoji svg,
+.vc-reactions .velt-reaction-pin--emoji img {
+  width: 12px !important;
+  height: 12px !important;
+  font-size: 12px !important;
+  line-height: 12px !important;
+}
+
+/* The trailing add button inside the chips row: same 24px box as the hover one,
+   and it must not pick up the chip's border. */
+.vc-reactions velt-comment-dialog-thread-card-reaction-tool-internal,
+.vc-reactions velt-reaction-tool,
+.vc-reactions .v-reaction-btn-container,
+.vc-reactions .action-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 24px !important;
+  height: 24px !important;
+  flex: none !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+}
+
+.vc-reactions .action-btn:hover {
+  background: #f7f7f7 !important;
+}
+
+
+/* ── ONE SURFACE AT A TIME: popover XOR side sheet ───────────────────────────
+   Design review: "Suggestion wala jo comment hai voh dono mai dikhna chaiye
+   kya? ya sirf ek mai" (miri, 1:41 PM) — only one. The design is explicit and
+   the repo already records the reasoning in VeltCollaboration.tsx: 890:22822
+   ("comment tag click") draws the popover with NO side sheet, and every
+   side-sheet frame draws no popover.
+
+   Half of that was already enforced — clicking a pin closes the host drawer.
+   The other direction was not: opening a thread FROM the sidebar left Velt's
+   floating dialog on the document, so the same annotation rendered twice at
+   once. Reproduced exactly as the screenshot shows it, with an agent suggestion
+   painted both over the document and in the drawer.
+
+   Both surfaces render from the SAME selection, so there is nothing to
+   deselect — clearing it would close the drawer too. What is wrong is that the
+   popover paints while the drawer owns the thread, so that is what this
+   suppresses.
+
+   `.vc-focus-header-row` inside `.hw-rail--open` is the signal: `FocusHeader()`
+   is rendered by BOTH drawer branches (ordinary thread and suggestion card), the
+   rail scope keeps the wireframe registry's own copy out, and `--open` is what
+   makes it false once the rail is closed. That last part is not optional — the
+   focused thread's markup SURVIVES inside a collapsed rail, so keying on the
+   markup alone left the popover hidden after a pin click had closed the drawer,
+   which is the exact case the popover is supposed to own.
+
+   `visibility`, never `display: none` — a display-hidden overlay cannot be
+   reopened by Velt, which is what deadlocked the filter dropdown once already.
+   Going back from the drawer deselects and Velt closes the pane itself, so this
+   only ever hides a pane that is about to go away. */
+body:has(.hw-rail--open .vc-focus-header-row) .cdk-overlay-pane:has(velt-comment-dialog-internal) {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* ── HOVER TOOLTIPS ──────────────────────────────────────────────────────────
+   Design review: "Focused thread mode mai resolve ke tooltip pe background nai
+   hai, aisa kuch daal sakte hai" (miri, 1:38 PM), with a reference image of a
+   proper tooltip card beside our bare label.
+
+   Measured with the drawer's Resolve tooltip open: `.velt-tooltip-content` and
+   its `.cdk-overlay-pane` were both `background: rgba(0,0,0,0)` with `border: 0`,
+   `radius: 0`, `shadow: none`, `padding: 0` and 16px inherited text — so the word
+   "Resolve" floated loose over the panel with nothing behind it.
+
+   No frame draws a tooltip, so it takes the product's popover language, sized
+   down: the same white / 1px #e6e6e6 / soft shadow as the kebab menu, at the
+   4px radius the small chips use and `--vc-meta`'s 13/20 type.
+
+   NOT scoped to the drawer. `.velt-tooltip-content` is Velt's own class and this
+   is the only rule for it, so every hover tooltip in the product — Copy Link,
+   the header actions, the reaction pins — gets one look rather than the drawer
+   getting a special case. Velt mounts them in `.cdk-overlay-pane` on `body`, so
+   a rail-scoped selector would miss them all. */
+.velt-tooltip-content,
+.velt-tooltip-content.s-tooltiptext {
+  padding: 4px 8px !important;
+  border-radius: 4px !important;
+  border: 1px solid #e6e6e6 !important;
+  box-shadow: 0px 2px 8px 2px #0000000f !important;
+  background: #ffffff !important;
+  box-sizing: border-box !important;
+  font-family: 'Inter' !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  line-height: 20px !important;
+  color: #1a1a1a !important;
+  white-space: nowrap !important;
+}
+
+/* ── the emoji PICKER the tool opens ─────────────────────────────────────────
+   No frame draws this one — the Altana sections stop at the chips row — so it
+   takes the product's popover language: the same white card, hairline, 6px
+   radius and shadow as the comment kebab menu (`.vc-options-menu`), so every
+   popup in the product reads as one family.
+
+   It arrived with none of it. Measured with the picker open:
+   `.velt-reactions-panel` and every ancestor up to the `.cdk-overlay-pane` were
+   `background: rgba(0,0,0,0)` with `border: 0`, `radius: 0`, `shadow: none` and
+   `padding: 0`, so the 8 emoji rendered as a bare 192x24 strip laid straight
+   over the agent's name — the row read "Altana Review🙌👏👍😍😂👀🔥📋".
+
+   Unscoped for the same reason the mention hover card is: Velt mounts this in a
+   `.cdk-overlay-pane` on `body`, never inside `.hw-rail`. */
+.velt-reactions-panel {
+  display: flex !important;
+  align-items: center !important;
+  padding: 4px !important;
+  border-radius: 6px !important;
+  border: 1px solid #e6e6e6 !important;
+  box-shadow: 0px 2px 12px 8px #0000000f !important;
+  background: #ffffff !important;
+  box-sizing: border-box !important;
+}
+
+.velt-reactions-panel velt-reactions-panel-items-internal {
+  display: flex !important;
+}
+
+.velt-reactions-panel .velt-reactions-panel-items {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 2px !important;
+}
+
+/* one emoji. 28px so the hover wash has room around a 16px glyph, which is the
+   same proportion the menu rows use. */
+.velt-reactions-panel velt-reactions-panel-item-internal,
+.velt-reactions-panel .velt-reactions-panel-item {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 28px !important;
+  height: 28px !important;
+  flex: none !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+}
+
+.velt-reactions-panel .velt-reactions-panel-item:hover {
+  background: #f7f7f7 !important;
+}
+
+.velt-reactions-panel velt-reactions-panel-item-emoji-internal {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 18px !important;
+  height: 18px !important;
+  font-size: 16px !important;
+  line-height: 18px !important;
+}
+
+
+/* ── HOVERING a posted mention ───────────────────────────────────────────────
+   Two things happen and neither was styled.
+
+   1. The chip itself had no hover state at all — it is a live affordance (it
+      opens the card below) that looked exactly like static text. It now picks up
+      the composer chip's own treatment, the design blue at 10% behind a 4px
+      radius, so the hover says "this is a thing" in a language the product
+      already speaks. `padding: 0 3px` with a matching negative margin keeps the
+      wash off the surrounding words WITHOUT moving them: a plain padding here
+      reflowed the rest of the line by 6px on every hover. */
+.vc-message .velt-mention:hover,
+.vc-message .velt-mention--name:hover,
+.velt-thread-card--message .velt-mention:hover,
+.velt-thread-card--message .velt-mention--name:hover {
+  padding: 0 3px !important;
+  margin: 0 -3px !important;
+  border-radius: 4px !important;
+  background: rgba(5, 137, 255, 0.1) !important;
+  cursor: pointer !important;
+}
+
+/* 2. The USER CARD the hover opens. It arrived with no chrome of any kind —
+      measured, `.velt-autocomplete-chip-tooltip` and every ancestor up to its
+      `.cdk-overlay-pane` were `background: rgba(0,0,0,0)` with `border: 0`,
+      `border-radius: 0` and `box-shadow: none`, so the avatar, name and email
+      floated loose over the comment text and over the composer behind them.
+      The chrome is the product's popover chrome — the same radius, hairline and
+      shadow as the comment kebab menu (`.vc-options-menu`) — and the two text
+      rows take the card's own `--vc-name` / `--vc-meta` values, so a hovered
+      mention reads like every other Velt surface here.
+
+      These selectors are deliberately UNSCOPED: Velt mounts the card in a
+      `.cdk-overlay-pane` on `body`, not inside `.hw-rail`, so anything scoped to
+      the rail or the panel misses it entirely. */
+.velt-autocomplete-chip-tooltip {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 8px 12px !important;
+  width: max-content !important;
+  max-width: 280px !important;
+  border-radius: 6px !important;
+  border: 1px solid #e6e6e6 !important;
+  box-shadow: 0px 2px 12px 8px #0000000f !important;
+  background: #ffffff !important;
+  box-sizing: border-box !important;
+  font-family: 'Inter' !important;
+}
+
+/* The avatar slot shipped at 32px around a 20px avatar, which put 12px of dead
+   space between the disc and the name on top of the row's own gap. */
+.velt-autocomplete-chip-tooltip--icon,
+.velt-autocomplete-chip-tooltip--icon velt-autocomplete-chip-tooltip-icon-internal,
+.velt-autocomplete-chip-tooltip--icon snippyly-user-avatar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: none !important;
+  width: 20px !important;
+  height: 20px !important;
+}
+
+/* The disc itself is already the product's 20px round avatar; it was the two
+   WRAPPERS between the slot and it that shipped at 32px, so the disc hung out of
+   the 20px slot and sat low against the name beside it. */
+.velt-autocomplete-chip-tooltip--icon .velt-user-avatar,
+.velt-autocomplete-chip-tooltip--icon .velt-user-avatar--initial-container {
+  width: 20px !important;
+  height: 20px !important;
+  border-radius: 56px !important;
+}
+
+.velt-autocomplete-chip-tooltip--icon .velt-user-avatar--initial {
+  font-size: 8px !important;
+  line-height: 20px !important;
+  font-weight: 500 !important;
+}
+
+.velt-autocomplete-chip-tooltip--content {
+  display: flex !important;
+  flex-direction: column !important;
+  min-width: 0 !important;
+}
+
+.velt-autocomplete-chip-tooltip--name {
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  line-height: 24px !important;
+  color: #1a1a1a !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.velt-autocomplete-chip-tooltip--description {
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  line-height: 20px !important;
+  color: #666666 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+
 /* ── the assignee band's two label branches (VcAssigneeBanner) ────────────────
    `<VeltIf>` clones in as an `app-if` element between `.vc-assignee-row` and the
    label, so it has to step out of the flex row's way — the same treatment
@@ -4482,12 +5030,18 @@ app-comment-sidebar-list-item {
 /* 1 · the name row. Velt's `suggestion-header-internal` computes to
    `display: block` (measured 376x40), so `Header.Agent` and `Header.Timestamp`
    stacked and the `1d` dropped onto its own line under the agent's name. */
+/* INLINE, not space-between. The agent block took `flex: 1 1 auto` and the row
+   `space-between`, which threw the `2d` to the panel's right edge — while the
+   ordinary-comment path put it 4px after the name. Two layouts for one row.
+   8:28925 settles it: `Name, Timestamp` is a 168px group at x=0, Name 149 wide,
+   Timestamp at x=153 — so 4px after the name, hugging it, with the rest of the
+   row empty. */
 .hw-agent-card velt-comment-dialog-suggestion-header-internal {
   display: flex !important;
   flex-direction: row !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 8px !important;
+  align-items: baseline !important;
+  justify-content: flex-start !important;
+  gap: 4px !important;
 }
 
 .hw-agent-card velt-comment-dialog-suggestion-agent-internal {
@@ -4495,7 +5049,7 @@ app-comment-sidebar-list-item {
   flex-direction: row !important;
   align-items: center !important;
   gap: 8px !important;
-  flex: 1 1 auto !important;
+  flex: 0 1 auto !important;
   min-width: 0 !important;
 }
 
@@ -4506,8 +5060,9 @@ app-comment-sidebar-list-item {
 
 /* 2 · the avatar. The purple disc was only ever declared as
    `.vc-card.vc-agent .vc-avatar`, so in the drawer the sparkle floated on white
-   with no ground behind it. Same 20px disc, same #935ded, wherever the agent
-   card renders. */
+   with no ground behind it. Same 20px disc, same colour, wherever the agent
+   card renders — see the `--vc-agent-disc` note below for why it is no longer
+   #935ded. */
 .hw-agent-card .vc-avatar {
   display: flex !important;
   align-items: center !important;
@@ -4515,7 +5070,7 @@ app-comment-sidebar-list-item {
   width: 20px !important;
   height: 20px !important;
   border-radius: 56px !important;
-  background: #935ded !important;
+  background: var(--vc-agent-disc) !important;
   flex: none !important;
 }
 
@@ -4536,12 +5091,23 @@ app-comment-sidebar-list-item {
    `display:block` 248px island inside a 376px `nowrap` row, which is why the
    third chip (`Re-analyze`) was sliced off at the panel edge instead of moving
    to a second line: nothing in that chain could shrink, so nothing could wrap. */
+/* LEFT, not right. These rules carried `justify-content: flex-end` from the
+   first pass, on the reasoning that right alignment was "the only alignment
+   signal the design gives for this row" — true at the time, because no frame
+   drew the row at all. The Design Suggestion board draws it now: 8:28954 puts
+   `Frame 1707479093` at x=0 of the agent message's text column, so the buttons
+   start flush under the words, and they wrap leftward.
+   That also settles a reported inconsistency: `Dig Deeper`/`Log` sit on an
+   ORDINARY comment, so they render through `velt-comment-dialog-actions-internal`
+   OUTSIDE `.hw-agent-card` and never matched these rules — they were already
+   left-aligned by default, while `Approve`/`Dismiss`/`Re-analyze` on a suggestion
+   card were pushed right. Same control, two alignments, for no design reason. */
 .hw-suggestion-actions,
 .hw-agent-card .velt-suggestion-actions,
 .hw-agent-card .velt-comment-actions {
   display: flex !important;
   flex-wrap: wrap !important;
-  justify-content: flex-end !important;
+  justify-content: flex-start !important;
   align-items: center !important;
   gap: 8px !important;
   row-gap: 8px !important;
@@ -4552,15 +5118,11 @@ app-comment-sidebar-list-item {
   display: flex !important;
   flex: 1 1 auto !important;
   min-width: 0 !important;
-  /* Align INSIDE the grown box. Without this the chips looked left-aligned, but
-     not by choice: this element grows to fill, its inner `.velt-comment-actions`
-     is content-sized, and `justify-content` was `normal` — so the row's own
-     `flex-end` never had anything to act on and the chips sat wherever the box
-     started. `.hw-suggestion-actions` has carried `justify-content: flex-end`
-     since the first pass, and that is the only alignment signal the design gives
-     for this row, so the decision chips and the progress row's `Stop` now share
-     one right edge instead of disagreeing by accident. */
-  justify-content: flex-end !important;
+  /* Align INSIDE the grown box: this element grows to fill, its inner
+     `.velt-comment-actions` is content-sized, so without an explicit value the
+     chips sit wherever the box happens to start. Flush LEFT, matching 8:28954 —
+     see the note on `.hw-suggestion-actions` above for why this flipped. */
+  justify-content: flex-start !important;
 }
 
 
@@ -4615,6 +5177,33 @@ app-comment-sidebar-list-item {
 }
 
 
+/* ── the drawer's header band must NOT inherit the agent card's padding ──────
+   The 48px `⋯ ✓` band is the same `FocusHeader()` on both branches, but its
+   PARENT is not: on a normal thread it is a direct child of `.vc-focus`
+   (padding 0), on a suggestion it is the first child of `.hw-agent-card`, whose
+   `padding: 12px 16px` it then sits inside. Measured side by side in the 400px
+   drawer: normal → band y 59..107 flush to the panel, `⋯ ✓` centred on y 83,
+   level with the SIDEBAR's own `‹` (x 1120) and `✕` (x 1472); agent → band
+   y 71..119 inset to x 1128 w 368, `⋯ ✓` centred on y 95 and 16px further in.
+   So on an agent comment the three sets of header controls — two owned by the
+   sidebar, one by the dialog — stopped sharing a line, and the 1px #e0e0e0 rule
+   under the band stopped reaching the panel edges.
+   Cancelling the card's padding on this ONE child puts the band back where the
+   normal branch draws it. The bottom 8px is deliberate, not symmetric: the card
+   is a flex column with `gap: 8px`, so 8 + 8 = the 16px the normal branch leaves
+   between the rule and its first comment row (107 → 123), which is what lines
+   the agent's avatar up with a human author's. */
+.hw-agent-card > .vc-focus-header-row {
+  margin: -12px -16px 8px !important;
+  /* The negative margins reposition the band but do not widen it on their own —
+     measured, x moved to the panel edge while the box stayed 368px, so the
+     1px rule still stopped 16px short at both ends. Adding the padding back
+     explicitly makes the rule span the full 400px, as it does on a normal
+     thread. */
+  width: calc(100% + 32px) !important;
+}
+
+
 /* ── an AGENT-authored comment looks like one on EITHER card type ────────────
    Two of the seeded findings are `type: 'suggestion'` and render as the agent
    card; the third deliberately omits `type` so it stays a normal comment (the
@@ -4626,9 +5215,9 @@ app-comment-sidebar-list-item {
    `veltClass="'vc-avatar--agent': {commentObj.agent}"` marks the agent's rows,
    and the glyph is painted here as a mask because a child injected into
    `ThreadCard.Avatar` would replace the avatar for every comment in the thread.
-   Same 20px disc, same #935ded, same sparkle as VcAgentCard. */
+   Same 20px disc, same colour, same sparkle as VcAgentCard. */
 .vc-avatar--agent {
-  background: #935ded !important;
+  background: var(--vc-agent-disc) !important;
   border-radius: 56px !important;
   overflow: hidden !important;
 }
@@ -4655,7 +5244,1136 @@ app-comment-sidebar-list-item {
   position: relative !important;
 }
 
+/* ── ONE agent disc colour ───────────────────────────────────────────────────
+   The disc was #935ded, a violet invented before the board drew this avatar.
+   Two problems, one fix:
+     · The DESIGN's is blue — frame 8:28854's disc samples rgb(26,188,254).
+     · On the ordinary-comment path our violet was never visible anyway: Velt's
+       own `div.s-user-avatar-initial-container` is a CHILD of the slot host and
+       paints its per-user tint (measured rgb(25,188,254)) straight over it. So
+       the agent read violet on its suggestion cards and blue on its
+       conversation card — the same author, two colours, in one list.
+   The token below is the design's blue, and the inner container is forced to it
+   as well so Velt's per-user tint can never diverge from the disc again. */
+:root {
+  --vc-agent-disc: #1abcfe;
+}
+
+.vc-avatar--agent .velt-user-avatar--initial-container,
+.vc-avatar--agent .s-user-avatar-initial-container,
+.hw-agent-card .vc-avatar .velt-user-avatar--initial-container,
+.hw-agent-card .vc-avatar .s-user-avatar-initial-container {
+  background: var(--vc-agent-disc) !important;
+}
+
 :root {
   /* PhosphorIcons Sparkle, the same path VcSparklesIcon draws. */
   --vc-sparkle-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'><path fill='black' d='M208 144a15.78 15.78 0 0 1-10.42 14.94l-51.65 19-19 51.61a15.92 15.92 0 0 1-29.88 0L78 178l-51.62-19a15.92 15.92 0 0 1 0-29.88l51.65-19 19-51.61a15.92 15.92 0 0 1 29.88 0l19 51.65 51.61 19A15.78 15.78 0 0 1 208 144ZM152 48h16v16a8 8 0 0 0 16 0V48h16a8 8 0 0 0 0-16h-16V16a8 8 0 0 0-16 0v16h-16a8 8 0 0 0 0 16Zm88 32h-8v-8a8 8 0 0 0-16 0v8h-8a8 8 0 0 0 0 16h8v8a8 8 0 0 0 16 0v-8h8a8 8 0 0 0 0-16Z'/></svg>");
+}
+
+
+/* ══ CONTROL BAND — 44:22045 `Table Controls` ════════════════════════════════
+   Replaces the `For You | Everything` pills, which the Altana V2 drawer
+   (44:22040) hides outright along with the rest of `Tab Bar Secondary`.
+
+     Table Controls  400 Fill x 56 Hug · padding 12/16 · gap 8 · row
+       Search   288 Fill x 32   leading Icon/MagnifyingGlass, "Search Comments"
+       Filters  32x32 Secondary  Icon/FunnelSimple
+       Columns  32x32 Secondary  Icon/Sliders
+
+   288 + 8 + 32 + 8 + 32 = 368 = 400 - 16 - 16, so the search takes whatever is
+   left and the two buttons stay square at any panel width. The band keeps its
+   56px height and its two hairlines from the old row. */
+.hw-panel-controls {
+  padding: 12px 16px !important;
+  gap: 8px !important;
+}
+
+/* The search is now ALWAYS open and fills the row — no more 32px collapsed
+   button that expands on focus. That behaviour existed to fit a search box
+   beside two tab pills; with the pills gone the design gives search the width. */
+.hw-panel-controls .hw-search-slot {
+  flex: 1 1 auto !important;
+  width: auto !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  height: 32px !important;
+  justify-content: flex-start !important;
+}
+
+/* leading glyph, not the trailing one the collapsed box used. */
+.hw-panel-controls .hw-search-glyph {
+  position: static !important;
+  flex: none !important;
+  width: 16px !important;
+  height: 16px !important;
+  margin-left: 10px !important;
+}
+
+.hw-panel-controls .hw-search {
+  position: static !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+}
+
+.hw-panel-controls .hw-search input {
+  position: static !important;
+  width: 100% !important;
+  height: 100% !important;
+  padding: 0 10px !important;
+  color: var(--hw-text) !important;
+  cursor: text !important;
+}
+
+.hw-panel-controls .hw-search input::placeholder {
+  color: #767676 !important;
+}
+
+/* the two 32x32 Secondary buttons */
+.hw-panel-controls .hw-ctl-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: none !important;
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  border-radius: 6px !important;
+  border: 1px solid #e6e6e6 !important;
+  background: #ffffff !important;
+  box-sizing: border-box !important;
+  cursor: pointer !important;
+  color: #666666 !important;
+}
+
+.hw-panel-controls .hw-ctl-btn:hover {
+  background: #f7f7f7 !important;
+}
+
+.hw-panel-controls .hw-ctl-btn svg {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+
+/* ── the Sliders button and its display-options menu (44:21925 `Columns`) ─────
+   The wrapper exists only to anchor the popup and must not take part in the
+   band's layout arithmetic: `display: contents` makes the 32x32 button a direct
+   flex item of `.hw-panel-controls`, so it lands on the same baseline and the
+   same 8px gap as the funnel. The popup is then anchored to the BAND, which is
+   `position: relative` for exactly this. */
+.hw-panel-controls .hw-ctl-display {
+  display: contents !important;
+}
+
+.hw-panel-controls {
+  position: relative !important;
+}
+
+/* Closed by default. The open state is a class the HOST puts on the rail
+   (VeltCollaboration's `displayMenuOpen`) — this is wireframe markup, so it
+   cannot gate on React state, and Velt's own toggle-active class is not part of
+   the documented contract. Same chrome as the comment kebab menu
+   (`.vc-options-menu`), so the product has one menu look. */
+.hw-display-menu {
+  display: none !important;
+}
+
+.hw-rail-inner.hw-display-open .hw-display-menu {
+  display: flex !important;
+  position: absolute !important;
+  top: calc(100% - 8px) !important;
+  right: 16px !important;
+  z-index: 20 !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  padding: 4px !important;
+  width: 200px !important;
+  border-radius: 6px !important;
+  border: 1px solid #e6e6e6 !important;
+  box-shadow: 0px 2px 12px 8px #0000000f !important;
+  background: #ffffff !important;
+  box-sizing: border-box !important;
+}
+
+/* THE ROW BOX GOES ON VELT'S OWN DIV, not on our `app-button` host. Velt's
+   button template is
+       <app-button class="hw-display-row">        <- ours
+         <div class="velt-button" (click)>        <- Velt's, `display: block`
+           …our tick + label…
+   so a row drawn on the host left the inner div block-level and the tick stacked
+   ABOVE the label: measured, host 190x52 with the tick at y159 and the label at
+   y184. Painting the flex row on `.velt-button` fixes the stacking AND makes the
+   whole visible row the click target, the same relocation the kebab menu rows
+   needed. */
+.hw-display-row {
+  display: block !important;
+  align-self: stretch !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  cursor: pointer !important;
+  font-family: var(--hw-font) !important;
+}
+
+.hw-display-row > .velt-button {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 8px !important;
+  min-height: 36px !important;
+  padding: 6px 12px !important;
+  border-radius: 4px !important;
+  box-sizing: border-box !important;
+  cursor: pointer !important;
+  font-size: 15px !important;
+  font-weight: 400 !important;
+  line-height: 24px !important;
+  color: #050505 !important;
+  text-align: left !important;
+}
+
+.hw-display-row > .velt-button:hover {
+  background: #f9f9f9 !important;
+}
+
+.hw-display-label {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
+}
+
+
+/* ── CLOSED = NO CHROME ───────────────────────────────────────────────────────
+   Velt keeps these two surfaces in the DOM and empties them when closed, so a
+   card painted unconditionally shows as an empty bordered chip: measured,
+   `.hw-filter` closed is 376x10 at the top of the control band with 0
+   descendants, still drawing its 1px border, its shadow and a white fill — the
+   stray pills above and below the search row.
+   This strips the CHROME only and never touches `display`. An earlier attempt
+   used `display: none` and deadlocked the dropdown — the clone starts empty, so
+   it was hidden, and a hidden element can never be opened. Leaving the box in
+   layout keeps Velt's open/close behaviour entirely its own; there is simply
+   nothing to see until it has content.
+   The rule itself lives at the END of this file: `:has(*)` contributes ZERO
+   specificity, so `.hw-filter:not(:has(*))` ties with the plain `.hw-filter`
+   card rule at (0,1,0) and lost on source order when it sat above it. */
+
+
+
+
+/* ══ THE FILTER PANEL (funnel) and the SORT/VIEW MENU (sliders) ══════════════
+   Both are Velt's own surfaces, so unstyled mode left them with no chrome at
+   all: the filter panel rendered IN FLOW straight over the comment list — its
+   header, six checkbox groups and Reset/Apply all transparent and interleaved
+   with the cards — and the sort menu came out as a tall list of bare rows.
+   Everything below is the panel's existing vocabulary, not new values: the
+   options menu's card (872:22294 — 6px radius, 1px #e6e6e6,
+   `0 2px 12px 8px #0000000f`, 4px padding), its 40px rows at 8/12 with the
+   #f9f9f9 hover, and the card's own type ramp. */
+
+/* ── the filter panel: a BOTTOM SHEET on the sidebar ─────────────────────────
+   It used to hang off the control band (`top: 56px`), which put a card straight
+   over the rows it was filtering. The host now runs
+   `filterPanelLayout="bottomSheet"` — a real SDK prop, and Velt honours it: its
+   inner container comes back classed `velt-sidebar-filter--container visible
+   bottomSheet`. Our own absolute positioning was the only thing still pinning it
+   to the top, so the anchor moves to the bottom edge here.
+   `top: auto` is load-bearing — with both `top` and `bottom` set the box is
+   stretched between them instead of hugging its content, which is what kept the
+   sheet 527px tall no matter how few groups it held. */
+.hw-filter {
+  position: absolute !important;
+  top: auto !important;
+  bottom: 0 !important;
+  right: 0 !important;
+  left: 0 !important;
+  z-index: 40 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  /* HUG the content. `max-height` on this element with `flex: 1 1 auto` +
+     `min-height: 0` on the body collapsed the whole panel to its padding — the
+     body had no definite height to flex against, so it resolved to 0 and the
+     card measured 400x10 with all six groups inside it. The cap lives on the
+     body instead, which is the part that should scroll. */
+  height: auto !important;
+  width: auto !important;
+  padding: 4px !important;
+  /* a sheet is attached to the bottom edge, so only the TOP corners round and
+     only the top edge carries a hairline; the shadow is thrown UPWARD, over the
+     list, instead of down onto it. */
+  border-radius: 12px 12px 0 0 !important;
+  border: 1px solid #e6e6e6 !important;
+  border-bottom: 0 !important;
+  box-shadow: 0px -2px 12px 8px #0000000f !important;
+  background: #ffffff !important;
+  box-sizing: border-box !important;
+  font-family: 'Inter', var(--hw-font) !important;
+}
+
+/* a sheet should not be able to swallow the whole panel — cap it at 70% of the
+   VIEWPORT height (the sheet is absolutely positioned, so a percentage here
+   would resolve against the panel's padding box, not its height) and let the
+   body scroll, which it already does. */
+.hw-filter > .velt-sidebar-filter--container {
+  max-height: 70vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+}
+
+/* the panel is positioned against the sidebar, so the sidebar is the anchor. */
+.hw-panel {
+  position: relative !important;
+}
+
+/* Velt wraps the declared markup in TWO containers of its own, and the outer one
+   is `position: absolute; height: 8px` — measured, which clamped the whole panel
+   to 10px with all six groups laid out inside it at their correct 36px rows. The
+   card is OUR element, so both wrappers step out of the way and let the three
+   sections below drive the height. */
+.hw-filter .velt-sidebar-filter--container {
+  position: static !important;
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  inset: auto !important;
+}
+
+.hw-filter .velt-sidebar-filters {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+}
+
+.hw-filter-head {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  flex: none !important;
+  padding: 8px 12px !important;
+}
+
+.hw-filter-title,
+.hw-filter-title .velt-comment-sidebar-filter-title {
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  line-height: 24px !important;
+  color: #050505 !important;
+}
+
+.hw-filter-close {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: none !important;
+  width: 24px !important;
+  height: 24px !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  color: #666666 !important;
+}
+
+.hw-filter-close:hover {
+  background: #f0f0f0 !important;
+}
+
+.hw-filter-close svg {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.hw-filter-body {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  flex: 0 1 auto !important;
+  /* the scrollport, capped so a long people list cannot outgrow the sidebar. */
+  max-height: 420px !important;
+  overflow-y: auto !important;
+}
+
+/* each filter GROUP (Involved / Assigned / Created by / Status / …) ──────────
+   The group host is ours (`.hw-filter-group`); inside it Velt wraps everything
+   in its own `div.velt-sidebar-filter`, so the column has to be declared on both
+   or the heading and its rows lay out side by side. */
+.hw-filter-group,
+.hw-filter-group > .velt-sidebar-filter {
+  display: flex !important;
+  flex-direction: column !important;
+  align-self: stretch !important;
+  width: 100% !important;
+}
+
+/* Nothing between the group and its rows may add a box: Velt puts every option
+   in a `div.velt-sidebar-filter--option` wrapper. */
+.hw-filter-group .velt-sidebar-filter--option {
+  display: contents !important;
+}
+
+/* the group's heading. The TAG is the selector, not our class — `Filter.<Group>
+   .Name` clones in as a bare `app-comment-sidebar-filter-name` and drops the
+   className, so `.hw-filter-group-name` never lands on anything. Its TEXT comes
+   from `filterConfig.<group>.name` on the host (VeltCollaboration), which is what
+   was actually missing; with the name unset this element is 0x0 and empty and no
+   amount of CSS puts a heading back. */
+.hw-filter-group app-comment-sidebar-filter-name {
+  display: block !important;
+  padding: 8px 12px 4px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  line-height: 16px !important;
+  letter-spacing: 0.02em !important;
+  text-transform: uppercase !important;
+  color: #848079 !important;
+}
+
+/* an empty heading (a group whose config carries no `name`) must not reserve
+   its padding — otherwise the gap reads as a missing label. */
+.hw-filter-group app-comment-sidebar-filter-name:empty {
+  display: none !important;
+}
+
+/* ONE CHECKBOX ROW. The row box goes on VELT'S OWN div, not on our
+   `.hw-filter-item` host: the host is a plain custom element and Velt's `(click)`
+   lives on the inner `div.velt-comment-sidebar-filter-item--<optionId>`, so a row
+   drawn on the host would be clickable only where the inner div happens to reach.
+   Same relocation the kebab menu rows needed. The inner div's class carries the
+   option id, so it is matched positionally (`> div`) rather than by name. */
+.hw-filter-item {
+  display: block !important;
+  align-self: stretch !important;
+}
+
+.hw-filter-item > div {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 8px !important;
+  min-height: 36px !important;
+  padding: 6px 12px !important;
+  border-radius: 4px !important;
+  box-sizing: border-box !important;
+  cursor: pointer !important;
+  font-size: 15px !important;
+  font-weight: 400 !important;
+  line-height: 24px !important;
+  color: #050505 !important;
+}
+
+.hw-filter-item > div:hover {
+  background: #f9f9f9 !important;
+}
+
+/* the three cells. Each is a wireframe host wrapping one Velt div; left at their
+   default `display` they stretched to the full 366px and stacked the row
+   vertically — measured, checkbox 366x16 over name 366x24 over count 366x16. */
+.hw-filter-check,
+.hw-filter-item-name,
+.hw-filter-item-count {
+  display: flex !important;
+  align-items: center !important;
+}
+
+.hw-filter-check,
+.hw-filter-check .velt-comment-sidebar-filter-item--icon-container {
+  flex: none !important;
+  width: 16px !important;
+  height: 16px !important;
+  justify-content: center !important;
+}
+
+/* the CHECKED box. Velt draws it as `checkbox-checked-internal > svg > g >
+   rect + path`, where the rect is the filled ground (#050505 out of the box) and
+   the path is the tick. Recolour the ground to the accent and leave the tick
+   near-white; the UNCHECKED box is a separate `checkbox-unchecked-internal` with
+   a stroked rect, which keeps its grey hairline. */
+.hw-filter-check velt-comment-sidebar-filter-item-checkbox-checked-internal rect {
+  fill: #0589ff !important;
+}
+
+.hw-filter-item-name {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
+}
+
+/* the count sits hard right, in the card's secondary text */
+.hw-filter-item-count,
+.hw-filter-item-count .velt-comment-sidebar-filter-item--count-container {
+  flex: none !important;
+  margin-left: auto !important;
+  font-size: 13px !important;
+  line-height: 20px !important;
+  color: #666666 !important;
+}
+
+.hw-filter-foot {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+  flex: none !important;
+  padding: 8px 12px !important;
+  border-top: 1px solid #e6e6e6 !important;
+}
+
+.hw-filter-reset,
+.hw-filter-done {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 6px !important;
+  height: 32px !important;
+  padding: 0 12px !important;
+  border-radius: 6px !important;
+  border: 1px solid #e6e6e6 !important;
+  background: #ffffff !important;
+  box-sizing: border-box !important;
+  cursor: pointer !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  line-height: 20px !important;
+  color: #333333 !important;
+}
+
+.hw-filter-reset:hover,
+.hw-filter-done:hover {
+  background: #f7f7f7 !important;
+}
+
+/* Apply is the primary of the pair — and PRIMARY here means the product's accent,
+   `Background/Accent #0589ff`, not near-black. The panel is the only surface in
+   the build that was still painting a filled control in #1a1a1a: every other
+   affirmative state — the composer's focus ring, the assign-on-send checkbox,
+   the action buttons' glyph, the selected table cell — is the blue. */
+.hw-filter-done {
+  border-color: #0589ff !important;
+  background: #0589ff !important;
+  color: #ffffff !important;
+}
+
+.hw-filter-done:hover {
+  border-color: #0477dd !important;
+  background: #0477dd !important;
+}
+
+.hw-filter-reset svg,
+.hw-filter-done svg {
+  width: 14px !important;
+  height: 14px !important;
+}
+
+
+/* the icon/label gap on Reset and Apply: their glyph and text are separate
+   nodes and ran together as `GReset` / `vApply` with no space between them. */
+.hw-filter-reset > *,
+.hw-filter-done > * {
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+.hw-filter-reset > * + *,
+.hw-filter-done > * + * {
+  margin-left: 6px !important;
+}
+
+/* ── CLOSED = NO CHROME ──────────────────────────────────────────────────────
+   Last in the file and scoped through an ancestor so it beats the card rules on
+   both specificity and order. Chrome only — `display` is never touched, so
+   Velt's open/close behaviour stays entirely its own. */
+.hw-panel .hw-filter:not(:has(*)) {
+  border: 0 !important;
+  box-shadow: none !important;
+  background: none !important;
+  padding: 0 !important;
+  min-height: 0 !important;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   DESIGN SUGGESTION BOARD (8:28539) — the updated pass.
+   Everything below is verbatim from that board and supersedes the older frames
+   it names. Four groups, in the board's own left-to-right order:
+     1. the assignee band, REPOSITIONED to the top          8:28804 · 8:28601
+     2. the composer's assign row, moved INSIDE the pill    8:28235 · 7:28165 ·
+                                                            7:28209 · 8:28965
+     3. the agent comment's action chips                    8:28954
+     4. two alternative assignment treatments, opt-in       8:28726 · 8:28438
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── 1 · THE ASSIGNEE BAND, REPOSITIONED ─────────────────────────────────────
+   Frame `Repositioned Assignment` (4:27906) is the board's name for this change,
+   and 8:28804 is the card that shows it: `Frame 427321039` — the #fdf1fa strip —
+   sits at y=0 of the 368x176 card with the comment body beneath it at y=36.
+   Frame 8:28601 does the same thing in the drawer, 400x44 between the header
+   band and the body. The wireframes now mount the band first on all three
+   surfaces; these rules give it the board's geometry.
+
+   The OLD rule centred the row (`justify-content: center` on `.vc-assignee-row`,
+   inherited from the footer band) and padded it `8px 12px`. The board measures
+   the card band at 36 tall with its 20px row inset 8px on every side, and the
+   avatar→label gap at 6px (avatar ends x=20, text starts x=26). */
+.vc-assignee-banner {
+  padding: 8px !important;
+  justify-content: flex-start !important;
+}
+
+.vc-assignee-row {
+  justify-content: flex-start !important;
+  gap: 6px !important;
+}
+
+/* The label used to take `flex: 1 1 0` so it could fill the centred row. As the
+   FIRST child of a rounded, `overflow: hidden` card the band no longer needs
+   that, and stretching it pushed the ellipsis of "Assigned to <a long name>"
+   out to the card's right edge instead of letting the text end where it ends. */
+.vc-assigned-label {
+  flex: 0 1 auto !important;
+}
+
+/* The drawer's band is the wider one: 8:28660 puts the avatar at x=16 and the
+   label at x=48 in a 44px full-bleed strip, so 12px/16px padding and a 12px gap.
+   `.vc-focus` is the drawer root; the popover and the sidebar card keep the 8px
+   card metric above. */
+.vc-focus > .vc-assignee-banner {
+  padding: 12px 16px !important;
+}
+
+.vc-focus > .vc-assignee-banner .vc-assignee-row {
+  gap: 12px !important;
+}
+
+/* The popover's band is now its FIRST child, so the corners it has to follow are
+   the dialog's TOP two, not the bottom two it used to sit against. `.vc-dialog`
+   is `overflow: hidden` with an 8px radius, which already clips it — this rule
+   exists only to keep the band from painting over the header's own bottom hairline
+   when a thread is both assigned and has a visibility banner. */
+.vc-dialog > .vc-assignee-banner {
+  border-bottom: 1px solid #f2e2ee !important;
+}
+
+/* ── the label is NOT one colour across surfaces ─────────────────────────────
+   The card band and the drawer band bind DIFFERENT tokens, and the build used
+   `Text/Secondary` for both:
+       card   8:28845  → Text/Secondary  #666666   (pixel-sampled rgb(102,102,102))
+       drawer 8:28660  → Text/Primary    #1a1a1a   (pixel-sampled rgb(26,26,26))
+   Sampled from the frames' own renders, not just the variable binding, because a
+   node can bind a token and still be overridden.
+   The popover follows the drawer: its band is the same full-bleed strip under a
+   header, and the board draws no popover of its own. The sidebar card keeps
+   #666666 from the base rule. */
+.vc-focus > .vc-assignee-banner .vc-assigned-label,
+.vc-focus > .vc-assignee-banner .vc-assigned-prefix,
+.vc-focus > .vc-assignee-banner .vc-assignee-name,
+.vc-dialog > .vc-assignee-banner .vc-assigned-label,
+.vc-dialog > .vc-assignee-banner .vc-assigned-prefix,
+.vc-dialog > .vc-assignee-banner .vc-assignee-name {
+  color: #1a1a1a !important;
+}
+
+/* ── NOTHING KNOWN YET → NO BAND ────────────────────────────────────────────
+   REPORTED: a band reading "Assigned to" with no avatar and no name after a
+   comment was sent with "Assign on send" ticked.
+   It is not missing content — it is Velt's LOADING state showing through. The
+   slots are filled with `velt-skeleton-loader-internal > div.skeleton-loader`
+   (measured: 28px in the avatar, 80px in the name, and the name's text node is
+   a single U+200E), and unstyled mode strips the skeleton's own background, so
+   both placeholders paint as nothing and only our literal "Assigned to" is left.
+   Measured further: the skeleton does NOT resolve — still there after 6s, and
+   after a reload the thread has no assignee at all, so that optimistic state
+   never arrives at a name.
+   The honest rendering of "we don't know who yet" is no band. The moment Velt
+   projects a real assignee the rule stops matching and the band paints. */
+.vc-assignee-banner:has(.skeleton-loader) {
+  display: none !important;
+}
+
+
+/* ── 2 · THE COMPOSER'S SECOND ROW ───────────────────────────────────────────
+   `Frame 1707478035` (294x24, at the pill's bottom) in 8:28235 / 7:28165 /
+   7:28209 / 8:28965. Left: the assign control. Right, at x=238: a 56px tools
+   group — the @ at 0 and the send button at 32, so 24 + 8 + 24.
+
+   The row is NOT always there. The sidebar and drawer both instance the same
+   component at 368x32 (`Input / Find Input`, one row, arrow inline) for the
+   RESTING composer, and the two-row form is what the board's expanded frames
+   draw — 3:27504 is literally named "Composer Expanded Empty" and carries the
+   blue focus border. So `display: contents` at rest keeps the tools group as a
+   direct flex child of the 32px pill, exactly the geometry that shipped, and the
+   row only materialises when it has to. */
+.vc-composer-actions {
+  display: contents;
+}
+
+.vc-composer-tools {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex: none !important;
+}
+
+/* EXPANDED — on focus, or whenever there is somebody to assign.
+   `:focus-within` alone is not enough: opening the assignee dropdown moves focus
+   into a CDK overlay at `body` level, which is outside the pill, so the row
+   would collapse under the user's own click. The second selector holds it open
+   for as long as Velt is actually rendering an assign control. */
+/* The element that has to turn into a column is whatever is the direct flex
+   PARENT of the input and the actions row, and that differs by surface:
+     dialog — `.vc-composer-field` is our own div and holds both directly;
+     page   — the Composer host IS the pill, and Velt's inner
+              `div.velt-comment-dialog-composer` is the row holding both
+              (measured: field 368x32 → wrapper 24 high, `flex-direction: row`).
+   Targeting the field on the page surface set `column` on a box whose single
+   child was that still-row wrapper, so the pill stayed 32px with the actions row
+   clipped beside the input. */
+.vc-composer-field:focus-within,
+.vc-composer-field:has(.velt-dropdown-assign-trigger),
+.vc-composer-page-field:focus-within > .velt-comment-dialog-composer,
+.vc-composer-page-field:has(.velt-dropdown-assign-trigger) > .velt-comment-dialog-composer {
+  flex-direction: column !important;
+  align-items: stretch !important;
+  /* 4px — `Frame 1707479083` ends at y=32, `Frame 1707478035` starts at y=36. */
+  gap: 4px !important;
+}
+
+/* …and the page pill itself stops centring its one child, so the column can
+   grow instead of being vertically centred inside a 32px box. */
+.vc-composer-page-field:focus-within,
+.vc-composer-page-field:has(.velt-dropdown-assign-trigger) {
+  align-items: stretch !important;
+}
+
+/* DESCENDANT, not `>`: in the page-mode variant the Composer host IS the pill
+   (`.vc-composer-page-field`) and Velt clones our children into its own inner
+   `div.velt-comment-dialog-composer`, so the row is a GRANDCHILD there. Measured
+   with `>`: `display` stayed `contents` and the pill never opened. */
+.vc-composer-field:focus-within .vc-composer-actions,
+.vc-composer-page-field:focus-within .vc-composer-actions,
+.vc-composer-field:has(.velt-dropdown-assign-trigger) .vc-composer-actions,
+.vc-composer-page-field:has(.velt-dropdown-assign-trigger) .vc-composer-actions {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  min-height: 24px !important;
+}
+
+/* The @ is drawn ONLY on the expanded frames — `Composer Default` (3:27473) is a
+   single 40px row with the arrow and nothing else. Hidden rather than omitted
+   because it is the same element in both states; R7's "omit, never display:none"
+   governs features the design does not have, not states it does not show. */
+.vc-mention-btn {
+  display: none !important;
+}
+
+.vc-composer-field:focus-within .vc-mention-btn,
+.vc-composer-page-field:focus-within .vc-mention-btn,
+.vc-composer-field:has(.velt-dropdown-assign-trigger) .vc-mention-btn,
+.vc-composer-page-field:has(.velt-dropdown-assign-trigger) .vc-mention-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 24px !important;
+  height: 24px !important;
+  flex: none !important;
+  border: 0 !important;
+  background: none !important;
+  border-radius: 4px !important;
+  color: #b8b8b8 !important;
+  cursor: pointer !important;
+}
+
+.vc-mention-btn:hover { background: #f1f1f1 !important; }
+
+/* Velt nests four boxes between the slot host and the glyph
+   (`velt-autocomplete-tool-internal > .velt-autocomplete-tool > .action-btn >
+   button.action__button > svg`) and unstyled mode strips the size off every one
+   of them, so the svg measured 0x0. Collapse the chain onto the slot's 24px box
+   and size the glyph at its end. */
+.vc-mention-btn velt-autocomplete-tool-internal,
+.vc-mention-btn .velt-autocomplete-tool,
+.vc-mention-btn .action-btn,
+.vc-mention-btn .action__button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 24px !important;
+  height: 24px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  color: inherit !important;
+  cursor: pointer !important;
+}
+
+.vc-mention-btn svg {
+  width: 20px !important;
+  height: 20px !important;
+  flex: none !important;
+}
+
+/* The assign control is now a child of the pill's bottom row, not a strip hanging
+   above it, so the two rules that positioned it there have to stop applying:
+   the 6px of air under it, and the 10px left inset that lined its glyph up with
+   the text in the field BELOW it. In the row it is the leftmost item and the
+   pill's own padding already places it. */
+.vc-composer-actions .vc-assign-user {
+  margin-bottom: 0 !important;
+  flex: 0 1 auto !important;
+  min-width: 0 !important;
+}
+
+.vc-composer-actions .vc-assign-user .velt-dropdown-assign-trigger {
+  padding: 0 !important;
+  height: 20px !important;
+}
+
+/* NO PLATE, IN ANY STATE. The frames draw the checkbox row on the pill's own
+   white — 7:28165, 7:28209 and 8:28965 all show bare `☐ Assign on send`, with a
+   ground only behind the `imogen ⌄` chip in the multi-mention one.
+   THREE rules painted `#f1f1f1` here, not one: `:hover`, `:focus` and
+   `:focus-visible`. They date from when this strip was a standalone row ABOVE
+   the pill, where a wash read as a control; inside the pill it reads as a grey
+   plate swallowing the whole trigger. Neutralising only `:hover` left the other
+   two — and the trigger is a `tabindex` div that KEEPS focus after you click the
+   checkbox, so the plate stayed on screen indefinitely, which is what the report
+   shows.
+   The focus ring survives on `:focus-visible` alone, so a keyboard user still
+   sees where they are and a mouse click leaves nothing behind. */
+.vc-composer-actions .vc-assign-user .velt-dropdown-assign-trigger,
+.vc-composer-actions .vc-assign-user .velt-dropdown-assign-trigger:hover,
+.vc-composer-actions .vc-assign-user .velt-dropdown-assign-trigger:focus,
+.vc-composer-actions .vc-assign-user .velt-dropdown-assign-trigger:focus-visible {
+  background: none !important;
+}
+
+.vc-composer-actions .vc-assign-user .velt-dropdown-assign-trigger:focus {
+  outline: none !important;
+}
+
+.vc-composer-actions .vc-assign-user .velt-dropdown-assign-trigger:focus-visible {
+  outline: 1px solid #0589ff !important;
+  outline-offset: 1px !important;
+  border-radius: 4px !important;
+}
+
+/* 13px / 400 / #666666 — `Body/SM`, read off the label node itself (7:28206).
+   The previous pass called this row "Caption 2" and set 12/500; the board's own
+   variable binding on that text layer is Body/SM, so this corrects it. */
+.vc-assign-user .velt-assign-dropdown--input-label {
+  font-size: 13px !important;
+  font-weight: 400 !important;
+}
+
+/* ── the mention chip INSIDE the composer ───────────────────────────────────
+   Velt gives the editor's mention token a ground: measured
+   `span.velt-mention.velt-mention--name`, `rgba(5,137,255,.1)`, `0 4px`,
+   radius 4. The board draws it flat — pixels sampled between the glyph strokes
+   of `@user` in 7:28209 come back pure `rgb(255,255,255)`, so there is no plate
+   behind it, only `#0589ff` text.
+   This mirrors what `.vc-message .velt-mention` already does for a POSTED
+   comment, where the tint is the HOVER state instead of the resting one. */
+.vc-composer-field .velt-mention,
+.vc-composer-page-field .velt-mention {
+  background: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  color: #0589ff !important;
+}
+
+/* ── the checkbox's two states ───────────────────────────────────────────────
+   Velt draws ONE 20-viewBox svg and switches its geometry, both keyed to
+   `currentColor` (read off the live element):
+     unchecked  `<rect stroke="currentColor" stroke-width="2" fill="none">`
+     checked    `.velt-assign-dropdown--checkbox-icon-selected` is added, and the
+                rect becomes `fill="currentColor"` with a white tick path.
+   So the whole state difference is one `color`. It was inheriting the composer's
+   text colour, which made the checked box near-black (measured
+   `rgb(106,102,96)`) where 7:28209 fills it in the design's accent.
+   `stroke-width: 1.5` because 2 in a 20 viewBox scaled to 16px renders 1.6px —
+   a chunky ring against the frame's hairline square. */
+.vc-assign-user .velt-assign-dropdown--checkbox-icon {
+  color: #b8b8b8 !important;
+}
+
+.vc-assign-user .velt-assign-dropdown--checkbox-icon rect {
+  stroke-width: 1.5 !important;
+}
+
+.vc-assign-user .velt-assign-dropdown--checkbox-icon-selected {
+  color: #0589ff !important;
+}
+
+
+/* ── 3 · THE AGENT COMMENT'S ACTION BUTTONS ──────────────────────────────────
+   Frame 8:28954 (`Comment Drawer`, 8:28854) draws `Dig Deeper` and `Log` as two
+   pill BUTTONS, not the small grey chips that shipped:
+       8:28952  124x34   icon 16x16 @ x9,y9   ·  label 80x24 @ x31,y5
+       8:28953   71x34   same metrics
+       gap between them: 132 - 124 = 8
+   so 9px left inset, a 6px icon→label gap (icon ends at 25, label starts at 31),
+   13px right inset, and 34px tall around a 24px line box (5px top and bottom).
+   Tokens read off 8:28952: label `Text/Primary #1a1a1a` at `Body/RG` 15/400/24,
+   hairline `Border/Border #e6e6e6`, glyph `Background/Accent #0589ff`.
+
+   These are the SAME `.velt-action-chip` elements the earlier pass styled at
+   12/500 on #f7f7f7 — the design simply had not drawn them yet then. Selector
+   shape is copied from that block for a reason: Angular's emulated encapsulation
+   injects `.velt-action-chip[_ngcontent-ng-cNNN]` (0,2,0) into <head> at RUNTIME,
+   after this file, so a single class loses and the doubled class only ties.
+   Scoping through the SDK's own custom-element tag gives 0,3,1 and wins on
+   specificity; being later in the file also beats the earlier block. */
+velt-comment-dialog-actions-internal .velt-comment-actions.velt-comment-actions {
+  gap: 8px;
+}
+
+velt-comment-dialog-action-chip-internal .velt-action-chip.velt-action-chip {
+  gap: 6px;
+  padding: 4px 13px 4px 9px;
+  min-height: 34px;
+  border: 1px solid #e6e6e6;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #1a1a1a;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 24px;
+}
+
+/* The glyph. `.velt-action-chip` has no icon slot and no children but its own
+   label span, so the arrow is a masked pseudo-element rather than markup —
+   a mask, not a background-image, so it takes `Background/Accent` from
+   `background-color` and can be recoloured per state.
+   Geometry is Tabler's `arrow-forward-up` on a 24 grid, which is what the
+   16x16 instance in 8:28959 renders: head at the top right, tail curving down
+   to the left. */
+velt-comment-dialog-action-chip-internal .velt-action-chip.velt-action-chip::before {
+  content: "";
+  width: 16px;
+  height: 16px;
+  flex: none;
+  background-color: #0589ff;
+  -webkit-mask: var(--vc-arrow-forward-up) center / 16px 16px no-repeat;
+  mask: var(--vc-arrow-forward-up) center / 16px 16px no-repeat;
+}
+
+:root {
+  --vc-arrow-forward-up: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M15 14l4 -4l-4 -4'/><path d='M19 10h-11a4 4 0 1 0 0 8h1'/></svg>");
+}
+
+velt-comment-dialog-action-chip-internal .velt-action-chip.velt-action-chip:hover:not(:disabled) {
+  background: #f9f9f9;
+  border-color: #d8d8d8;
+  color: #1a1a1a;
+}
+
+/* The press flash was Velt-violet (#625df5 on #e3e1fd), left over from before
+   the brand colours were reconciled. `Color/Blue/1 #e6f3ff` and
+   `Background/Accent #0589ff` are the file's own pair — the same two the sidebar
+   uses for a selected row. */
+velt-comment-dialog-action-chip-internal .velt-action-chip.velt-action-chip--pressed:not(:disabled) {
+  background: #e6f3ff;
+  border-color: #0589ff;
+  color: #1a1a1a;
+}
+
+velt-comment-dialog-action-chip-internal .velt-action-chip.velt-action-chip:focus-visible {
+  outline: 2px solid #0589ff;
+  outline-offset: 2px;
+}
+
+
+/* ── 3b · THE BUILT-IN ACCEPT / REJECT, AS THE SAME BUTTON ───────────────────
+   One agent card in the demo declares custom `actions` and renders labelled
+   pills; another declares none and falls back to the SDK's own pair, which
+   shipped as a 24px filled-teal tick and a 24px red cross. Same decision, two
+   vocabularies, two shapes, in one list.
+   They are `div[role=button]` hosts that take neither children nor a className
+   (measured — see VcAgentCard), so the words come from `::after`. That is safe
+   here and only here: the SDK already sets `aria-label="Accept"` / `"Reject"`
+   plus a matching `title` on each button, so the accessible name is real and the
+   generated text is decoration that agrees with it, not the only label.
+   Everything else is the action-chip rule copied onto these two selectors, so
+   the pills are the same object as `Approve` / `Dismiss` / `Dig Deeper`. */
+.hw-suggestion-actions .velt-suggestion-action-accept__button,
+.hw-suggestion-actions .velt-suggestion-action-reject__button {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  width: auto !important;
+  height: auto !important;
+  min-height: 34px !important;
+  padding: 4px 13px 4px 9px !important;
+  border: 1px solid #e6e6e6 !important;
+  border-radius: 999px !important;
+  background: #ffffff !important;
+  color: #0589ff !important;
+  cursor: pointer !important;
+  transition: background 120ms ease, border-color 120ms ease !important;
+}
+
+.hw-suggestion-actions .velt-suggestion-action-accept__button:hover,
+.hw-suggestion-actions .velt-suggestion-action-reject__button:hover {
+  background: #f9f9f9 !important;
+  border-color: #d8d8d8 !important;
+}
+
+/* the glyph keeps its 16px box and takes the chips' accent, so tick and cross
+   read as the same family as the arrow on every other action. */
+.hw-suggestion-actions .velt-suggestion-action-accept__button > svg,
+.hw-suggestion-actions .velt-suggestion-action-reject__button > svg,
+.hw-suggestion-actions .velt-suggestion-action-accept__icon,
+.hw-suggestion-actions .velt-suggestion-action-reject__icon {
+  width: 16px !important;
+  height: 16px !important;
+  flex: none !important;
+  color: #0589ff !important;
+}
+
+.hw-suggestion-actions .velt-suggestion-action-accept__button::after,
+.hw-suggestion-actions .velt-suggestion-action-reject__button::after {
+  font-family: 'Inter', var(--hw-font);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 24px;
+  color: #1a1a1a;
+}
+
+.hw-suggestion-actions .velt-suggestion-action-accept__button::after { content: "Accept"; }
+.hw-suggestion-actions .velt-suggestion-action-reject__button::after { content: "Reject"; }
+
+
+/* ── 4 · THE TWO ALTERNATIVE ASSIGNMENT TREATMENTS ───────────────────────────
+   The board draws THREE sidebars side by side — `Repositioned Assignment`
+   (4:27906), `Bold Assignment` (8:28666) and `Figma-esque` (8:28295) — and they
+   are three drawings of ONE element, not three things to ship at once.
+
+   REPOSITIONED is the default, and not by coin toss: the `Comment Drawer`
+   (8:28601) is the board's only non-alternative surface, and it draws the
+   #fdf1fa band under the header — the Repositioned treatment exactly. So that
+   one is live with no opt-in, above.
+
+   The other two are here in full, behind a root attribute, so the whole board
+   is implemented and a reviewer can put all three in front of a designer
+   without a rebuild:
+
+       document.documentElement.dataset.vcAssign = 'bold'    // 8:28666
+       document.documentElement.dataset.vcAssign = 'figma'   // 8:28295
+       delete document.documentElement.dataset.vcAssign      // back to default
+
+   Every value below was sampled from the frames' own renders rather than
+   guessed, because neither variant binds its distinguishing colour to a
+   variable (`get_variable_defs` returns no black for the Bold band at all).   */
+
+/* ── 4a · BOLD (8:28726 · 8:28727) ──────────────────────────────────────────
+   Same band in the same place, inverted: #1a1a1a ground, white label, and the
+   card itself picks up a 1px #1a1a1a outline so the black strip reads as the
+   top of an outlined object rather than a floating bar. Sampled off the render:
+   band ground and card border both rgb(26,26,26) = `Text/Primary`, label
+   rgb(255,255,255), card body rgb(249,249,249) = `Background/Secondary` (which
+   is what it already is). The avatar keeps its own colour — rgb(237,119,208) in
+   the render, i.e. the user's own `Color/UserDefined/Pink`, not a band style. */
+html[data-vc-assign="bold"] .vc-assignee-banner {
+  background: #1a1a1a !important;
+}
+
+html[data-vc-assign="bold"] .vc-assigned-label,
+html[data-vc-assign="bold"] .vc-assigned-prefix,
+html[data-vc-assign="bold"] .vc-assignee-name {
+  color: #ffffff !important;
+}
+
+/* `:has(.vc-assignee-row)` — the outline belongs to an ASSIGNED card only; the
+   band's host renders on every card and is collapsed when empty (see the M2
+   rule far above), so keying on its real child is what separates the two. An
+   inset shadow rather than a border: the card's 8px radius and `overflow:
+   hidden` already clip the band, and a real border would move the content in by
+   1px and cost the band a pixel of width. */
+html[data-vc-assign="bold"] .vc-card:has(.vc-assignee-row) {
+  box-shadow: inset 0 0 0 1px #1a1a1a !important;
+}
+
+/* ── 4b · FIGMA-ESQUE (8:28295 · 8:28438 · 8:28514) ────────────────────────
+   A different list altogether: no card boxes at all (sampled ground is plain
+   rgb(255,255,255), the panel's own), 1px hairlines between rows where the
+   frame draws `Line 1`..`Line 4` at 16px inset, an 8px text inset instead of
+   12 (`Text` sits at x=8 in 8:28312, x=12 in the other two variants), and the
+   assignment as a 28px pill parked at the row's bottom RIGHT, level with
+   `↳ 1 reply` — `Frame 427321039` 135x28: avatar 20 at x=4,y=4, label at x=28,
+   ground #fdf1fa, label `Text/Primary` rather than the band's `Text/Secondary`.
+
+   The pill is the same element as the band, moved. It cannot be re-ordered into
+   the reply row by flow — the band is a child of the CARD and the reply row
+   lives inside `.vc-card-inner` — so it is taken out of flow and pinned to the
+   card's bottom-right corner (`.vc-card` is already `position: relative`), with
+   room reserved underneath the content so it never lands on the message. */
+html[data-vc-assign="figma"] .vc-card {
+  background: transparent !important;
+  border-radius: 0 !important;
+}
+
+html[data-vc-assign="figma"] .vc-card-inner {
+  background: transparent !important;
+  padding: 8px !important;
+}
+
+/* the hairlines. Velt ALREADY draws them: measured, each card sits in its own
+   `div.velt-sidebar--comments-block` holding `velt-comment-dialog-internal` plus
+   an `hr.velt-sidebar--comments-hr` — 7 of them for 8 cards, i.e. exactly the
+   between-rows rule `Line 1`..`Line 4` draw in 8:28295 — and this stylesheet
+   hides them for the default card-box list. So the Figma-esque variant does not
+   invent a divider, it un-hides Velt's.
+   (A `.vc-card + .vc-card` border was tried first and matched nothing: the cards
+   are never siblings, each is wrapped twice over.)
+   16px inset each side — `Line 1` runs x=16..384 in the 400px frame — and
+   `Border/Border`, since Velt's own hairline is rgb(26,25,23), far too dark. */
+html[data-vc-assign="figma"] hr.velt-sidebar--comments-hr {
+  display: block !important;
+  height: 0 !important;
+  margin: 0 16px !important;
+  border: 0 !important;
+  border-top: 1px solid #e6e6e6 !important;
+}
+
+html[data-vc-assign="figma"] .vc-assignee-banner {
+  position: absolute !important;
+  right: 8px !important;
+  bottom: 8px !important;
+  width: auto !important;
+  height: 28px !important;
+  padding: 4px !important;
+  border-radius: 14px !important;
+  background: #fdf1fa !important;
+}
+
+html[data-vc-assign="figma"] .vc-assignee-row {
+  gap: 4px !important;
+}
+
+html[data-vc-assign="figma"] .vc-assigned-label,
+html[data-vc-assign="figma"] .vc-assigned-prefix,
+html[data-vc-assign="figma"] .vc-assignee-name {
+  color: #1a1a1a !important;
+}
+
+/* reserve the pill's strip, on assigned rows only. */
+html[data-vc-assign="figma"] .vc-card:has(.vc-assignee-row) .vc-card-inner {
+  padding-bottom: 44px !important;
 }

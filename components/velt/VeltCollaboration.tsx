@@ -1,9 +1,9 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import {
   VeltComments,
   VeltCommentsSidebar,
-  useCurrentUser,
+  useCommentAnnotations,
   useVeltClient,
   useVeltEventCallback,
 } from "@veltdev/react";
@@ -15,9 +15,9 @@ import { VeltCommentContext } from "./VeltCommentContext";
 import { VeltCustomization } from "./ui-customization/VeltCustomization";
 import {
   CANCEL_COMPOSER_BUTTON,
+  DISPLAY_MARK_ALL_READ,
+  DISPLAY_OPTIONS_BUTTON,
   OPEN_SIDEBAR_BUTTON,
-  SIDEBAR_SCOPE_FOR_YOU,
-  SIDEBAR_SCOPE_GROUP,
 } from "./ui-customization/vcButtonIds";
 
 // Right-anchored comments drawer hosting the embedded page-mode sidebar.
@@ -34,6 +34,8 @@ function Panel({
 }) {
   const buttonEvent = useVeltEventCallback("veltButtonClick");
   const railRef = useRef<HTMLDivElement>(null);
+  const { client } = useVeltClient();
+  const annotations = useCommentAnnotations();
 
   // "Open in sidebar" (the vc-open-sidebar VeltButtonWireframe in the comment
   // dialog header, figma 872:21857 @ 331,23) → open the host's comments drawer.
@@ -47,6 +49,83 @@ function Panel({
     if (buttonEvent?.buttonContext?.clickedButtonId !== OPEN_SIDEBAR_BUTTON) return;
     setSidebarOpen(() => true);
   }, [buttonEvent, setSidebarOpen]);
+
+  // ── the band's Sliders button → the display-options menu ───────────────────
+  //
+  // The menu is WIREFRAME markup (VeltCommentSidebarWf), so it cannot gate on
+  // React state. The host owns the open/closed bit and publishes it as a class on
+  // the rail, which the stylesheet keys off — the same direction as the ✕ listener
+  // below: host code on a host element, never a React handler inside a wireframe.
+  //
+  // The class is toggled IMPERATIVELY rather than held in `useState`, for two
+  // reasons: updating a DOM node the effect owns is what effects are for, and a
+  // state change here would re-render `<VeltCommentsSidebar>` — a large Angular
+  // component — every time the menu opens, for a class nothing in React reads.
+  const setDisplayMenuOpen = useCallback((open: boolean) => {
+    // `.hw-rail-inner`, not `.hw-rail`: the rail's own className is a React
+    // expression now (it carries `hw-rail--open`), and every re-render would
+    // clobber a class added imperatively to the same element. The inner div's
+    // className is a static string, so nothing overwrites it.
+    railRef.current
+      ?.querySelector(".hw-rail-inner")
+      ?.classList.toggle("hw-display-open", open);
+  }, []);
+
+  // ONE press must run the handler ONCE. `useVeltEventCallback` returns the last
+  // event and HOLDS it, so any effect listing something that changes identity on
+  // re-render — `client` does — re-runs on the SAME press. Measured: "Mark all as
+  // read" ran twice per click. It is idempotent so nothing broke there, but the
+  // toggle below would have cancelled itself. The event object is the identity to
+  // deduplicate on.
+  const handledEventRef = useRef<unknown>(null);
+  const takeButtonEvent = useCallback(
+    (id: string) => {
+      if (buttonEvent?.buttonContext?.clickedButtonId !== id) return false;
+      if (handledEventRef.current === buttonEvent) return false;
+      handledEventRef.current = buttonEvent;
+      return true;
+    },
+    [buttonEvent],
+  );
+
+  useEffect(() => {
+    if (!takeButtonEvent(DISPLAY_OPTIONS_BUTTON)) return;
+    railRef.current
+      ?.querySelector(".hw-rail-inner")
+      ?.classList.toggle("hw-display-open");
+  }, [takeButtonEvent]);
+
+  // Close on a press anywhere that is not the button or the menu. Capture phase so
+  // it runs before Velt's own handlers and cannot be swallowed by them. Always
+  // mounted — `classList.toggle(cls, false)` on an already-closed menu is a no-op,
+  // and a listener that mounts and unmounts with the menu would have to re-subscribe
+  // on every open.
+  useEffect(() => {
+    const onDocClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.closest?.(".hw-ctl-display")) return;
+      setDisplayMenuOpen(false);
+    };
+    document.addEventListener("click", onDocClick, true);
+    return () => document.removeEventListener("click", onDocClick, true);
+  }, [setDisplayMenuOpen]);
+
+  // ── the menu's one row → mark every thread read ────────────────────────────
+  //
+  // There is no bulk API: `CommentElement` exposes `markAsRead(annotationId)` and
+  // nothing wider, so this walks the threads the panel already has and calls it per
+  // thread. Listing `annotations` in the deps is safe BECAUSE of the dedup above —
+  // a re-run triggered by the comment stream finds the event already handled and
+  // returns before touching anything.
+  useEffect(() => {
+    if (!takeButtonEvent(DISPLAY_MARK_ALL_READ)) return;
+    const commentElement = client?.getCommentElement();
+    if (!commentElement) return;
+    for (const annotation of annotations ?? []) {
+      if (annotation?.annotationId) void commentElement.markAsRead(annotation.annotationId);
+    }
+    setDisplayMenuOpen(false);
+  }, [takeButtonEvent, client, annotations, setDisplayMenuOpen]);
 
   // Cancel (hw-cancel VeltButtonWireframe) → clear + collapse the composer.
   // Deferred via timeout: the hook delivers an external event, not derived
@@ -165,7 +244,13 @@ function Panel({
 
   return (
     <div
-      className="hw-rail"
+      /* `hw-rail--open` is read by the stylesheet, which suppresses the floating
+         pin popover while the drawer owns the thread (popover XOR side sheet).
+         It has to be the OPEN state, not merely the drawer's markup: the focused
+         thread's DOM survives inside the collapsed rail, so a selector keyed to
+         that alone kept the popover hidden after a pin click had closed the rail
+         — measured, rail 0px wide and the popover `visibility: hidden`. */
+      className={`hw-rail${open ? " hw-rail--open" : ""}`}
       ref={railRef}
       style={{
         width: open ? 400 : 0,
@@ -194,7 +279,39 @@ function Panel({
              ("I think that would work for us, then! We can customize the CSS
              later"), so the sidebar's own Search slot is mounted and this is its
              placeholder. */
-          searchPlaceholder="Search comments"
+          searchPlaceholder="Search Comments"
+          /* ENABLES the funnel's filter panel. `Filter` and `FilterButton` are
+             declared in the wireframe, but every filter is off by default, so the
+             panel rendered 0x0 and the button looked inert — measured, the live
+             `.hw-filter` stayed 0x0 through a real click.
+             `involved` is the one that replaces the removed `For You` pill: it
+             covers authored + mentioned + assigned, which is what "threads that
+             concern me" means. The rest are the filters the panel's declared rows
+             expose. */
+          /* `name` is the GROUP HEADING, and it is not optional in practice:
+             `Filter.<Group>.Name` renders the string from here, so with `name`
+             unset the slot cloned in as a real `app-comment-sidebar-filter-name`
+             element measuring 0x0 with no text — which is why the panel read as
+             six identical `All / Me / User 2 / ...` blocks with nothing saying
+             which group was which. The labels say what each group actually
+             filters on, read off the live counts: `people` is the AUTHOR
+             (Me 6 / Altana Review Agent 3 — the two who wrote anything),
+             `involved` is everyone on the thread, `tagged` is @-mentions. */
+          /* BOTTOM SHEET, not a floating menu. `filterPanelLayout` is a real
+             host prop (`IVeltCommentSidebarV2Props`: 'menu' | 'bottomSheet') and
+             it was unset, so the panel defaulted to `menu` — a card hanging off
+             the funnel that overlays the list it is filtering. As a sheet it
+             rises from the bottom of the sidebar instead, which keeps the rows
+             visible above it and gives Reset/Apply a fixed footer to sit in. */
+          filterPanelLayout="bottomSheet"
+          filterConfig={{
+            involved: { enable: true, name: "Involved" },
+            assigned: { enable: true, name: "Assigned to" },
+            people: { enable: true, name: "Created by" },
+            status: { enable: true, name: "Status" },
+            priority: { enable: true, name: "Priority" },
+            tagged: { enable: true, name: "Tagged" },
+          }}
           pageModeComposerVariant="pageModeComposer"
           /* selects the `comment-dialog---sidebar` wireframe for every list row.
              Without it the rows fall back to the BASE dialog template and the
@@ -210,77 +327,13 @@ function Panel({
   );
 }
 
-// ═══ `For You | Everything` → a real sidebar filter ══════════════════════════
-//
-// The two pills are VeltButtonWireframes in one `single-select` group (see
-// VeltCommentSidebarWf). Velt owns which one is active and reports the change on
-// `veltButtonClick`; this component is the other half — it turns that selection
-// into an actual filter through the documented sidebar API:
-//
-//   client.getCommentElement().setCommentSidebarFilters({ involved: [...] })
-//
-// Each call REPLACES the selections for the keys it names and leaves omitted keys
-// alone, so passing `involved: []` is how "Everything" clears the scope without
-// disturbing the status defaults the sidebar applies on load.
-//
-// WHY `involved` AND NOT `assigned`. "For You" should mean "threads that concern
-// me", and `involved` is the key that covers authored + mentioned + assigned;
-// `assigned` alone would leave the tab almost always empty, since assignment is
-// rare. This is the one semantic choice in here that the frames do not pin down —
-// worth confirming with the designers alongside Figma #13.
-//
-// No host React state and no handler inside wireframe markup (R4): the pills'
-// pressed appearance is Velt's own selection state, and this only reacts to it.
-function VeltSidebarScopeTabs() {
-  const buttonEvent = useVeltEventCallback("veltButtonClick");
-  const { client } = useVeltClient();
-  const user = useCurrentUser();
-
-  useEffect(() => {
-    if (!client) return;
-    if (buttonEvent?.buttonContext?.groupId !== SIDEBAR_SCOPE_GROUP) return;
-
-    // Prefer the group's reported selection over the clicked id: with
-    // `single-select` Velt is the source of truth for what is now active, and
-    // re-clicking the active pill reports the same selection rather than a
-    // toggle-off.
-    //
-    // PAYLOAD SHAPE — captured live, because it is easy to get wrong:
-    //   buttonContext = {
-    //     type: "single-select",
-    //     groupId: "vc-sidebar-scope",
-    //     clickedButtonId: "vc-tab-for-you",
-    //     selections: { "vc-sidebar-scope": { "vc-tab-for-you": true } },
-    //   }
-    // `selections[groupId]` is an OBJECT KEYED BY BUTTON ID, not the id string.
-    // A first pass here did `String(selected).includes(id)`, which stringifies to
-    // "[object Object]" and so read as "not For You" on every click — the pills
-    // switched correctly and the list never moved.
-    const selections = buttonEvent?.buttonContext?.selections?.[
-      SIDEBAR_SCOPE_GROUP
-    ] as Record<string, boolean> | undefined;
-    const forYou = selections
-      ? Boolean(selections[SIDEBAR_SCOPE_FOR_YOU])
-      : buttonEvent?.buttonContext?.clickedButtonId === SIDEBAR_SCOPE_FOR_YOU;
-
-    // `setCommentSidebarFilters` is documented on the V2 sidebar page, but it is
-    // a commentElement method rather than a component prop and it DOES drive the
-    // V1 sidebar we mount — verified live: filtering to a userId nobody matches
-    // took the list 4 → 0 cards, clearing took it back to 4, and
-    // `involved: [{ userId: <signed-in user> }]` narrowed it to the one thread
-    // that user authored.
-    const commentElement = client.getCommentElement();
-    if (!commentElement?.setCommentSidebarFilters) {
-      console.warn("[SidebarScope] setCommentSidebarFilters unavailable");
-      return;
-    }
-    commentElement.setCommentSidebarFilters({
-      involved: forYou && user?.userId ? [{ userId: user.userId }] : [],
-    });
-  }, [buttonEvent, client, user]);
-
-  return null;
-}
+// The `For You | Everything` pills and their `setCommentSidebarFilters` bridge
+// used to live here. Both are gone: the Altana V2 drawer (44:22040) hides
+// `Tab Bar Secondary` and replaces that row with `Table Controls` (44:22045) —
+// search plus a funnel and a sliders button, each of which opens one of Velt's
+// OWN sidebar dropdowns. The `involved` filter the "For You" pill was
+// reimplementing by hand is a native option inside the funnel's filter panel, so
+// there is no host filter state left to keep in sync.
 
 // [Velt] Unstyled base — the customization is authored strictly against Velt's
 // unstyled DOM, so every pipeline snapshot, the style plan, and the judge all
@@ -292,6 +345,23 @@ function VeltUnstyledBase() {
   useEffect(() => {
     if (!client) return;
     client.setUnstyledMode(true, { keepFunctionalStyles: true });
+  }, [client]);
+
+  // ── "Assign on Send" (Design Suggestion board, the five Composer frames) ────
+  //
+  // The updated design replaces the composer's inline `Assign to <user> ⌄` strip
+  // with a CHECKBOX on a second row — `Composer / mention - not auto assign`
+  // (7:28165) and `… - auto assign` (7:28209) are the two states, and
+  // `Composer / no mention` (8:28235) shows the row is present whether or not the
+  // text holds a mention.
+  //
+  // That is a native switch, not something to rebuild: `AssignToType` is
+  // `'dropdown' | 'checkbox'` and the dropdown is what we have been rendering.
+  // `Composer.AssignUser` stays declared in the wireframe — it is the slot the
+  // checkbox renders into; only what Velt puts inside it changes.
+  useEffect(() => {
+    if (!client) return;
+    client.getCommentElement().setAssignToType({ type: "checkbox" });
   }, [client]);
 
   return null;
@@ -316,7 +386,6 @@ export function VeltCollaboration({
           design's "Product Name" row (872:21785) has data to render. */}
       <VeltCommentContext />
       {/* `For You | Everything` (872:21415) → commentElement.setCommentSidebarFilters(). */}
-      <VeltSidebarScopeTabs />
       {/* Popover comments for the product table: a VeltCommentTool with a
           targetElementId pins a thread to a Name cell and Velt draws the
           triangle indicator in that cell's top-right corner. Text comments in

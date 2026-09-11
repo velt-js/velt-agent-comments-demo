@@ -5,12 +5,17 @@ import {
   VeltCommentsSidebarWireframe,
   VeltIf,
 } from "@veltdev/react";
+import type { ReactNode } from "react";
+import React from "react";
 import { EmptyIllustration } from "@/components/icons";
-import { VcMagnifyingGlassIcon } from "./VcIcons";
 import {
-  SIDEBAR_SCOPE_EVERYTHING,
-  SIDEBAR_SCOPE_FOR_YOU,
-  SIDEBAR_SCOPE_GROUP,
+  VcFunnelSimpleIcon,
+  VcMagnifyingGlassIcon,
+  VcSlidersIcon,
+} from "./VcIcons";
+import {
+  DISPLAY_MARK_ALL_READ,
+  DISPLAY_OPTIONS_BUTTON,
 } from "./vcButtonIds";
 
 // ═══ surface-sidebar (flows board 872:21663 "Normal Sidebar", 400x884) ════════
@@ -37,6 +42,42 @@ import {
 // STILL OPEN: thread #11 asked where resolved comments are seen. The dropdown that
 // used to sit here answered it incidentally; these two pills do not, and the frame
 // draws no third control. Flagged rather than invented.
+/**
+ * One filter group — heading + its repeated checkbox rows.
+ *
+ * The six groups (`Involved`, `Assigned`, `People`, `Status`, `Priority`,
+ * `Tagged`) are separate components with identical shapes, so they are passed in
+ * rather than written out six times. `Item` is a REPEATER: Velt clones this one
+ * declaration once per option, so `Checkbox`, `Name` and `Count` here describe
+ * every row in the group.
+ *
+ * `Item.Checkbox` stays CHILDLESS deliberately — it owns `Checked`/`Unchecked`
+ * and Velt swaps the right one in; supplying children would freeze the row on one
+ * state. `Search` is not mounted: it is the type-ahead for very long option lists
+ * and 44:22045 draws none.
+ */
+type FilterGroupSlot = React.FC<{ className?: string; children?: ReactNode }> & {
+  Name: React.FC<{ className?: string }>;
+  Item: React.FC<{ className?: string; children?: ReactNode }> & {
+    Checkbox: React.FC<{ className?: string }>;
+    Name: React.FC<{ className?: string }>;
+    Count: React.FC<{ className?: string }>;
+  };
+};
+
+function FilterGroup({ group: Group }: { group: FilterGroupSlot }) {
+  return (
+    <Group className="hw-filter-group">
+      <Group.Name className="hw-filter-group-name" />
+      <Group.Item className="hw-filter-item">
+        <Group.Item.Checkbox className="hw-filter-check" />
+        <Group.Item.Name className="hw-filter-item-name" />
+        <Group.Item.Count className="hw-filter-item-count" />
+      </Group.Item>
+    </Group>
+  );
+}
+
 export function VeltCommentSidebarWf() {
   return (
     <VeltCommentsSidebarWireframe>
@@ -67,57 +108,91 @@ export function VeltCommentSidebarWf() {
             <VeltCommentsSidebarWireframe.CloseButton className="hw-panel-close" />
           </div>
 
-          {/* ── band 2: `For You | Everything` + search (872:21415) ─────────
-              The frame draws two TAB PILLS, and that is what this is now. The
-              earlier pass put Velt's MinimalFilterDropdown here instead, reading
-              Figma #6 ("the default navigation, etc. from Velt are good with us!")
-              as "use the default control". Re-read in context — the note is pinned
-              ON this row, i.e. it is about the default NAVIGATION BEHAVIOUR being
-              acceptable, not about replacing the drawn pills with a dropdown. So
-              the pills are drawn as drawn, and Velt still owns the behaviour
-              underneath them.
+          {/* ── band 2: search + filters (44:22045 `Table Controls`) ────────
+              REPLACES the `For You | Everything` tab pills. The Altana V2 drawer
+              (44:22040) hides `Tab Bar Secondary` outright and puts this row in
+              its place, so the pills — and the host-side
+              `setCommentSidebarFilters` bridge that drove them — are gone.
 
-              Two action components in ONE single-select group, so Velt manages
-              which pill is active and emits the change — no host state, and no
-              React handler inside wireframe markup (R4):
+              Spec, read off 44:22045:
+                Table Controls  400 Fill x 56 Hug, padding 12/16, gap 8, row
+                  Search    288 Fill x 32, leading Icon/MagnifyingGlass,
+                            placeholder "Search Comments"
+                  Filters   32x32 Secondary, Icon/FunnelSimple
+                  Columns   32x32 Secondary, Icon/Sliders
+                (Row Count, Groups, Highlights and Pill/Smart Groups are hidden.)
+              288 + 8 + 32 + 8 + 32 = 368 = 400 - 16 - 16, so the search fills
+              whatever is left and the two buttons stay square.
 
-                type="single-select" + group   → radio behaviour across the pair
-                active on "Everything"        → the frame's selected pill
-                id                            → what the host branches on
-
-              The host turns the click into a real filter through the documented
-              sidebar API (`commentElement.setCommentSidebarFilters`) — see
-              VeltSidebarScopeTabs in components/velt/VeltCollaboration.tsx. */}
+              BEHAVIOUR IS VELT'S. The two buttons are not custom host state —
+              each is a native sidebar dropdown, which is why the custom filter
+              logic is no longer needed:
+                Filters (funnel)  -> the full filter panel: involved, assigned,
+                                     people, status, priority, tagged, location.
+                                     "involved" is what the old `For You` pill
+                                     was reimplementing by hand.
+                Columns (sliders) -> the minimal filter/sort dropdown: sort by
+                                     date or unread, filter all/open/resolved/
+                                     read/unread/assigned-to-me. */}
           <div className="hw-panel-controls">
-            <div className="hw-tabs">
-              <VeltButtonWireframe
-                id={SIDEBAR_SCOPE_FOR_YOU}
-                type="single-select"
-                group={SIDEBAR_SCOPE_GROUP}
-                className="hw-tab"
-              >
-                <span className="hw-tab-label">For You</span>
-              </VeltButtonWireframe>
-              <VeltButtonWireframe
-                id={SIDEBAR_SCOPE_EVERYTHING}
-                type="single-select"
-                group={SIDEBAR_SCOPE_GROUP}
-                active
-                className="hw-tab"
-              >
-                <span className="hw-tab-label">Everything</span>
-              </VeltButtonWireframe>
-            </div>
-
-            {/* #9 — Velt's default search, in the design's 32x32 bordered box.
-                Left childless so Velt renders its real input; the collapsed
-                magnifier is drawn by CSS on this class. Placeholder comes from
-                <VeltCommentsSidebar searchPlaceholder>. */}
+            {/* Search: childless so Velt renders its real input. The magnifier is
+                our own leading glyph; the placeholder comes from
+                <VeltCommentsSidebar searchPlaceholder="Search Comments">. */}
             <div className="hw-search-slot">
               <span className="hw-search-glyph" aria-hidden="true">
                 <VcMagnifyingGlassIcon />
               </span>
               <VeltCommentsSidebarWireframe.Search className="hw-search" />
+            </div>
+
+            <VeltCommentsSidebarWireframe.FilterButton className="hw-ctl-btn">
+              <span className="hw-icon-btn">
+                <VcFunnelSimpleIcon />
+              </span>
+            </VeltCommentsSidebarWireframe.FilterButton>
+
+{/* ── the band's SECOND 32x32 Secondary button (44:21925 `Columns`,
+                   Icon/Sliders) and the menu it opens ─────────────────────────
+                Drawn exactly as the frame draws it; what it OPENS is this
+                surface's display options, because "Columns" is meaningless over
+                a list of comments — Table Controls is Altana's own TABLE
+                component reused in the drawer, and the frame already switches off
+                Row Count, Groups, Highlights and Smart Groups for that reason.
+
+                Built from VeltButtonWireframes, not an SDK dropdown: probed live,
+                every candidate slot clones into the registry twin and never into
+                the panel, staying 0x0 — `MinimalActionsDropdown` and
+                `MinimalFilterDropdown` are multi-thread COMMENT DIALOG slots
+                (constants.d.ts: VELT_MULTI_THREAD_COMMENT_DIALOG_MINIMAL_*)
+                merely re-exported on the sidebar namespace, and `ActionButton`,
+                `FullscreenButton` and `ResetFilterButton` never render here
+                either. `FilterButton` is the only secondary control this sidebar
+                has. So the ids below are the bridge and VeltCollaboration owns
+                the behaviour, the same contract `vc-open-sidebar` uses (R4). */}
+            <div className="hw-ctl-display">
+              <VeltButtonWireframe
+                id={DISPLAY_OPTIONS_BUTTON}
+                type="button"
+                className="hw-ctl-btn"
+              >
+                <span className="hw-icon-btn">
+                  <VcSlidersIcon />
+                </span>
+              </VeltButtonWireframe>
+
+              {/* The menu. Hidden until the host puts `hw-display-open` on the
+                  rail — it cannot gate on React state, since this is wireframe
+                  markup, and Velt's own toggle-active class is not part of the
+                  documented contract. Same chrome as the comment kebab menu. */}
+              <div className="hw-display-menu" role="menu">
+                <VeltButtonWireframe
+                  id={DISPLAY_MARK_ALL_READ}
+                  type="button"
+                  className="hw-display-row"
+                >
+                  <span className="hw-display-label">Mark all as read</span>
+                </VeltButtonWireframe>
+              </div>
             </div>
           </div>
 
@@ -153,6 +228,45 @@ export function VeltCommentSidebarWf() {
             <VeltCommentsSidebarWireframe.PageModeComposer className="vc-composer-page" />
           </div>
         </VeltCommentsSidebarWireframe.Panel>
+
+        {/* ── the filter panel the funnel opens (44:22045 `Filters`) ─────────
+            A TOP-LEVEL slot and a SIBLING of Panel, the same way FocusedThread
+            is. It was never declared, which is why `FilterButton` looked inert:
+            the trigger had nothing to open. Declaring it is also what makes the
+            old `For You | Everything` bridge unnecessary — `Involved` below is
+            the native version of the filter that pill was reimplementing with
+            `setCommentSidebarFilters`, and it comes with People, Assigned,
+            Status, Priority and Tagged alongside it for free. */}
+        <VeltCommentsSidebarWireframe.Filter className="hw-filter">
+          <div className="hw-filter-head">
+            <VeltCommentsSidebarWireframe.Filter.Title className="hw-filter-title" />
+            <VeltCommentsSidebarWireframe.Filter.CloseButton className="hw-filter-close" />
+          </div>
+          <div className="hw-filter-body">
+{/* Each group owns its heading and its rows. The heading was missing
+                because these six were declared CHILDLESS, which hands the whole
+                group to Velt's default template — and that template draws the
+                checkbox rows but no `Name`, so the panel read as six identical
+                `All / Me / User 2 / ...` blocks with nothing saying which was
+                which.
+                The earlier attempt at fixing it declared `Name` + a CHILDLESS
+                `Item` and collapsed the panel to nothing. That was the container
+                rule biting, not a repeater quirk: `Item` is itself a container
+                (Checkbox / Name / Count), so declaring it childless left every
+                repeated row with no content to draw. Declaring the full row tree
+                is what makes it work — verified live: 6 headings, 20 rows. */}
+            <FilterGroup group={VeltCommentsSidebarWireframe.Filter.Involved} />
+            <FilterGroup group={VeltCommentsSidebarWireframe.Filter.Assigned} />
+            <FilterGroup group={VeltCommentsSidebarWireframe.Filter.People} />
+            <FilterGroup group={VeltCommentsSidebarWireframe.Filter.Status} />
+            <FilterGroup group={VeltCommentsSidebarWireframe.Filter.Priority} />
+            <FilterGroup group={VeltCommentsSidebarWireframe.Filter.Tagged} />
+          </div>
+          <div className="hw-filter-foot">
+            <VeltCommentsSidebarWireframe.Filter.ResetButton className="hw-filter-reset" />
+            <VeltCommentsSidebarWireframe.Filter.DoneButton className="hw-filter-done" />
+          </div>
+        </VeltCommentsSidebarWireframe.Filter>
 
         {/* ── the FOCUSED THREAD view (flows board 872:21662 → 872:21603
               "Comment Drawer", 448x884) ───────────────────────────────────────

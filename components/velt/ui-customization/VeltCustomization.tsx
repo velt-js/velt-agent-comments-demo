@@ -7,6 +7,7 @@ import { VeltSidebarCardWf } from "./VeltSidebarCardWf";
 import { VeltCommentToolWf } from "./VeltCommentToolWf";
 import { VeltPageModeComposerWf } from "./VeltComposerWf";
 import { VeltFocusedThreadWf } from "./VeltFocusedThreadWf";
+import { VeltSidebarButtonWf } from "./VeltSidebarButtonWf";
 
 // Exactly one VeltWireframe element per app (global template registry).
 //
@@ -54,6 +55,7 @@ export function VeltCustomization() {
       <VeltFocusedThreadWf />
       <VeltPageModeComposerWf />
       <VeltCommentToolWf />
+      <VeltSidebarButtonWf />
     </VeltWireframe>
   );
 }

@@ -207,8 +207,20 @@ button {
   font-weight: 500;
 }
 
-/* Sidebar (comments) toggle — custom button, not the Velt SDK button, since the
-   sidebar is embedded. Toggles the drawer open/closed. */
+/* Sidebar (comments) toggle — `VeltSidebarButton`, templated by
+   VeltSidebarButtonWf. This span is the HOST wrapper: it carries the hit area,
+   the hover wash and the React onClick that moves the drawer, because the button
+   itself lives inside a wireframe and cannot take one (R4).
+
+   The design (2:7495, App Header → Actions) draws this control with NO plate —
+   a bare glyph, unlike every other chip in that row, which all sit on a filled
+   rounded square. It used to be a 34x34 beige plate holding a panel-toggle
+   glyph; the plate is gone and only the hover wash remains.
+
+   The one deliberate departure from the design: the glyph is LIGHT, not the
+   design's #1A1A1A. The design's app bar is white and ours is #161513, so the
+   design's value is "the bar's foreground", and taking it literally would paint
+   a near-black glyph on a near-black bar. */
 .hw-sidebar-toggle {
   position: relative;
   display: inline-flex;
@@ -218,16 +230,77 @@ button {
   height: 34px;
   margin-left: 4px;
   border-radius: 9px;
-  background: #e6e4df;
-  color: #1c1b19;
+  background: transparent;
+  color: #c9c7c1;
+  cursor: pointer;
 }
 
 .hw-sidebar-toggle:hover {
-  background: #d9d6cf;
+  background: rgba(255, 255, 255, 0.08);
+  color: #efeeea;
 }
 
+/* Open state: colour only, no plate. The design's "side sheet open" frame
+   (2:7495) draws this control exactly as it draws it closed — the open drawer is
+   itself the affordance — so the only thing that changes here is that the glyph
+   goes to full strength. A filled plate would put back the chrome the redesign
+   removed. */
 .hw-sidebar-toggle--active {
-  background: #ffffff;
+  color: #ffffff;
+}
+
+/* Velt's own hosts between the wrapper and our span carry no box of their own. */
+.hw-sidebar-toggle velt-sidebar-button,
+.hw-sidebar-toggle .velt-sidebar-button {
+  display: contents;
+}
+
+/* The glyph + its badge. `position: relative` here rather than on the 34px
+   wrapper so the dot hangs off the ICON's corner, which is what the design
+   draws — on the wrapper it would sit 7px away in the empty hit area. */
+.hw-sb-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+.hw-sb-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+.hw-sb-icon svg {
+  width: 20px;
+  height: 20px;
+  /* the path is `fill: currentColor`, so the wrapper's color drives it and the
+     hover/active states above need no separate icon rule. */
+}
+
+/* The unread badge. `UnreadIcon` self-gates — Velt renders it only while the
+   signed-in user has unread comments — so this whole block is inert on a read
+   inbox and no host state decides it. */
+.hw-sb-unread {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  display: flex;
+}
+
+.hw-sb-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  /* Same blue as the sidebar cards' unread dot (`--vc-unread-dot`), so one
+     unread colour reads across the product. The ring is the app bar's own
+     background, which is what separates the dot from the dark glyph under it. */
+  background: #0589ff;
+  box-shadow: 0 0 0 2px #161513;
 }
 
 /* ---------- Document viewer ---------- */
@@ -547,6 +620,24 @@ snippyly-comment-text.comment-text-highlight,
   padding-right: 34px;
 }
 
+/* The commented cell is OUTLINED while its dialog is the selected one.
+   Velt marks exactly that cell — `data-velt-comment-pin-active="true"` appears
+   only on the one whose dialog is open; the other commented cells get
+   `data-velt-comment-disabled="auto"` and nothing else.
+
+   `box-shadow: inset`, not `border`: the table is `border-collapse: collapse`,
+   so a real border on one `td` collapses against its neighbours and nudges the
+   row. An inset ring is layout-neutral, follows `border-radius`, and draws just
+   inside the cell — which is where the design puts it, with the pin tucked into
+   the top-right corner INSIDE the ring.
+
+   `#0589ff` is the product accent, the same blue the composer's focus ring and
+   the "mine" reaction chip use. */
+.hv-cell-commentable[data-velt-comment-pin-active="true"] {
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1px #0589ff;
+}
+
 /* The transform here creates a stacking context, so the dropdown's own z-index
    is scoped inside it — the open menu has to be lifted above the neighbouring
    (position:relative) cells or the row below swallows the clicks. */
@@ -600,9 +691,18 @@ snippyly-comment-text.comment-text-highlight,
 }
 
 /* The Comment Tool renders VeltCommentToolWf's row; the host element itself is
-   the click target, so it must fill the dropdown. */
-.hv-cell-dropdown velt-comment-tool {
+   the click target, so it must fill the dropdown.
+
+   THE HOST IS NOT THE ONLY BOX. Velt puts its own `div.velt-comment-tool`
+   between the host and our row, and that div is `display: inline-block`, so it
+   shrink-wraps to the words: measured 119px inside a 160px content box, which
+   is why the hover wash stopped short of the menu's right edge instead of
+   filling the row. Both boxes have to be told to fill. */
+.hv-cell-dropdown velt-comment-tool,
+.hv-cell-dropdown velt-comment-tool .velt-comment-tool {
   display: block;
+  width: 100%;
+  box-sizing: border-box;
   cursor: pointer;
 }
 

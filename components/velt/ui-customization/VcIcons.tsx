@@ -124,12 +124,49 @@ export function VcCheckCircleIcon() {
     );
 }
 
+/** ChatTeardrop (fill) — the app bar's comments control.
+ *  Phosphor, the icon family the rest of this file uses (FunnelSimple, Sliders,
+ *  MagnifyingGlass, CheckCircle), kept on its native 256 grid so the path is the
+ *  vendor's verbatim rather than a hand-rescaled approximation. The shape is a
+ *  disc with a square bottom-left corner — the design's bubble-with-a-tail. */
+export function VcChatTeardropIcon() {
+    return (
+        <svg width="24" height="24" viewBox="0 0 256 256" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M132,24A100.11,100.11,0,0,0,32,124v84a16,16,0,0,0,16,16h84a100,100,0,0,0,0-200Z" />
+        </svg>
+    );
+}
+
 /** ArrowCounterClockwise — reopen (the resolved counterpart of CheckCircle). */
 export function VcArrowCounterClockwiseIcon() {
     return (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <path d="M6.32 9.44H2.57V5.69" stroke="#333333" strokeLinecap="round" strokeLinejoin="round" />
             <path d="M6.32 9.44a8.06 8.06 0 1 1-1.02 6.19" stroke="#333333" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+    );
+}
+
+/** Phosphor FunnelSimple — the design's `Filters` control (44:22045). */
+export function VcFunnelSimpleIcon() {
+    return (
+        <svg width="16" height="16" viewBox="0 0 256 256" fill="none" aria-hidden="true">
+            <path
+                d="M39.99 64a8 8 0 0 1 8-8h160a8 8 0 0 1 0 16h-160a8 8 0 0 1-8-8Zm32 72h96a8 8 0 0 0 0-16h-96a8 8 0 0 0 0 16Zm64 48h-32a8 8 0 0 0 0 16h32a8 8 0 0 0 0-16Z"
+                fill="currentColor"
+            />
+        </svg>
+    );
+}
+
+/** Phosphor Sliders — the design's `Columns` control (44:22045). */
+export function VcSlidersIcon() {
+    return (
+        <svg width="16" height="16" viewBox="0 0 256 256" fill="none" aria-hidden="true">
+            <path
+                d="M40 88h33.02a32 32 0 0 0 61.96 0H216a8 8 0 0 0 0-16h-81.02a32 32 0 0 0-61.96 0H40a8 8 0 0 0 0 16Zm64-24a16 16 0 1 1-16 16 16 16 0 0 1 16-16Zm112 104h-33.02a32 32 0 0 0-61.96 0H40a8 8 0 0 0 0 16h81.02a32 32 0 0 0 61.96 0H216a8 8 0 0 0 0-16Zm-64 24a16 16 0 1 1 16-16 16 16 0 0 1-16 16Z"
+                fill="currentColor"
+            />
         </svg>
     );
 }
