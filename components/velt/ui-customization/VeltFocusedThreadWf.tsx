@@ -142,7 +142,30 @@ export function VeltFocusedThreadWf() {
                     Self-gating, so an unassigned thread keeps today's geometry. */}
                 <VcAssigneeBanner />
 
-                <VeltCommentDialogWireframe.VisibilityBanner />
+                {/* NOT MOUNTED — `VisibilityBanner` (R7: omitted, never
+                    display:none).
+                    REPORTED: the black `🔒 Only visible to 1 Team` pill appears on
+                    the Vercel preview but never locally. It is not a styling
+                    regression and not environment-specific chrome — it is a
+                    SELF-GATING slot that only paints when the SDK resolves the
+                    annotation's audience as RESTRICTED, and the two environments
+                    resolve audience by different routes:
+                      local   — `permissionProvider.dev: true` +
+                                `resolvePermissions` runs IN THE BROWSER
+                                (app/page.tsx), and nothing narrows the audience;
+                                the console even reports "Permission provider not
+                                configured".
+                      preview — Velt's backend IGNORES the browser resolver for a
+                                production key and calls the registered
+                                server-to-server Real-Time Permission Provider
+                                instead (app/api/velt/check-permissions/route.ts —
+                                its own header says exactly this). That resolves to
+                                a narrower audience, so the banner has something to
+                                say and paints.
+                    No Altana frame draws a visibility banner on any surface, so
+                    the fix that holds in BOTH environments is not to mount it.
+                    Its chrome is still in styles.css under "Visibility banner" if
+                    it is ever wanted back. */}
 
                 <VeltCommentDialogWireframe.Body className="vc-focus-body">
                     <VeltCommentDialogWireframe.Threads className="vc-focus-thread">
