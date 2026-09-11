@@ -1,7 +1,7 @@
 "use client";
 
 import { VeltSidebarButtonWireframe } from "@veltdev/react";
-import { VcChatTeardropIcon } from "./VcIcons";
+import { VcChatTeardropIcon, VcChatTeardropOutlineIcon } from "./VcIcons";
 
 // ═══ surface-sidebar-button ═══════════════════════════════════════════════════
 //
@@ -39,8 +39,20 @@ export function VeltSidebarButtonWf() {
   return (
     <VeltSidebarButtonWireframe>
       <span className="hw-sb-btn">
+        {/* BOTH weights, one shown at a time. Design 37:20702 gives this control
+            two states — the teardrop is OUTLINED while the panel is shut and
+            SOLID once it is open — and the state lives on the host wrapper
+            (`.hw-sidebar-toggle--active`, driven by the same `sidebarOpen` that
+            moves the rail), so the swap is a CSS one and neither glyph needs a
+            `VeltIf`. Rendering both is what lets the switch be pure CSS: the
+            wireframe has no access to the host's open state. */}
         <VeltSidebarButtonWireframe.Icon className="hw-sb-icon">
-          <VcChatTeardropIcon />
+          <span className="hw-sb-glyph hw-sb-glyph--outline">
+            <VcChatTeardropOutlineIcon />
+          </span>
+          <span className="hw-sb-glyph hw-sb-glyph--fill">
+            <VcChatTeardropIcon />
+          </span>
         </VeltSidebarButtonWireframe.Icon>
         <VeltSidebarButtonWireframe.UnreadIcon className="hw-sb-unread">
           <span className="hw-sb-dot" aria-hidden="true" />

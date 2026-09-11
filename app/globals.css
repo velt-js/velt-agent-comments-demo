@@ -55,8 +55,14 @@ button {
   gap: 16px;
   flex-shrink: 0;
   padding: 12px 20px;
-  background: #161513;
-  border-bottom: 1px solid #2b2a27;
+  /* THE DESIGN'S APP HEADER, not a dark bar. `App Header / Generic` (37:21174)
+     is white with a 1px `Border/Border` hairline under it — pixel-sampled off
+     that node's own render: ground rgb(255,255,255), last row rgb(230,230,230).
+     This is what lets the sidebar button use the design's literal #333333 in
+     both states; on the old #161513 bar the solid state measured 1.04:1 and
+     would have vanished. */
+  background: #ffffff;
+  border-bottom: 1px solid #e6e6e6;
 }
 
 .hw-topbar-breadcrumb {
@@ -64,7 +70,7 @@ button {
   align-items: center;
   gap: 10px;
   min-width: 0;
-  color: #c9c7c1;
+  color: #666666;
   font-size: 13px;
 }
 
@@ -75,8 +81,11 @@ button {
   width: 22px;
   height: 22px;
   border-radius: 6px;
-  background: #2b2a27;
-  color: #efeeea;
+  /* `App Icon Corner Radius` 6, and the glyph is `Icons/Icon Primary Inverse`
+     #f9f9f9 — i.e. the logo stays a dark tile with a light letter even on the
+     white bar, which is how 37:21174 draws it. */
+  background: #333333;
+  color: #f9f9f9;
   font-size: 12px;
   font-weight: 600;
   flex-shrink: 0;
@@ -87,11 +96,11 @@ button {
 }
 
 .hw-crumb-sep {
-  color: #575551;
+  color: #b8b8b8;
 }
 
 .hw-crumb--active {
-  color: #efeeea;
+  color: #050505;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -99,8 +108,8 @@ button {
 .hw-crumb-meta {
   margin-left: 4px;
   padding-left: 10px;
-  border-left: 1px solid #383632;
-  color: #7c7a74;
+  border-left: 1px solid #e6e6e6;
+  color: #666666;
   font-size: 12px;
   white-space: nowrap;
 }
@@ -114,27 +123,29 @@ button {
 
 .hw-chip {
   font-size: 12px;
-  color: #c9c7c1;
-  border: 1px solid #383632;
+  color: #333333;
+  border: 1px solid #e6e6e6;
   border-radius: 8px;
   padding: 5px 10px;
-  background: transparent;
+  background: #ffffff;
 }
 
 .hw-chip:hover {
-  border-color: #4a4843;
-  color: #efeeea;
+  border-color: #d8d8d8;
+  background: #f9f9f9;
+  color: #050505;
 }
 
 .hw-chip--dark {
-  background: #efeeea;
-  color: #161513;
-  border-color: #efeeea;
+  background: #1a1a1a;
+  color: #ffffff;
+  border-color: #1a1a1a;
 }
 
 .hw-chip--dark:hover {
-  background: #ffffff;
-  color: #161513;
+  background: #333333;
+  border-color: #333333;
+  color: #ffffff;
 }
 
 .hw-body {
@@ -184,26 +195,26 @@ button {
   margin-left: 4px;
   padding: 4px 10px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.06);
-  color: #b9b7b1;
+  background: #f9f9f9;
+  color: #666666;
   font-size: 12px;
 }
 
 .hw-user-switcher select {
   font: inherit;
-  color: #efeeea;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #1a1a1a;
+  background: #ffffff;
+  border: 1px solid #e6e6e6;
   border-radius: 6px;
   padding: 3px 6px;
 }
 
 .hw-user-switcher select option {
-  color: #161513;
+  color: #1a1a1a;
 }
 
 .hw-user-name {
-  color: #efeeea;
+  color: #050505;
   font-weight: 500;
 }
 
@@ -217,10 +228,10 @@ button {
    rounded square. It used to be a 34x34 beige plate holding a panel-toggle
    glyph; the plate is gone and only the hover wash remains.
 
-   The one deliberate departure from the design: the glyph is LIGHT, not the
-   design's #1A1A1A. The design's app bar is white and ours is #161513, so the
-   design's value is "the bar's foreground", and taking it literally would paint
-   a near-black glyph on a near-black bar. */
+   THE DESIGN'S OWN TONE, now that the bar is white: `Icons/Icon Primary`
+   #333333, pixel-confirmed as rgb(51,51,51) in 37:21174's header. The earlier
+   note here explained why the glyph had to be light instead — that reason is
+   gone with the dark bar. */
 .hw-sidebar-toggle {
   position: relative;
   display: inline-flex;
@@ -231,22 +242,48 @@ button {
   margin-left: 4px;
   border-radius: 9px;
   background: transparent;
-  color: #c9c7c1;
+  color: #333333;
   cursor: pointer;
 }
 
 .hw-sidebar-toggle:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #efeeea;
+  background: #f9f9f9;
 }
 
-/* Open state: colour only, no plate. The design's "side sheet open" frame
-   (2:7495) draws this control exactly as it draws it closed — the open drawer is
-   itself the affordance — so the only thing that changes here is that the glyph
-   goes to full strength. A filled plate would put back the chrome the redesign
-   removed. */
+/* Open state. The earlier note here said the design "draws this control exactly
+   as it draws it closed" and changed only the glyph's strength. Node 37:20702
+   says otherwise: it gives the control two weights of the same silhouette —
+   OUTLINED shut, SOLID open. Pixel-sampled from that board's app header, the
+   solid form is one flat shape with the blue badge at its top right.
+   The tone is the SAME in both states — `Icons/Icon Primary` #333333 — because
+   that is what the design does: the weight alone carries the state. (It used to
+   go to #ffffff on open, which was a workaround for the dark bar.) */
 .hw-sidebar-toggle--active {
-  color: #ffffff;
+  color: #333333;
+}
+
+/* ── the two weights ────────────────────────────────────────────────────────
+   Both are rendered (see VeltSidebarButtonWf: the wireframe cannot read the
+   host's open state, so the swap has to be CSS). They stack in the same 20px
+   box rather than sitting side by side, so neither one shifts the badge. */
+.hw-sb-glyph {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.hw-sidebar-toggle .hw-sb-glyph--outline {
+  display: inline-flex;
+}
+
+.hw-sidebar-toggle--active .hw-sb-glyph--outline {
+  display: none;
+}
+
+.hw-sidebar-toggle--active .hw-sb-glyph--fill {
+  display: inline-flex;
 }
 
 /* Velt's own hosts between the wrapper and our span carry no box of their own. */
@@ -258,26 +295,33 @@ button {
 /* The glyph + its badge. `position: relative` here rather than on the 34px
    wrapper so the dot hangs off the ICON's corner, which is what the design
    draws — on the wrapper it would sit 7px away in the empty hit area. */
+/* 24px, not 20. The design's icon box is 24 (every `Icon / …` instance in that
+   file is, and the glyph pixel-sampled out of node 37:20702's app header runs
+   ~22px of ink inside it). At 20 the Phosphor teardrop — which occupies 200 of
+   its 256 grid — rendered only ~15.6px of ink, visibly smaller than the design's.
+   NOTE for a pixel-exact pass: Phosphor's 78% fill still leaves ours ~19px
+   against the design's ~22, because that artwork sits tighter in its box than
+   Phosphor's does. Closing the last 3px needs the exported vector, not a resize. */
 .hw-sb-btn {
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
 }
 
 .hw-sb-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
 }
 
 .hw-sb-icon svg {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   /* the path is `fill: currentColor`, so the wrapper's color drives it and the
      hover/active states above need no separate icon rule. */
 }
@@ -300,7 +344,9 @@ button {
      unread colour reads across the product. The ring is the app bar's own
      background, which is what separates the dot from the dark glyph under it. */
   background: #0589ff;
-  box-shadow: 0 0 0 2px #161513;
+  /* the ring is the app bar's own ground, which is what separates the dot from
+     the glyph under it — white now, not #161513. */
+  box-shadow: 0 0 0 2px #ffffff;
 }
 
 /* ---------- Document viewer ---------- */
