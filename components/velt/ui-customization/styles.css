@@ -4673,7 +4673,9 @@ app-comment-sidebar-list-item {
   flex-direction: row-reverse !important;
   justify-content: flex-end !important;
   align-items: center !important;
-  gap: 2px !important;
+  /* 4px between the count and the emoji, up from 2 (design review). At the
+     16px glyph the old 2px read as the digit touching the emoji. */
+  gap: 4px !important;
   height: 24px !important;
   min-width: 0 !important;
   padding: 0 8px !important;
