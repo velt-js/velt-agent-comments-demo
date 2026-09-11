@@ -6518,7 +6518,10 @@ html[data-vc-assign="figma"] .vc-card:has(.vc-assignee-row) .vc-card-inner {
    parent already paints one. Measured: the control band is the only place the
    two nest. */
 .hw-ctl-btn .hw-icon-btn:hover {
-  background: none !important;
+  /* `background-color`, not the `background` shorthand: what is being cancelled
+     is a COLOUR, and the shorthand serializes `none` as `0px 0px`, which reads
+     like a position and hides the intent from the next person to open this. */
+  background-color: transparent !important;
 }
 
 
