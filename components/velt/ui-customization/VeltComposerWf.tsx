@@ -91,40 +91,30 @@ function SendButton() {
     );
 }
 
-// ── THE `@` BUTTON IS NOT MOUNTED ───────────────────────────────────────────
-// The board draws one (`tabler-icon-at`, 24x24, first in the 56px tools group of
-// every expanded composer frame, e.g. 8:28251) and it was built as
-// `Composer.ActionButton type="userMentions"` — Velt's own mention tool. It
-// worked in isolation, and it is removed anyway, because the SDK does not scope
-// that tool to the composer it is nested in.
-//
-// MEASURED, in the pin popover with the focused-thread drawer still mounted
-// inside the collapsed rail:
-//   · before the click — the popover's `.vc-composer-field` is 60px and
-//     `:focus-within`, `document.activeElement` is its own editable;
-//   · after clicking ITS `@` — `document.activeElement` is a DIFFERENT
-//     `.velt-composer-input--message`, the one at x=1139 inside
-//     `div.vc-focus` (the drawer), whose wrapper still carries
-//     `velt-composer-open`. Nothing is inserted into the popover.
-// So one press produced both halves of the report: the popover's field lost
-// `:focus-within` and collapsed to 32px, and the autocomplete anchored to the
-// drawer's caret at the far right of the viewport — the "dropdown opened far
-// away" in the screenshot.
-//
-// It cannot be fixed from here. The tool targets whichever composer Velt holds
-// as OPEN, and the WIREFRAME slot takes no `annotationId` to override that —
-// `IVeltCommentDialogComposerActionButtonProps` exposes one on the plain
-// `VeltCommentDialogComposerActionButton`, but not on the wireframe form
-// (tsc: "Property 'annotationId' does not exist"). A host that mounts more than
-// one composer — a pin popover plus the sidebar's page composer plus the
-// focused-thread drawer, all of which this demo has — therefore cannot point the
-// tool at the right one.
-//
-// TYPING `@` is unaffected and is the path that actually works: it inserts into
-// the focused editable and anchors the panel to the caret, verified in the
-// popover, the drawer and the page composer. Shipping a button that collapses
-// the composer and opens a menu across the screen is worse than shipping the
-// keystroke alone, so the button is omitted (R7) until the SDK scopes the tool.
+/**
+ * The `@` — `tabler-icon-at`, 24x24, first in the 56px tools group of every
+ * expanded composer frame on the Design Suggestion board (e.g. 8:28251).
+ *
+ * It is Velt's own `Composer.ActionButton` under a different `type`, not a
+ * control of ours: `type` is what selects WHICH composer action a button is, and
+ * the SDK's union for it is
+ *   userMentions | autocomplete | file | audio | video | screen | submit |
+ *   attachments | format
+ * so `userMentions` IS the @ (the send arrow above is `submit`). One line, and
+ * it stays wired to the SDK's own autocomplete. Self-closing for the same
+ * reason the send button is — markup inside this slot covers Velt's button and
+ * kills the click (that is documented on SendButton below).
+ *
+ * The glyph is painted in CSS, like the arrow.
+ */
+function MentionButton() {
+    return (
+        <VeltCommentDialogWireframe.Composer.ActionButton
+            type="userMentions"
+            className="vc-mention-btn"
+        />
+    );
+}
 
 /**
  * The pill's interior, shared verbatim by both surfaces: the Velt input on the left,
@@ -165,6 +155,7 @@ function ComposerFieldContents({ inputClass, placeholder }: { inputClass: string
             <div className="vc-composer-actions">
                 <AssignUser />
                 <div className="vc-composer-tools">
+                    <MentionButton />
                     <SendButton />
                 </div>
             </div>

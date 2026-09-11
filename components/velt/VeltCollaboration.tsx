@@ -272,7 +272,25 @@ function Panel({
              that enters it. Without the second prop the mode exists but nothing
              ever navigates into it. */
           focusedThreadMode={true}
-          openAnnotationInFocusMode={true}
+          /* GATED ON THE PANEL BEING OPEN, not `true`.
+             `openAnnotationInFocusMode` makes SELECTING an annotation enter focus
+             mode — and a pin click selects one, so with it always on, clicking a
+             pin while the panel is shut drove the sidebar's focused thread to the
+             same annotation behind the collapsed rail. Measured: `.vc-focus`
+             400x765 holding the very thread the popover was showing, with its own
+             composer, and both composers marked `velt-composer-open`. Velt's
+             `userMentions` tool then resolved to that one — hence the popover's @
+             collapsing its own field and anchoring the picker at the rail's edge.
+             Every reference demo that uses this tool (harvey-demo-next,
+             notion-style, the dashboard samples) registers exactly ONE comment
+             dialog, so the tool has only one composer to find and the ambiguity
+             never arises.
+             With the panel open the drawer IS the surface the design wants, and
+             the floating popover is suppressed there anyway (see the
+             `body:has(.hw-rail--open …)` rule), so one composer is live either
+             way. Figma #3's row-click-opens-the-thread behaviour is unaffected:
+             a row can only be clicked while the panel is open. */
+          openAnnotationInFocusMode={open}
           replyPlaceholder="Reply"
           commentPlaceholder="New Comment"
           /* Figma #9 — the designers accepted Velt's default search

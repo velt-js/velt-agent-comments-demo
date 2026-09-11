@@ -680,11 +680,14 @@ velt-comment-dialog-suggestion-banner-internal .velt-suggestion-banner--rejected
    selector matched nothing either way — it is left out rather than restored so that a
    future attempt at the native assignee picker is not silently defeated by a hide rule
    nobody remembers writing. */
-/* `velt-autocomplete-tool-internal` was on this list, then briefly off it while
-   the composer carried an `@` button, and it is off it for good now: the button
-   is not mounted at all (see the long note at the top of VeltComposerWf.tsx —
-   the SDK does not scope its mention tool to the composer it sits in), so the
-   element never renders and there is nothing left to hide. */
+/* `velt-autocomplete-tool-internal` USED to be on this list. It is the @ —
+   Velt's mention tool, `aria-label="Mention someone using @ symbol"` — and the
+   Design Suggestion board draws it in the tools group of every expanded composer
+   (`tabler-icon-at`, 24x24, first of the 56px group at x=238). It is hidden no
+   longer; see `.vc-mention-btn` in the Design Suggestion section at the foot of
+   this file for its chrome. The element exists in exactly one place — the
+   `Composer.ActionButton type="userMentions"` slot the composer wireframe
+   declares — so un-hiding it cannot surface an @ anywhere the design lacks one. */
 velt-comment-dialog-custom-annotation-dropdown-internal {
   display: none !important;
 }
@@ -5992,9 +5995,60 @@ body:has(.hw-rail--open .vc-focus-header-row) .cdk-overlay-pane:has(velt-comment
   min-height: 24px !important;
 }
 
-/* The `@` button's chrome lived here. It is gone with the button — see the note
-   at the top of VeltComposerWf.tsx for the measurement that removed it. Nothing
-   else in the build targets `.vc-mention-btn`. */
+/* The @ is drawn ONLY on the expanded frames — `Composer Default` (3:27473) is a
+   single 40px row with the arrow and nothing else. Hidden rather than omitted
+   because it is the same element in both states; R7's "omit, never display:none"
+   governs features the design does not have, not states it does not show. */
+.vc-mention-btn {
+  display: none !important;
+}
+
+.vc-composer-field:focus-within .vc-mention-btn,
+.vc-composer-page-field:focus-within .vc-mention-btn,
+.vc-composer-field:has(.velt-dropdown-assign-trigger) .vc-mention-btn,
+.vc-composer-page-field:has(.velt-dropdown-assign-trigger) .vc-mention-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 24px !important;
+  height: 24px !important;
+  flex: none !important;
+  border: 0 !important;
+  background: none !important;
+  border-radius: 4px !important;
+  color: #b8b8b8 !important;
+  cursor: pointer !important;
+}
+
+.vc-mention-btn:hover { background: #f1f1f1 !important; }
+
+/* Velt nests four boxes between the slot host and the glyph
+   (`velt-autocomplete-tool-internal > .velt-autocomplete-tool > .action-btn >
+   button.action__button > svg`) and unstyled mode strips the size off every one
+   of them, so the svg measured 0x0. Collapse the chain onto the slot's 24px box
+   and size the glyph at its end. */
+.vc-mention-btn velt-autocomplete-tool-internal,
+.vc-mention-btn .velt-autocomplete-tool,
+.vc-mention-btn .action-btn,
+.vc-mention-btn .action__button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 24px !important;
+  height: 24px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  color: inherit !important;
+  cursor: pointer !important;
+}
+
+.vc-mention-btn svg {
+  width: 20px !important;
+  height: 20px !important;
+  flex: none !important;
+}
 
 /* The assign control is now a child of the pill's bottom row, not a strip hanging
    above it, so the two rules that positioned it there have to stop applying:
