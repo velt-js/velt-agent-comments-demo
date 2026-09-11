@@ -5925,6 +5925,15 @@ body:has(.hw-rail--open .vc-focus-header-row) .cdk-overlay-pane:has(velt-comment
   align-items: center !important;
   gap: 8px !important;
   flex: none !important;
+  /* PUSHED RIGHT BY ITS OWN MARGIN, not by the row's `space-between`.
+     REPORTED: the edit composer put `@` and the send arrow at the LEFT while
+     every other composer puts them at the right. `space-between` only separates
+     TWO items, and the row's first child — the assign slot — is
+     `display: none` while it is `:empty`, which it always is in edit mode (Velt
+     renders no assign control there). One child, and `space-between` leaves it
+     at the start. `margin-left: auto` does not care how many siblings there are,
+     so the tools group sits on the right edge in every composer. */
+  margin-left: auto !important;
 }
 
 /* EXPANDED — on focus, or whenever there is somebody to assign.
@@ -6376,4 +6385,26 @@ html[data-vc-assign="figma"] .vc-assignee-name {
 /* reserve the pill's strip, on assigned rows only. */
 html[data-vc-assign="figma"] .vc-card:has(.vc-assignee-row) .vc-card-inner {
   padding-bottom: 44px !important;
+}
+
+
+/* ── THE COMMENT PIN'S TRIANGLE ──────────────────────────────────────────────
+   It rendered in Velt's brand violet (#625df5) where every other accent in the
+   product is `Background/Accent #0589ff` — the same drift already corrected for
+   mention chips.
+   It took three passes to find because every `background` and `fill` probe came
+   back transparent: the pin is a CSS BORDER triangle, not a painted box. Velt's
+   own rule is
+     .velt-comment-pin--popover { width:0; height:0; border-style:solid;
+       border-width: 0 10px 10px 0;
+       border-color: transparent var(--velt-accent) transparent transparent; }
+   so the only visible colour lives in `border-RIGHT-color`, and the other three
+   sides must STAY transparent or the triangle fills out into a square.
+   `--velt-accent` itself is declared on Angular host elements
+   (`[_nghost-ng-cNNN]`), not on `:root`, so a `:root` override would lose to the
+   inherited value — redeclaring it ON the pin wins, and covers any orientation
+   variant that reads the var rather than the right edge. */
+.velt-comment-pin--popover {
+  --velt-accent: #0589ff !important;
+  border-right-color: #0589ff !important;
 }
