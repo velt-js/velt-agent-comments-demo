@@ -606,6 +606,15 @@ snippyly-comment-text.comment-text-highlight,
   cursor: pointer;
 }
 
+/* Belt and braces for the empty-pill bug: Velt's comment tool hides its own
+   content while a comment is being composed, so this container could be left
+   holding nothing but its 4px padding and 1px border — a 168x10 white pill
+   floating under the SKU. No row, no menu. (The real cause is fixed in
+   ProductsTable's onClickCapture; this makes the state unpaintable either way.) */
+.hv-cell-dropdown:not(:has(.hv-menu-row)) {
+  display: none !important;
+}
+
 .hv-menu-row {
   display: flex;
   align-items: center;

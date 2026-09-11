@@ -209,16 +209,22 @@ export function ProductsTable() {
                   {/* Hidden with CSS rather than unmounted: unmounting the
                       Comment Tool tears down the pin portal Velt just mounted
                       on the cell, closing the composer with it. */}
+                  {/* onClickCapture on the CONTAINER, not `onClick` on the tool.
+                      `<VeltCommentTool onClick>` never fires once a wireframe is
+                      registered for the tool — the click lands on the wireframe's
+                      own markup — so the menu stayed open after "Add comment".
+                      Velt's tool then hides itself while a comment is being
+                      composed, leaving this container with a 0-height child: the
+                      168x10 empty bordered pill under the SKU that got reported.
+                      Capturing here closes the menu for any click inside it. */}
                   <div
                     className="hv-cell-dropdown"
                     role="menu"
                     style={{ display: openMenu === product.id ? "block" : "none" }}
+                    onClickCapture={() => setOpenMenu(null)}
                   >
                     {/* Rendered by VeltCommentToolWf as an "Add comment" row. */}
-                    <VeltCommentTool
-                      targetElementId={cellId(product.id)}
-                      onClick={() => setOpenMenu(null)}
-                    />
+                    <VeltCommentTool targetElementId={cellId(product.id)} />
                   </div>
                 </div>
               </td>

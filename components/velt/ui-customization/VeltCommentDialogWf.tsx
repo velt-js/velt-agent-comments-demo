@@ -1,12 +1,14 @@
 "use client";
 
 import {
+    VeltData,
     VeltButtonWireframe,
     VeltCommentDialogActionsWireframe,
-    VeltCommentDialogProgressWireframe,
     VeltCommentDialogWireframe,
+    VeltIf,
 } from "@veltdev/react";
 import { VcCommentActions, VcEditComposer } from "./VcCommentActions";
+import { VcAgentCard } from "./VcAgentCard";
 import { VcAssigneeBanner } from "./VcAssigneeBanner";
 import { VcArrowBendDownRightIcon, VcSidebarSimpleIcon } from "./VcIcons";
 import { VcOptionsMenu } from "./VcOptionsMenu";
@@ -45,38 +47,28 @@ import { VcDialogComposer } from "./VeltComposerWf";
 export function VeltCommentDialogWf() {
     return (
         <VeltCommentDialogWireframe>
-            {/* ── Agent comment: suggestion card (unchanged from the demo's own design;
-                   sub-phase A draws no frame for it, so nothing here is design-gated) ── */}
-            <VeltCommentDialogWireframe.Suggestion>
-                <div className="hw-agent-card">
-                    {/* Resolution banner — SDK shows it only once accepted/rejected */}
-                    <VeltCommentDialogWireframe.Suggestion.Banner />
-                    <VeltCommentDialogWireframe.Suggestion.Header />
-                    <VeltCommentDialogWireframe.Suggestion.Body />
-                    {/* Live agent run ON this card (SDK AC-061). REQUIRED HERE: the SDK
-                        mounts the progress row inside the suggestion card's DEFAULT
-                        template, and this wireframe replaces that template wholesale — so
-                        without this line a run writes correctly to the server and simply
-                        never appears, with nothing logged. */}
-                    <VeltCommentDialogProgressWireframe />
-                    <VeltCommentDialogWireframe.Suggestion.Footer>
-                        <div className="hw-agent-footer">
-                            {/* Actions FIRST, then the link: the footer stacks vertically, so
-                                source order is visual order — chips on top, "Open Comment"
-                                underneath. */}
-                            <VeltCommentDialogWireframe.Suggestion.Actions>
-                                <div className="hw-suggestion-actions">
-                                    <VeltCommentDialogWireframe.Suggestion.Actions.Accept />
-                                    <VeltCommentDialogWireframe.Suggestion.Actions.Reject />
-                                </div>
-                            </VeltCommentDialogWireframe.Suggestion.Actions>
-                            <VeltCommentDialogWireframe.Suggestion.Footer.OpenComment />
-                        </div>
-                    </VeltCommentDialogWireframe.Suggestion.Footer>
-                </div>
-            </VeltCommentDialogWireframe.Suggestion>
+            {/* ── Agent comment: the shared suggestion card (VcAgentCard).
+                   This branch used to write the card out inline with
+                   `Suggestion.Header` declared CHILDLESS, so Velt fell back to its
+                   default header and painted a dark squircle avatar instead of the
+                   design's purple sparkle disc — the "agent pin dialogs are not
+                   styled" report. Both surfaces share one definition now. ── */}
+            <VcAgentCard showOpenComment />
 
-            {/* ── Normal comment: header + thread cards + composer (872:21857) ── */}
+            {/* ── Normal comment: header + thread cards + composer (872:21857) ──
+                GATED. The comment above used to say the SDK's native
+                isSuggestionComment() gate was enough here and was "LIVE-VERIFIED
+                to fire in both this surface and the sidebar rows". It is not, and
+                this surface was the one place still relying on it: MEASURED on an
+                agent annotation, the floating dialog rendered a 361x636 container
+                holding BOTH branches — the 361x300 suggestion card AND `.vc-dialog`
+                358x336 stacked underneath it, so the popover showed the agent's
+                accept/reject card with a second "Comment / Altana Review A. /
+                Reply" dialog hanging off the bottom of it.
+                The sidebar-card and focused-thread variants already carry this
+                exact guard for this exact reason; the base dialog needed it too,
+                and now all three surfaces gate the same way. */}
+            <VeltIf condition="{annotation.type} !== 'suggestion'">
             <div className="vc-dialog">
                 {/* Header is an appendix slot (velt-comment-dialog-header-wireframe) — a real
                     registered element the curated manifest does not cover, not an invention. */}
@@ -115,7 +107,17 @@ export function VeltCommentDialogWf() {
                             two rows (root + 1 reply). */}
                         <VeltCommentDialogWireframe.ThreadCard className="vc-comment">
                             <div className="vc-comment-rail">
-                                <VeltCommentDialogWireframe.ThreadCard.Avatar className="vc-avatar" />
+                                {/* `veltClass` marks an AGENT-authored row so the stylesheet can give
+                                    it the design's purple sparkle disc. Without it the same
+                                    agent got the generic initial avatar here and the sparkle
+                                    on its suggestion cards — two looks for one author. The
+                                    glyph has to come from CSS: putting a child in
+                                    `ThreadCard.Avatar` would replace the avatar for EVERY
+                                    comment, not just the agent's. */}
+                                <VeltCommentDialogWireframe.ThreadCard.Avatar
+                                    className="vc-avatar"
+                                    veltClass="'vc-avatar--agent': {commentObj.agent}"
+                                />
                             </div>
                             <div className="vc-comment-main">
                                 <div className="vc-comment-head">
@@ -123,7 +125,29 @@ export function VeltCommentDialogWf() {
                                         sidebar card, where the timestamp is pinned to the card's
                                         right edge. */}
                                     <div className="vc-comment-headrow">
-                                        <VeltCommentDialogWireframe.ThreadCard.Name className="vc-name" />
+                                        {/* FULL name, via `VeltData`, not `ThreadCard.Name`.
+                                    `ThreadCard.Name` ABBREVIATES the last word —
+                                    measured, it rendered "Altana Review Agent" as
+                                    "Altana Review A." and "User 1" as "User 1." — while
+                                    the V2 design writes names out in full ("Jordan Lee",
+                                    "Naomi Williams", "Altana AI"). It also made the SAME
+                                    agent read differently on its two card types, because
+                                    the suggestion path's `Header.Agent.Name` does not
+                                    abbreviate. `commentObj.from.name` is the per-comment
+                                    author, so replies keep their own author too. */}
+                                <span className="vc-name">
+                                    {/* TWO SOURCES, because an agent-authored comment has no
+                                        `from`: measured, `commentObj.from.name` rendered EMPTY on
+                                        the agent's conversation card while working on every human
+                                        row — Velt carries the agent identity separately. Same
+                                        `{commentObj.agent}` gate the avatar's veltClass uses. */}
+                                    <VeltIf condition="!{commentObj.agent}">
+                                        <VeltData field="commentObj.from.name" />
+                                    </VeltIf>
+                                    <VeltIf condition="{commentObj.agent}">
+                                        <VeltData field="commentObj.agent.agentName" />
+                                    </VeltIf>
+                                </span>
                                         <VeltCommentDialogWireframe.ThreadCard.Time className="vc-time" />
                                     </div>
                                     <VcCommentActions />
@@ -188,6 +212,7 @@ export function VeltCommentDialogWf() {
                     Self-gating: nothing renders on an unassigned thread. */}
                 <VcAssigneeBanner />
             </div>
+            </VeltIf>
 
             {/* NOT MOUNTED, on purpose (R7 — omitted, never display:none):
                   · ThreadCard.Reply — frame 872:21857 draws no per-comment reply control.

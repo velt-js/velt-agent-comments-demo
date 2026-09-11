@@ -137,8 +137,40 @@ export function VeltSidebarCardWf() {
                                 comment only. */}
                             <VeltCommentDialogWireframe.ThreadCard className="vc-card-head">
                                 <div className="vc-card-headrow">
-                                    <VeltCommentDialogWireframe.ThreadCard.Avatar className="vc-avatar" />
-                                    <VeltCommentDialogWireframe.ThreadCard.Name className="vc-name" />
+                                    {/* `veltClass` marks an AGENT-authored row so the stylesheet can give
+                                        it the design's purple sparkle disc. Without it the same
+                                        agent got the generic initial avatar here and the sparkle
+                                        on its suggestion cards — two looks for one author. The
+                                        glyph has to come from CSS: putting a child in
+                                        `ThreadCard.Avatar` would replace the avatar for EVERY
+                                        comment, not just the agent's. */}
+                                    <VeltCommentDialogWireframe.ThreadCard.Avatar
+                                        className="vc-avatar"
+                                        veltClass="'vc-avatar--agent': {commentObj.agent}"
+                                    />
+                                    {/* FULL name, via `VeltData`, not `ThreadCard.Name`.
+                                        `ThreadCard.Name` ABBREVIATES the last word —
+                                        measured, it rendered "Altana Review Agent" as
+                                        "Altana Review A." and "User 1" as "User 1." — while
+                                        the V2 design writes names out in full ("Jordan Lee",
+                                        "Naomi Williams", "Altana AI"). It also made the SAME
+                                        agent read differently on its two card types, because
+                                        the suggestion path's `Header.Agent.Name` does not
+                                        abbreviate. `commentObj.from.name` is the per-comment
+                                        author, so replies keep their own author too. */}
+                                    <span className="vc-name">
+                                        {/* TWO SOURCES, because an agent-authored comment has no
+                                            `from`: measured, `commentObj.from.name` rendered EMPTY on
+                                            the agent's conversation card while working on every human
+                                            row — Velt carries the agent identity separately. Same
+                                            `{commentObj.agent}` gate the avatar's veltClass uses. */}
+                                        <VeltIf condition="!{commentObj.agent}">
+                                            <VeltData field="commentObj.from.name" />
+                                        </VeltIf>
+                                        <VeltIf condition="{commentObj.agent}">
+                                            <VeltData field="commentObj.agent.agentName" />
+                                        </VeltIf>
+                                    </span>
                                     <span className="vc-meta">
                                         <VeltCommentDialogWireframe.ThreadCard.Unread>
                                             {/* Velt's DEFAULT unread marker is not verified identical to the

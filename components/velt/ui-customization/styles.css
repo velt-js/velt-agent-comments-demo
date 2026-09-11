@@ -432,7 +432,14 @@ app-if.hw-normal-comment,
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 12px;
+  /* 16px SIDES, matching every other surface in the dialog and the drawer:
+     `.vc-dialog-header`, the normal comment row
+     (`.vc-comment .velt-thread-card--container`), `.vc-composer` and
+     `.vc-focus-body` are all `12px 16px` / 16px. This card was the only one at a
+     flat 12px, so an agent comment's text ran 4px closer to the card edge than
+     the comment above or the Reply box below it — the uneven gutter in the
+     report. Vertical stays 12px, same as the comment rows. */
+  padding: 12px 16px;
   font-family: var(--hw-font);
   font-size: 14px;
   line-height: 20px;
@@ -1067,17 +1074,126 @@ velt-comment-dialog-action-chip-internal .velt-action-chip .velt-action-chip__ic
   height: 14px;
 }
 
-/* --- progress row ------------------------------------------------ */
+/* --- progress row ------------------------------------------------
+   A live run renders one `.velt-progress__group` per step:
 
-/* Chips under a live run indent to line up with the label rather than the
-   dots — the same relationship a comment's actions have to its body. */
+     div.velt-progress__group
+       div.velt-progress__row      [dots] [label]
+       actions-internal            [Stop]
+
+   and `__actions` is a BLOCK, so `Stop` dropped onto its own line below the
+   label. This block used to indent it 36px "to line up with the label rather
+   than the dots", which left the button orphaned in the middle of the card with
+   nothing above or below it aligned to it — the state in the report.
+
+   It now follows the card's own established pattern instead: the name row puts
+   its label on the left and its timestamp hard right, so a progress step puts
+   `[dots] label` on the left and `Stop` hard right, on ONE row. Same left edge
+   as every other line in the card, 8px rhythm throughout, and `Stop` is sized
+   DOWN from the Approve/Dismiss/Re-analyze chips so a transient control does not
+   compete with the card's real decisions. */
+
+velt-comment-dialog-progress-internal .velt-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+velt-comment-dialog-progress-internal .velt-progress__group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+velt-comment-dialog-progress-internal .velt-progress__row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  /* 8px, not the SDK's 12px — the card's icon-to-text step everywhere else. */
+  gap: 8px;
+  /* `flex: 0 1 auto`, NOT `1 1 auto`: growing the row consumes the free space
+     that `Stop`'s `margin-left: auto` needs, and the button then sat mid-card
+     (measured, right edge 1426 against a 1500 content edge) instead of flush. */
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+/* the status line is secondary text: the card's 13px/20 #666666, not 14px. */
+velt-comment-dialog-progress-internal .velt-progress-label {
+  font-family: 'Inter', var(--hw-font);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #666666;
+}
+
+velt-comment-dialog-progress-internal .velt-progress-dots {
+  flex: none;
+}
+
+/* THE DOTS WERE INVISIBLE. Measured: three 4x4 spans, `opacity: 1`, and
+   `background-color: rgba(0, 0, 0, 0)` — unstyled mode stripped their colour and
+   nothing replaced it. So a running step rendered as a 24px empty gap followed by
+   its label, which is what made the status line look arbitrarily indented with
+   nothing to the left of it.
+   #0589ff is the palette's "active" blue — the same value as the unread dot and
+   the reply link — which is the right register for a live run. */
+velt-comment-dialog-progress-internal .velt-progress-dots > span {
+  background-color: #0589ff;
+  border-radius: 50%;
+  animation: vc-progress-pulse 1.2s ease-in-out infinite;
+}
+
+velt-comment-dialog-progress-internal .velt-progress-dots > span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+velt-comment-dialog-progress-internal .velt-progress-dots > span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes vc-progress-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* A run is legible from the label and the Stop button alone, so the motion is
+   pure decoration — hold the dots at full opacity instead of animating them. */
+@media (prefers-reduced-motion: reduce) {
+  velt-comment-dialog-progress-internal .velt-progress-dots > span {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* `Stop` to the right edge of its own step, in flow — no indent, no extra line. */
 velt-comment-dialog-progress-internal .velt-progress__actions {
-  display: block;
-  padding-left: 36px;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  /* `justify-content`, not `margin-left: auto`. The agent-card rule further down
+     gives every `actions-internal` in this card `flex: 1 1 auto !important` (it
+     is what lets the Approve/Dismiss/Re-analyze row wrap), so this element GROWS
+     and an auto margin has no free space to work with — measured, the box filled
+     1304..1500 while its content stayed pinned at the left. Aligning inside the
+     grown box is what puts `Stop` on the card's right edge. */
+  justify-content: flex-end !important;
 }
 
 velt-comment-dialog-progress-internal .velt-progress__actions .velt-comment-actions {
-  margin-top: 4px;
+  margin-top: 0;
+  flex-wrap: nowrap;
+}
+
+/* one size down from the card's decision chips (30px), so the hierarchy reads. */
+velt-comment-dialog-progress-internal .velt-progress__actions .velt-action-chip {
+  height: 24px;
+  min-height: 24px;
+  padding: 0 10px;
+  font-size: 12px;
+  line-height: 20px;
 }
 
 
@@ -4352,4 +4468,194 @@ app-comment-sidebar-list-item {
   overflow: hidden !important;
   white-space: nowrap !important;
   text-overflow: ellipsis !important;
+}
+
+
+/* ══ AGENT / SUGGESTION CARD IN THE FOCUSED-THREAD DRAWER ════════════════════
+   This surface had never actually been opened before it was reported: clicking
+   an agent comment in the sidebar showed the card with its name row broken, a
+   colourless avatar and the action chips running off the panel. All three are
+   the same root cause — the agent card's own rules were written against the
+   sidebar LIST card (`.vc-card.vc-agent ...`) and nothing scoped them to
+   `.hw-agent-card`, which is what the drawer and the popover render. */
+
+/* 1 · the name row. Velt's `suggestion-header-internal` computes to
+   `display: block` (measured 376x40), so `Header.Agent` and `Header.Timestamp`
+   stacked and the `1d` dropped onto its own line under the agent's name. */
+.hw-agent-card velt-comment-dialog-suggestion-header-internal {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+}
+
+.hw-agent-card velt-comment-dialog-suggestion-agent-internal {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+}
+
+.hw-agent-card velt-comment-dialog-suggestion-header-timestamp-internal,
+.hw-agent-card .vc-time {
+  flex: none !important;
+}
+
+/* 2 · the avatar. The purple disc was only ever declared as
+   `.vc-card.vc-agent .vc-avatar`, so in the drawer the sparkle floated on white
+   with no ground behind it. Same 20px disc, same #935ded, wherever the agent
+   card renders. */
+.hw-agent-card .vc-avatar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 20px !important;
+  height: 20px !important;
+  border-radius: 56px !important;
+  background: #935ded !important;
+  flex: none !important;
+}
+
+.hw-agent-card .vc-avatar-glyph > svg {
+  color: #ffffff !important;
+}
+
+/* 3 · the action chips. Three of them (Approve / Dismiss / Re-analyze) at their
+   natural widths exceed the drawer's 376px content box, and the row was
+   `nowrap` — so `Re-analyze` was sliced off at the panel edge. Wrapping keeps
+   every action reachable at any panel width; on the wider popover they still sit
+   on one line, so nothing about that surface changes. */
+/* The `.hw-suggestion-actions` div declared in the wireframe is DROPPED by this
+   slot — measured, the live chain is
+     .hw-agent-footer > suggestion-actions-internal > div.velt-suggestion-actions
+       > actions-internal > div.velt-comment-actions > action-chip x3
+   so the wrap has to be asserted on Velt's own elements. `actions-internal` is a
+   `display:block` 248px island inside a 376px `nowrap` row, which is why the
+   third chip (`Re-analyze`) was sliced off at the panel edge instead of moving
+   to a second line: nothing in that chain could shrink, so nothing could wrap. */
+.hw-suggestion-actions,
+.hw-agent-card .velt-suggestion-actions,
+.hw-agent-card .velt-comment-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  gap: 8px !important;
+  row-gap: 8px !important;
+  min-width: 0 !important;
+}
+
+.hw-agent-card velt-comment-dialog-actions-internal {
+  display: flex !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  /* Align INSIDE the grown box. Without this the chips looked left-aligned, but
+     not by choice: this element grows to fill, its inner `.velt-comment-actions`
+     is content-sized, and `justify-content` was `normal` — so the row's own
+     `flex-end` never had anything to act on and the chips sat wherever the box
+     started. `.hw-suggestion-actions` has carried `justify-content: flex-end`
+     since the first pass, and that is the only alignment signal the design gives
+     for this row, so the decision chips and the progress row's `Stop` now share
+     one right edge instead of disagreeing by accident. */
+  justify-content: flex-end !important;
+}
+
+
+/* ── the FLOATING agent card needs the popover's own chrome ───────────────────
+   A normal pin dialog gets its white card from `.vc-dialog` — our own div in the
+   non-suggestion branch (358px, radius 8, 1px #e6e6e6, the 12/8 shadow). The
+   suggestion branch renders `.hw-agent-card` instead, and that class was written
+   for the DRAWER, where the 400px panel already supplies the ground. So a
+   floating agent dialog had nothing behind it at all: measured, every element
+   from `.hw-agent-card` up through `suggestion-internal`,
+   `div.velt-comment-dialog` and `.cdk-overlay-pane` was
+   `background: rgba(0,0,0,0)` with `border: 0`, `radius: 0`, `shadow: none` —
+   the card's text sat straight on the document.
+   Scoped to `.cdk-overlay-container`, which is where Velt mounts the floating
+   dialog and which the drawer (plain DOM inside `.hw-rail`) is never inside, so
+   the drawer's borderless card is untouched. Values are `.vc-dialog`'s, verbatim,
+   so an agent pin dialog and a comment pin dialog read as the same object. */
+.cdk-overlay-container .hw-agent-card {
+  width: 358px !important;
+  max-width: 100% !important;
+  border-radius: 8px !important;
+  border: 1px solid #e6e6e6 !important;
+  box-shadow: 0px 2px 12px 8px #0000000f !important;
+  background: #ffffff !important;
+  box-sizing: border-box !important;
+}
+
+
+/* ── the agent card's TEXT COLUMN ────────────────────────────────────────────
+   A normal comment row is `[avatar] | [name + message]` — the rail is a real
+   column, so the message starts at 48px (16 padding + 20 avatar + 12 gap) and
+   sits directly under the author's name.
+   The agent card is not built that way: `Suggestion.Header` is one row
+   (`[avatar] name ... time`) and `Suggestion.Body` is its SIBLING, so the body
+   fell back to the card's own padding edge. Measured: avatar at 16, name at 44,
+   body at 16 — the body ran under the avatar instead of lining up with the name,
+   which is the missing gutter in the report.
+   Everything after the header is inset by the rail's own width (20px avatar +
+   8px gap = 28px) so the whole card reads as one text column hanging off the
+   name, exactly like a human comment. The footer's chips are right-aligned so
+   the inset is invisible there, but it keeps their wrap box honest. */
+.hw-agent-card {
+  --vc-agent-rail: 28px;
+}
+
+.hw-agent-card velt-comment-dialog-suggestion-banner-internal,
+.hw-agent-card velt-comment-dialog-suggestion-body-internal,
+.hw-agent-card velt-comment-dialog-progress-internal,
+.hw-agent-card .hw-agent-footer {
+  padding-left: var(--vc-agent-rail);
+  box-sizing: border-box;
+}
+
+
+/* ── an AGENT-authored comment looks like one on EITHER card type ────────────
+   Two of the seeded findings are `type: 'suggestion'` and render as the agent
+   card; the third deliberately omits `type` so it stays a normal comment (the
+   seed explains why: customer action chips mount only on thread rows and
+   progress rows, never inside the suggestion card, so "Dig Deeper" could not
+   exist on a suggestion). That split is intentional — but it meant one author,
+   `altana-review-agent`, was drawn two different ways: the purple sparkle on its
+   suggestion cards and Velt's generic initial disc on its conversation card.
+   `veltClass="'vc-avatar--agent': {commentObj.agent}"` marks the agent's rows,
+   and the glyph is painted here as a mask because a child injected into
+   `ThreadCard.Avatar` would replace the avatar for every comment in the thread.
+   Same 20px disc, same #935ded, same sparkle as VcAgentCard. */
+.vc-avatar--agent {
+  background: #935ded !important;
+  border-radius: 56px !important;
+  overflow: hidden !important;
+}
+
+/* Velt's initial ("A") sits inside — hide it so the mask below is what shows. */
+.vc-avatar--agent .velt-user-avatar--initial,
+.vc-avatar--agent .s-user-avatar-initial {
+  color: transparent !important;
+}
+
+.vc-avatar--agent::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 12px;
+  height: 12px;
+  background-color: #ffffff;
+  -webkit-mask: var(--vc-sparkle-mask) center / 12px 12px no-repeat;
+  mask: var(--vc-sparkle-mask) center / 12px 12px no-repeat;
+}
+
+.vc-avatar--agent {
+  position: relative !important;
+}
+
+:root {
+  /* PhosphorIcons Sparkle, the same path VcSparklesIcon draws. */
+  --vc-sparkle-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'><path fill='black' d='M208 144a15.78 15.78 0 0 1-10.42 14.94l-51.65 19-19 51.61a15.92 15.92 0 0 1-29.88 0L78 178l-51.62-19a15.92 15.92 0 0 1 0-29.88l51.65-19 19-51.61a15.92 15.92 0 0 1 29.88 0l19 51.65 51.61 19A15.78 15.78 0 0 1 208 144ZM152 48h16v16a8 8 0 0 0 16 0V48h16a8 8 0 0 0 0-16h-16V16a8 8 0 0 0-16 0v16h-16a8 8 0 0 0 0 16Zm88 32h-8v-8a8 8 0 0 0-16 0v8h-8a8 8 0 0 0 0 16h8v8a8 8 0 0 0 16 0v-8h8a8 8 0 0 0 0-16Z'/></svg>");
 }

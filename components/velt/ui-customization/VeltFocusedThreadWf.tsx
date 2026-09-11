@@ -1,17 +1,17 @@
 "use client";
 
 import {
+    VeltData,
     VeltCommentDialogActionsWireframe,
-    VeltCommentDialogProgressWireframe,
     VeltCommentDialogWireframe,
     VeltIf,
 } from "@veltdev/react";
+import { VcAgentCard } from "./VcAgentCard";
 import { VcAssigneeBanner } from "./VcAssigneeBanner";
 import { VcCommentActions, VcEditComposer } from "./VcCommentActions";
 import {
     VcArrowCounterClockwiseIcon,
     VcCheckCircleIcon,
-    VcSparklesIcon,
 } from "./VcIcons";
 import { VcOptionsMenu } from "./VcOptionsMenu";
 import { VcDialogComposer } from "./VeltComposerWf";
@@ -46,6 +46,48 @@ import { VcDialogComposer } from "./VeltComposerWf";
 // are COMMENT-DIALOG slots — they only resolve against an annotation — so they
 // live here, in `.vc-focus-actions`, and the stylesheet lifts that row into the
 // header band above. Mounting them in the sidebar instead would render inert.
+/**
+ * The drawer's 48px header band, shared by BOTH branches.
+ *
+ * It must be declared with OUR OWN children on every branch. Declared childless
+ * (which the suggestion branch did at first) the `Header` container falls back to
+ * Velt's defaults and the band filled with an unstyled `(  ) Open v` status
+ * dropdown and an open-in-new arrow — measured, and nothing in the design draws
+ * either. A container slot owns its whole child tree; supplying it is what keeps
+ * the defaults out.
+ */
+function FocusHeader() {
+    return (
+        <VeltCommentDialogWireframe.Header className="vc-focus-header-row">
+            <div className="vc-focus-actions">
+                <VcOptionsMenu />
+                {/* GATED ON STATUS. The Resolve/Unresolve pair does NOT
+                    self-gate — measured, both rendered 24x24 at once, so the
+                    header showed `... / check / undo` where 872:21603 draws a
+                    single check. `{resolved}` picks one. The ATTRIBUTE form
+                    (`veltIf=` on the slot) was tried first and did nothing, so
+                    this uses the `<VeltIf>` WRAPPER form, which does gate. The
+                    wrappers clone in as `app-if` elements, so the stylesheet
+                    gives them `display: contents` to keep this a flex row. */}
+                <VeltIf condition="!{resolved}">
+                    <VeltCommentDialogWireframe.ResolveButton className="vc-focus-resolve">
+                        <span className="hw-icon-btn">
+                            <VcCheckCircleIcon />
+                        </span>
+                    </VeltCommentDialogWireframe.ResolveButton>
+                </VeltIf>
+                <VeltIf condition="{resolved}">
+                    <VeltCommentDialogWireframe.UnresolveButton className="vc-focus-unresolve">
+                        <span className="hw-icon-btn">
+                            <VcArrowCounterClockwiseIcon />
+                        </span>
+                    </VeltCommentDialogWireframe.UnresolveButton>
+                </VeltIf>
+            </div>
+        </VeltCommentDialogWireframe.Header>
+    );
+}
+
 export function VeltFocusedThreadWf() {
     return (
         <VeltCommentDialogWireframe variant="focusedThread">
@@ -53,34 +95,7 @@ export function VeltFocusedThreadWf() {
                    same way the floating dialog does: the SDK's native
                    isSuggestionComment() gate renders exactly one of the two
                    branches, so no VeltIf is needed. ── */}
-            <VeltCommentDialogWireframe.Suggestion>
-                <div className="hw-agent-card">
-                    <VeltCommentDialogWireframe.Suggestion.Banner />
-                    <VeltCommentDialogWireframe.Suggestion.Header>
-                        <VeltCommentDialogWireframe.Suggestion.Header.Agent>
-                            <VeltCommentDialogWireframe.Suggestion.Header.Agent.Avatar className="vc-avatar">
-                                <span className="vc-avatar-glyph">
-                                    <VcSparklesIcon />
-                                </span>
-                            </VeltCommentDialogWireframe.Suggestion.Header.Agent.Avatar>
-                            <VeltCommentDialogWireframe.Suggestion.Header.Agent.Name className="vc-name" />
-                        </VeltCommentDialogWireframe.Suggestion.Header.Agent>
-                        <VeltCommentDialogWireframe.Suggestion.Header.Timestamp className="vc-time" />
-                    </VeltCommentDialogWireframe.Suggestion.Header>
-                    <VeltCommentDialogWireframe.Suggestion.Body />
-                    <VeltCommentDialogProgressWireframe />
-                    <VeltCommentDialogWireframe.Suggestion.Footer>
-                        <div className="hw-agent-footer">
-                            <VeltCommentDialogWireframe.Suggestion.Actions>
-                                <div className="hw-suggestion-actions">
-                                    <VeltCommentDialogWireframe.Suggestion.Actions.Accept />
-                                    <VeltCommentDialogWireframe.Suggestion.Actions.Reject />
-                                </div>
-                            </VeltCommentDialogWireframe.Suggestion.Actions>
-                        </div>
-                    </VeltCommentDialogWireframe.Suggestion.Footer>
-                </div>
-            </VeltCommentDialogWireframe.Suggestion>
+            <VcAgentCard header={<FocusHeader />} />
 
             {/* ── Ordinary threads (872:21603) ─────────────────────────────────
                 GATED, unlike the base dialog. MEASURED: in this variant the SDK's
@@ -117,35 +132,7 @@ export function VeltFocusedThreadWf() {
                     Thread` + `✕` are positioned INTO it by the stylesheet instead.
                     That direction is safe: those are sidebar-owned controls, so
                     their clicks never pass through the dialog's hit-testing. */}
-                <VeltCommentDialogWireframe.Header className="vc-focus-header-row">
-                    <div className="vc-focus-actions">
-                        <VcOptionsMenu />
-                        {/* GATED ON STATUS. The Resolve/Unresolve pair does NOT
-                            self-gate — measured, both `resolve-button-internal` and
-                            `unresolve-button-internal` rendered 24x24 at once, so the
-                            header showed `⋯ ✓ ↺` where 872:21603 draws a single `✓`.
-                            `{resolved}` picks one. The ATTRIBUTE form (`veltIf=` on the
-                            slot) was tried first and did nothing — both buttons still
-                            rendered 24x24 — so this uses the `<VeltIf>` WRAPPER form,
-                            which does gate. The wrappers clone in as `app-if` elements,
-                            so the stylesheet gives them `display: contents` to keep this
-                            a 3-across flex row. */}
-                        <VeltIf condition="!{resolved}">
-                            <VeltCommentDialogWireframe.ResolveButton className="vc-focus-resolve">
-                                <span className="hw-icon-btn">
-                                    <VcCheckCircleIcon />
-                                </span>
-                            </VeltCommentDialogWireframe.ResolveButton>
-                        </VeltIf>
-                        <VeltIf condition="{resolved}">
-                            <VeltCommentDialogWireframe.UnresolveButton className="vc-focus-unresolve">
-                                <span className="hw-icon-btn">
-                                    <VcArrowCounterClockwiseIcon />
-                                </span>
-                            </VeltCommentDialogWireframe.UnresolveButton>
-                        </VeltIf>
-                    </div>
-                </VeltCommentDialogWireframe.Header>
+                <FocusHeader />
 
                 <VeltCommentDialogWireframe.VisibilityBanner />
 
@@ -153,12 +140,44 @@ export function VeltFocusedThreadWf() {
                     <VeltCommentDialogWireframe.Threads className="vc-focus-thread">
                         <VeltCommentDialogWireframe.ThreadCard className="vc-focus-comment">
                             <div className="vc-focus-rail">
-                                <VeltCommentDialogWireframe.ThreadCard.Avatar className="vc-avatar" />
+                                {/* `veltClass` marks an AGENT-authored row so the stylesheet can give
+                                    it the design's purple sparkle disc. Without it the same
+                                    agent got the generic initial avatar here and the sparkle
+                                    on its suggestion cards — two looks for one author. The
+                                    glyph has to come from CSS: putting a child in
+                                    `ThreadCard.Avatar` would replace the avatar for EVERY
+                                    comment, not just the agent's. */}
+                                <VeltCommentDialogWireframe.ThreadCard.Avatar
+                                    className="vc-avatar"
+                                    veltClass="'vc-avatar--agent': {commentObj.agent}"
+                                />
                             </div>
                             <div className="vc-focus-main">
                                 <div className="vc-focus-head">
                                     <div className="vc-comment-headrow">
-                                        <VeltCommentDialogWireframe.ThreadCard.Name className="vc-name" />
+                                        {/* FULL name, via `VeltData`, not `ThreadCard.Name`.
+                                    `ThreadCard.Name` ABBREVIATES the last word —
+                                    measured, it rendered "Altana Review Agent" as
+                                    "Altana Review A." and "User 1" as "User 1." — while
+                                    the V2 design writes names out in full ("Jordan Lee",
+                                    "Naomi Williams", "Altana AI"). It also made the SAME
+                                    agent read differently on its two card types, because
+                                    the suggestion path's `Header.Agent.Name` does not
+                                    abbreviate. `commentObj.from.name` is the per-comment
+                                    author, so replies keep their own author too. */}
+                                <span className="vc-name">
+                                    {/* TWO SOURCES, because an agent-authored comment has no
+                                        `from`: measured, `commentObj.from.name` rendered EMPTY on
+                                        the agent's conversation card while working on every human
+                                        row — Velt carries the agent identity separately. Same
+                                        `{commentObj.agent}` gate the avatar's veltClass uses. */}
+                                    <VeltIf condition="!{commentObj.agent}">
+                                        <VeltData field="commentObj.from.name" />
+                                    </VeltIf>
+                                    <VeltIf condition="{commentObj.agent}">
+                                        <VeltData field="commentObj.agent.agentName" />
+                                    </VeltIf>
+                                </span>
                                         <VeltCommentDialogWireframe.ThreadCard.Time className="vc-time" />
                                     </div>
                                     {/* per-comment hover affordances (Figma #7) */}
