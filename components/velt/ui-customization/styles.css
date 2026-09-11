@@ -3347,7 +3347,10 @@ app-comment-sidebar-list-item {
   cursor: pointer !important;
 }
 
-.vc-menu-item-edit:hover { background: #f0f0f0 !important; }
+/* #f9f9f9, the SAME wash every other row in this menu uses (`markasread`,
+   `copylink`, `delete`). It was #f0f0f0 here alone, which read as `Edit`
+   highlighting harder than `Delete` on the identical gesture. */
+.vc-menu-item-edit:hover { background: #f9f9f9 !important; }
 
 /* ── the edit field (ThreadCard.EditComposer) ─────────────────────────────────
    Self-gating: 0x0 until a comment is put into edit mode, so it adds no resting
@@ -6500,4 +6503,37 @@ html[data-vc-assign="figma"] .vc-card:has(.vc-assignee-row) .vc-card-inner {
    4px apart and this rule deliberately does not touch it. */
 .vc-dialog > .vc-assignee-banner {
   padding: 8px 16px !important;
+}
+
+
+/* ── ONE HOVER WASH PER BUTTON ───────────────────────────────────────────────
+   Reported: the funnel and sliders buttons show two different grounds on hover,
+   a rounded square inside a rounded square.
+   Both are real, and both are ours: the 32px shell
+   (`.hw-panel-controls .hw-ctl-btn:hover` → #f7f7f7) and the 24px glyph wrapper
+   inside it (`.hw-icon-btn:hover` → `--hw-surface-pressed`), each with its own
+   6px radius, so they stack as two visible squares.
+   `.hw-icon-btn` is the shared glyph wrapper and its hover IS the affordance
+   wherever it stands alone, so it is not removed — only suppressed where a
+   parent already paints one. Measured: the control band is the only place the
+   two nest. */
+.hw-ctl-btn .hw-icon-btn:hover {
+  background: none !important;
+}
+
+
+/* ── AN EMPTY SLOT TAKES NO SPACE ────────────────────────────────────────────
+   Reported against the drawer header's resolve button, and it is the same M2
+   rule the assignee banner already has: Velt renders
+   `velt-comment-dialog-resolve-button-internal` on threads where it has nothing
+   to project — measured `<!----><!---->`, no element children — while our CSS
+   still gives it a 24x24 box, so the header carried a dead 24px gap next to the
+   kebab. (It happens on every ASSIGNED thread: the SDK withholds the button
+   there, which is a separate SDK behaviour, not something this rule changes.)
+   Gate on the host having a real child, exactly like `.vc-assignee-banner`.
+   `:has(*)` tests for an ELEMENT child, which is what distinguishes a projected
+   button from the pair of Angular comment anchors. */
+.vc-focus-resolve:not(:has(*)),
+.vc-focus-unresolve:not(:has(*)) {
+  display: none !important;
 }
