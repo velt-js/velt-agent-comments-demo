@@ -137,6 +137,24 @@ export function VcChatTeardropIcon() {
     );
 }
 
+/**
+ * ChatTeardrop at Phosphor's REGULAR weight — the same silhouette as the fill
+ * above with its interior carved out, which is how Phosphor draws an outline
+ * (one path plus a counter subpath, not a stroke). `Zm0,184H48V124a84,84,0,1,1,84,84Z`
+ * is that counter; it leaves a 16-unit ring on the 256 grid, i.e. 1.5px at 24px.
+ *
+ * This is the sidebar button's CLOSED state. Design node 37:20702 draws the pair:
+ * outlined while the panel is shut, solid once it is open — see
+ * `.hw-sidebar-toggle` in app/globals.css for the switch.
+ */
+export function VcChatTeardropOutlineIcon() {
+    return (
+        <svg width="24" height="24" viewBox="0 0 256 256" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M132,24A100.11,100.11,0,0,0,32,124v84a16,16,0,0,0,16,16h84a100,100,0,0,0,0-200Zm0,184H48V124a84,84,0,1,1,84,84Z" />
+        </svg>
+    );
+}
+
 /** ArrowCounterClockwise — reopen (the resolved counterpart of CheckCircle). */
 export function VcArrowCounterClockwiseIcon() {
     return (

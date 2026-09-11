@@ -240,13 +240,40 @@ button {
   color: #efeeea;
 }
 
-/* Open state: colour only, no plate. The design's "side sheet open" frame
-   (2:7495) draws this control exactly as it draws it closed — the open drawer is
-   itself the affordance — so the only thing that changes here is that the glyph
-   goes to full strength. A filled plate would put back the chrome the redesign
-   removed. */
+/* Open state. The earlier note here said the design "draws this control exactly
+   as it draws it closed" and changed only the glyph's strength. Node 37:20702
+   says otherwise: it gives the control two weights of the same silhouette —
+   OUTLINED shut, SOLID open. Pixel-sampled from that board's app header, the
+   solid form is one flat shape with the blue badge at its top right.
+   The colour still goes to full strength, because that header is white and this
+   demo's app bar is near-black (#161513) — a #333333 glyph would disappear on
+   it — so the WEIGHT carries the state change and the tone carries the contrast. */
 .hw-sidebar-toggle--active {
   color: #ffffff;
+}
+
+/* ── the two weights ────────────────────────────────────────────────────────
+   Both are rendered (see VeltSidebarButtonWf: the wireframe cannot read the
+   host's open state, so the swap has to be CSS). They stack in the same 20px
+   box rather than sitting side by side, so neither one shifts the badge. */
+.hw-sb-glyph {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.hw-sidebar-toggle .hw-sb-glyph--outline {
+  display: inline-flex;
+}
+
+.hw-sidebar-toggle--active .hw-sb-glyph--outline {
+  display: none;
+}
+
+.hw-sidebar-toggle--active .hw-sb-glyph--fill {
+  display: inline-flex;
 }
 
 /* Velt's own hosts between the wrapper and our span carry no box of their own. */
@@ -258,26 +285,33 @@ button {
 /* The glyph + its badge. `position: relative` here rather than on the 34px
    wrapper so the dot hangs off the ICON's corner, which is what the design
    draws — on the wrapper it would sit 7px away in the empty hit area. */
+/* 24px, not 20. The design's icon box is 24 (every `Icon / …` instance in that
+   file is, and the glyph pixel-sampled out of node 37:20702's app header runs
+   ~22px of ink inside it). At 20 the Phosphor teardrop — which occupies 200 of
+   its 256 grid — rendered only ~15.6px of ink, visibly smaller than the design's.
+   NOTE for a pixel-exact pass: Phosphor's 78% fill still leaves ours ~19px
+   against the design's ~22, because that artwork sits tighter in its box than
+   Phosphor's does. Closing the last 3px needs the exported vector, not a resize. */
 .hw-sb-btn {
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
 }
 
 .hw-sb-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
 }
 
 .hw-sb-icon svg {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   /* the path is `fill: currentColor`, so the wrapper's color drives it and the
      hover/active states above need no separate icon rule. */
 }
