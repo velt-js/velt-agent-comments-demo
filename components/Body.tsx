@@ -1,6 +1,7 @@
 "use client";
 
 import { DownloadIcon } from "./icons";
+import { ProductsTable } from "./ProductsTable";
 
 // Static stand-in for the legal document viewer behind the comments panel
 // (ported from the altana-wireframes reference). This component owns the
@@ -44,6 +45,7 @@ export function Body() {
             2.3 “Active Pharmaceutical Ingredient (API)” has the meaning set forth in the Quality Agreement.
           </p>
         </div>
+        <ProductsTable />
       </div>
       <div className="hv-doc-toolbar" role="toolbar" aria-label="Document controls">
         <button className="hv-tb-btn" type="button" aria-label="Previous page">‹</button>

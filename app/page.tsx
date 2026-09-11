@@ -87,7 +87,10 @@ export default function Home() {
         />
         <div className="hw-body">
           <Body />
-          <VeltCollaboration sidebarOpen={sidebarOpen} />
+          <VeltCollaboration
+            sidebarOpen={sidebarOpen}
+            setSidebarOpen={setSidebarOpen}
+          />
         </div>
       </div>
     </VeltProvider>

@@ -28,10 +28,17 @@ export default function VeltInitializeDocument() {
     };
     if (cfg.organizationId) options.organizationId = cfg.organizationId;
 
+    // A `?documentId=` in the URL overrides the configured id, so each
+    // velt-customize run (or a re-run) gets an isolated document instead of
+    // every user sharing the one hardcoded in users.ts. Read inside the effect
+    // — this is a client component, but the effect is the only place `window`
+    // is guaranteed.
+    const override = new URLSearchParams(window.location.search).get("documentId");
+
     setDocuments(
       cfg.documents.map((doc) => ({
-        id: doc.id,
-        metadata: { documentName: doc.name },
+        id: override ?? doc.id,
+        metadata: { documentName: override ? `Run ${override}` : doc.name },
       })),
       options,
     );

@@ -122,3 +122,18 @@ export function EmptyIllustration() {
     </svg>
   );
 }
+
+export function CommentPlusIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path
+        d="M14 9.33333C14 10.0697 13.403 10.6667 12.6667 10.6667H4.66667L2 13.3333V3.33333C2 2.59695 2.59695 2 3.33333 2H12.6667C13.403 2 14 2.59695 14 3.33333V9.33333Z"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M8 4.9v3.2M6.4 6.5h3.2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    </svg>
+  );
+}

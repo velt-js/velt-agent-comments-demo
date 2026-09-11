@@ -1,8 +1,7 @@
 "use client";
 
 import type { User } from "@veltdev/types";
-import { useVeltClient, VeltNotificationsTool } from "@veltdev/react";
-import { PanelToggleIcon } from "./icons";
+import { useVeltClient, VeltNotificationsTool, VeltSidebarButton } from "@veltdev/react";
 import { users, setDocumentsConfigByUserId } from "./velt/users";
 
 interface HeaderProps {
@@ -95,15 +94,22 @@ export function Header({
           </div>
         )}
         <VeltNotificationsTool enableCrossOrganization={true} />
-        <button
-          type="button"
+        {/* [Velt] The SDK's own sidebar button, templated by
+            VeltSidebarButtonWf — the design draws a bare chat-bubble glyph with
+            an unread dot here, and `UnreadIcon` is a slot only this component
+            has, so the host button that used to sit here could never show it.
+
+            The click is bridged on a HOST wrapper rather than passed into the
+            wireframe (R4): `VeltSidebarButton` toggles VELT's panel, and this
+            app's drawer is the host-owned `.hw-rail` whose width React controls,
+            so the rail has to be told as well. The wrapper is our element, so its
+            onClick is ordinary React. */}
+        <span
           className={`hw-sidebar-toggle${sidebarOpen ? " hw-sidebar-toggle--active" : ""}`}
           onClick={() => setSidebarOpen((o) => !o)}
-          aria-label={sidebarOpen ? "Hide comments" : "Show comments"}
-          aria-pressed={sidebarOpen}
         >
-          <PanelToggleIcon />
-        </button>
+          <VeltSidebarButton />
+        </span>
       </div>
     </header>
   );

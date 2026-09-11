@@ -14,6 +14,7 @@ import { useCallback, useEffect, useRef } from "react";
 import {
   useAcceptSuggestion,
   useCommentActionCallback,
+  useCommentAnnotations,
   useRejectSuggestion,
 } from "@veltdev/react";
 import {
@@ -129,16 +130,80 @@ export function AgentRunController() {
     [pause],
   );
 
-  const stopRun = useCallback(async () => {
-    const run = runRef.current;
-    if (!run) return;
-    // Flip the flag BEFORE clearing the timer and before the await: a pause that
-    // resolves during the network round trip must see a cancelled run.
-    run.cancelled = true;
-    clearRunTimer();
-    runRef.current = null;
-    await postRun({ phase: "cancel", annotationId: run.annotationId, commentId: run.commentId });
-  }, [clearRunTimer]);
+  /**
+   * Stop a run — including one this component never started.
+   *
+   * `fallback` is the target carried by the Stop chip's own click event. It is
+   * what makes the button work at all after a reload: the pacing lives in this
+   * component, so `runRef` is empty on a fresh page, and the previous version
+   * returned early whenever it was — which is exactly the reported "Stop does
+   * nothing". The progress row belongs to a real comment on the server, so the
+   * cancel has to be sent from whatever identifiers are to hand, not only from
+   * local state.
+   */
+  const stopRun = useCallback(
+    async (fallback?: { annotationId?: string; commentId?: number }) => {
+      const run = runRef.current;
+      const annotationId = run?.annotationId ?? fallback?.annotationId;
+      const commentId = run?.commentId ?? fallback?.commentId;
+
+      if (run) {
+        // Flip the flag BEFORE clearing the timer and before the await: a pause
+        // that resolves during the network round trip must see a cancelled run.
+        run.cancelled = true;
+        clearRunTimer();
+        runRef.current = null;
+      }
+
+      if (!annotationId || typeof commentId !== "number") return;
+      await postRun({ phase: "cancel", annotationId, commentId });
+    },
+    [clearRunTimer],
+  );
+
+  // ── REAP ORPHANED RUNS ──────────────────────────────────────────────────────
+  //
+  // `phase: 'start'` ADDS A COMMENT whose only content is the progress object,
+  // and every later phase UPDATES that comment. The pacing, though, lives in
+  // this component — so a run interrupted by a reload or a closed tab can never
+  // advance or complete, and its comment is stranded at `state: 'active'`
+  // forever. That is the "it's always visible" report: the rows on screen were
+  // real comments left behind by runs whose browser had gone away, and nothing
+  // in the system was ever going to finish them.
+  //
+  // Reaped from the FIRST annotations emission only, and never again. A run
+  // cannot outlive the page, so anything already active when this component
+  // mounts is orphaned by definition — while anything that appears later was
+  // started by this session and must be left alone.
+  //
+  // Doing it per-emission instead was tried and broke Re-analyze outright:
+  // `startRun` sets `runRef` only AFTER the start round-trip returns, so between
+  // the server creating the comment and the ref being assigned there is a window
+  // where a perfectly live run looks orphaned — and the reaper cancelled the run
+  // it had just started. Measured: the progress row never appeared at all.
+  const annotations = useCommentAnnotations();
+  const reapedRef = useRef(false);
+
+  useEffect(() => {
+    if (reapedRef.current) return;
+    if (!annotations) return;
+    reapedRef.current = true;
+
+    for (const annotation of annotations) {
+      for (const comment of annotation.comments ?? []) {
+        if (comment.progress?.state !== "active") continue;
+        console.log(
+          "[AgentRun] reaping orphaned run",
+          `${annotation.annotationId}:${comment.commentId}`,
+        );
+        void postRun({
+          phase: "cancel",
+          annotationId: annotation.annotationId,
+          commentId: comment.commentId,
+        });
+      }
+    }
+  }, [annotations]);
 
   useEffect(() => {
     if (!actionEvent) return;
@@ -151,7 +216,9 @@ export function AgentRunController() {
         break;
 
       case ACTION_IDS.STOP:
-        void stopRun();
+        // Pass the event's own target: on a fresh page this is the ONLY way to
+        // reach the comment the row belongs to.
+        void stopRun({ annotationId, commentId });
         break;
 
       case ACTION_IDS.COPY_RESPONSE:
