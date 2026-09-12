@@ -16,36 +16,22 @@ import {
 import { VcOptionsMenu } from "./VcOptionsMenu";
 import { VcDialogComposer } from "./VeltComposerWf";
 
-// ═══ surface-focused-thread ═══════════════════════════════════════════════════
+// The sidebar's focused-thread drawer. Needs its own variant, selected by
+// `focusedThreadDialogVariant` — without a matching registration it falls back to
+// the base wireframe and renders the floating popover's chrome (title bar, border,
+// shadow) inside the drawer.
 //
-//   figma 872:21662 → 872:21603 "Comment Drawer" (448x884)
-//   in app context:  890:22521 · 890:24231 · 890:24417 · 890:24599 · 890:24781
-//   scope:           Figma thread #3 — "the design of this threaded comment
-//                    panel is relevant."
+// How the three dialog variants differ:
+//   base            bordered popover with its own "Comment" title
+//   sidebar         flat list card: grey box, context line, reply toggle
+//   focusedThread   drawer body: no card box, no context line, no reply toggle —
+//                   every comment is already expanded
 //
-// The FOURTH VeltCommentDialogWireframe registration. The comment dialog is
-// re-used verbatim for the sidebar's focused-thread view, so — exactly like the
-// sidebar rows and the page-mode composer — it needs its own variant, selected by
-// `<VeltCommentsSidebar focusedThreadDialogVariant="focusedThread">`. Without a
-// matching registration the focused thread falls back to the BASE wireframe and
-// renders the 358px floating popover's chrome (its own "Comment" title bar, card
-// border and shadow) inside a 448px drawer.
-//
-// ── How this differs from the two sibling registrations
-//   BASE (VeltCommentDialogWf)      358x248 bordered popover, own "Comment" title
-//   variant="sidebar"               368px flat CARD: grey box, context line,
-//                                   "1 reply" toggle, assignee band
-//   variant="focusedThread" (HERE)  448px drawer body: NO card box, NO context
-//                                   line, NO reply toggle — every comment is
-//                                   already expanded, so rows are just
-//                                   avatar + name + time + message, 8px apart.
-//
-// ── The header split (see VeltCommentSidebarWf's FocusedThread comment)
-// The frame's header is `‹  Comment Thread   ⋯  ✓  ✕`. `‹` and the title belong to
-// the sidebar's FocusedThread slot; `✕` is the sidebar CloseButton. `⋯` and `✓`
-// are COMMENT-DIALOG slots — they only resolve against an annotation — so they
-// live here, in `.vc-focus-actions`, and the stylesheet lifts that row into the
-// header band above. Mounting them in the sidebar instead would render inert.
+// The drawer's header is assembled from two owners. `‹` and the title belong to
+// the sidebar's FocusedThread slot and `✕` to its CloseButton; `⋯` and `✓` are
+// comment-dialog slots that only resolve against an annotation, so they live here
+// and the stylesheet lifts that row into the header band.
+
 /**
  * The drawer's 48px header band, shared by BOTH branches.
  *
@@ -108,30 +94,12 @@ export function VeltFocusedThreadWf() {
                 is enough. */}
             <VeltIf condition="{annotation.type} !== 'suggestion'">
             <div className="vc-focus">
-                {/* The drawer's HEADER BAND is drawn by the DIALOG, not by the
-                    sidebar — and `⋯ ✓` live inside the dialog's own `Header` slot.
-                    Both of those are load-bearing:
-
-                    · `Options` DOES NOT WORK outside a dialog Header. Measured: in
-                      a plain `<div>` at the dialog root the trigger rendered and
-                      hit-tested fine (elementsFromPoint returned it on top), but no
-                      `.mat-mdc-menu-panel` was ever created — the dropdown simply
-                      cannot mount. Inside Header it opens, exactly as it does in the
-                      floating popover.
-
-                    · The previous version lifted this row into the SIDEBAR's header
-                      with `position:absolute; top:-36px`. That put its box outside
-                      the dialog, and the dialog's own outside-click handling then
-                      treated a press on `⋯` as a click outside itself: the focused
-                      thread closed on the first click and the menu never appeared
-                      (measured — the first DOM mutation after the click already read
-                      `focus:false menu:false`). Dropping the lift kept the thread
-                      open, which isolated it.
-
-                    So the dialog owns the 48px band, and the sidebar's `‹ Comment
-                    Thread` + `✕` are positioned INTO it by the stylesheet instead.
-                    That direction is safe: those are sidebar-owned controls, so
-                    their clicks never pass through the dialog's hit-testing. */}
+                {/* The dialog owns the 48px header band, and `⋯ ✓` have to sit
+                    inside its own Header slot — `Options` can't mount its dropdown
+                    anywhere else. The sidebar's `‹ Comment Thread` and `✕` are
+                    positioned into this band by the stylesheet instead; that
+                    direction is safe because their clicks never pass through the
+                    dialog's own outside-click handling. */}
                 <FocusHeader />
 
                 {/* ── REPOSITIONED (8:28601 · 8:28660) ─────────────────────────────
@@ -142,30 +110,12 @@ export function VeltFocusedThreadWf() {
                     Self-gating, so an unassigned thread keeps today's geometry. */}
                 <VcAssigneeBanner />
 
-                {/* NOT MOUNTED — `VisibilityBanner` (R7: omitted, never
-                    display:none).
-                    REPORTED: the black `🔒 Only visible to 1 Team` pill appears on
-                    the Vercel preview but never locally. It is not a styling
-                    regression and not environment-specific chrome — it is a
-                    SELF-GATING slot that only paints when the SDK resolves the
-                    annotation's audience as RESTRICTED, and the two environments
-                    resolve audience by different routes:
-                      local   — `permissionProvider.dev: true` +
-                                `resolvePermissions` runs IN THE BROWSER
-                                (app/page.tsx), and nothing narrows the audience;
-                                the console even reports "Permission provider not
-                                configured".
-                      preview — Velt's backend IGNORES the browser resolver for a
-                                production key and calls the registered
-                                server-to-server Real-Time Permission Provider
-                                instead (app/api/velt/check-permissions/route.ts —
-                                its own header says exactly this). That resolves to
-                                a narrower audience, so the banner has something to
-                                say and paints.
-                    No Altana frame draws a visibility banner on any surface, so
-                    the fix that holds in BOTH environments is not to mount it.
-                    Its chrome is still in styles.css under "Visibility banner" if
-                    it is ever wanted back. */}
+                {/* VisibilityBanner is deliberately not mounted. No Altana frame draws
+                    one, and it only paints when the SDK resolves an annotation's
+                    audience as restricted — which the browser-side permission
+                    resolver we use locally never does, but the server-side one the
+                    deployed app uses does. That made it appear on preview only.
+                    Its chrome is still in styles.css if it's ever wanted. */}
 
                 <VeltCommentDialogWireframe.Body className="vc-focus-body">
                     <VeltCommentDialogWireframe.Threads className="vc-focus-thread">

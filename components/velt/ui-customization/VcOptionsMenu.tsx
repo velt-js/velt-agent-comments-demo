@@ -3,40 +3,17 @@
 import { VeltCommentDialogWireframe } from "@veltdev/react";
 import { VcDotsThreeIcon } from "./VcIcons";
 
-// ══ fam-comment-dialog-options-drodpwon / surface-options-menu ═══════════════
+// The thread-level options dropdown: Mark as Unread · Copy Link · Delete.
 //
-//   figma 872:22294 (states board) · 872:22362 (flows board, anchored inside the
-//   358px popover at 113,37) · 890:23213 (app context)
-//   THREE rows, in this order:  Mark as Unread · Copy Link · Delete
+// Nested inside each comment-dialog variant that needs it rather than registered
+// at the wireframe root, which would go global and shadow the nested copies.
 //
-// The THREAD-level options dropdown, nested inside every comment-dialog variant
-// that needs it (the floating popover's header and the focused thread's header),
-// never registered at the VeltWireframe root — a root-level registration would
-// become a global key and shadow the nested copies ("don't register the same
-// component both ways", wireframes.md §3).
+// Mounted on the root-level `Options` slot, not `ThreadCard.Options` — this is the
+// one kebab per thread. The per-comment kebab is a different slot, in
+// VcCommentActions.
 //
-// Mounted on the ROOT-LEVEL `Options` slot (NOT `ThreadCard.Options`): this is the
-// one kebab per THREAD. The per-COMMENT kebab is a different slot and lives in
-// VcCommentActions.tsx.
-//
-// ── Why this is now exactly the design's three rows ──────────────────────────
-// It used to carry a fourth row, `Assign to me`, added as a workaround while the
-// native assignee picker was believed to be broken. Both halves of that decision
-// are now settled by the designers in Figma:
-//
-//   #5  (pinned on this very dropdown) — "I think whatever default options Velt
-//       has for this kind of action is good with us, this is just illustrative."
-//   #10 — "For Assigning Comment, should it be from Three dot menu, or through
-//       composer?" → Imogen Todd: "I think through the COMPOSER would make
-//       sense." Rakesh Goyal then linked two live builds where Velt's own
-//       composer assign UI works, and Imogen picked one.
-//
-// So assignment moves to the composer (`Composer.AssignUser`, see
-// VeltComposerWf.tsx) and this menu goes back to the three rows the frame draws.
-// The host-side `assignUser()` bridge that backed the old row is gone with it.
-//
-// `Edit` is not here either: it is per-comment, and #7 puts it on the comment's
-// own hover kebab.
+// No Edit row (that's per-comment) and no Assign row: assignment moved to the
+// composer, per design review.
 
 export function VcOptionsMenu() {
     return (

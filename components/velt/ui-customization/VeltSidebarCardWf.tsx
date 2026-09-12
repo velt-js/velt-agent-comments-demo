@@ -11,45 +11,23 @@ import { VcAssigneeBanner } from "./VcAssigneeBanner";
 import { VcCommentActions, VcEditComposer, VcReactions } from "./VcCommentActions";
 import { VcDialogComposer } from "./VeltComposerWf";
 
-// ═══ fam-comment-dialog-states / surface-sidebar-card ═════════════════════════
+// The sidebar's list rows. `variant="sidebar"` plus the host's
+// `dialogVariant="sidebar"` give them their own template, so the flat 368px card
+// and the floating popover stop sharing a layout.
 //
-//   figma 872:21719 · 872:21735 · 872:21757 · 872:21775  — four 368x92..176 flat rows
-//   mock:  .velt-customize/phases/WYAWuEm8DrIk-872-20766-A/mocks/fam-comment-dialog-states.html
+// Two branches, picked by the SDK's own isSuggestionComment() gate — which fires
+// for list rows too, not just the floating dialog. An agent annotation renders
+// through the Suggestion slots and no thread cards at all, so the design's "agent
+// comment looks like an ordinary card" has to be built on Suggestion.Header.Agent.
+// Mount only the normal branch and every agent row comes out blank.
 //
-// The SECOND VeltCommentDialogWireframe context registration (family 2 owns the third,
-// `variant="pageModeComposer"`). The comment dialog is reused verbatim for every sidebar
-// list row; `variant="sidebar"` + the host's `<VeltCommentsSidebar dialogVariant="sidebar">`
-// give those rows their own template, so the 368px flat card and the 358px floating
-// popover stop sharing one layout (DI-1).
+// State modifiers ride on `Body`, not on our own `.vc-card` div: `veltClass` on a
+// plain div never fires.
 //
-// ── Two branches, ONE native gate ────────────────────────────────────────────
-// The SDK's own isSuggestionComment() gate decides which subtree renders; LIVE-VERIFIED
-// that it fires for SIDEBAR ROWS too, not only the floating dialog (DI-4's open question):
-// a seeded agent annotation renders `velt-comment-dialog-suggestion-internal` inside the
-// sidebar host and NO thread cards at all. So the design's "agent comment draws an
-// ordinary card" is reachable only through the Suggestion slots — which is what the
-// Suggestion branch below does: same `.vc-card…` chrome, fed by Suggestion.Header.Agent
-// instead of ThreadCard. Mounting only the normal branch would have left every agent row
-// blank.
-//
-// ── State modifiers: velt-class on Body, NOT on the own .vc-card div ─────────
-// plan-structure asks for veltClass on the own root div. R28 forbids it: `velt-class` on
-// a plain <div> is dead code (survives the clone, never fires). The modifiers therefore
-// ride on `VeltCommentDialogWireframe.Body` — a real Velt element, and the ancestor of
-// every state-dependent row in the card. Recorded as bd-13.
-//
-// ── What is deliberately NOT mounted (R7: omitted, never display:none) ───────
-// ThreadCard.Reply (the design draws no per-comment reply affordance on a collapsed row).
-// The THREAD-level kebab and the Resolve/Unresolve pair are gone from this surface: the
-// four collapsed frames draw neither, and the design gives thread-level actions their own
-// home — opening a row switches the panel to the FOCUSED THREAD, whose header carries
-// `⋯` and `✓` (VeltFocusedThreadWf.tsx). What survives on the card is the PER-COMMENT
-// hover kebab from <VcCommentActions/> — Edit · Delete, 890:23218 / 890:23222 and Figma #7.
-// REACTIONS are not part of this design (0 reaction/emoji nodes in either section; the
-// four `Icon / Smiley` nodes are all hidden) and were removed.
-// Suggestion.Footer / .Actions / .Banner and Suggestion.Header.Menu (the design's agent
-// row is an ordinary card, so accept/reject stays on the floating dialog where the frame
-// actually draws it — see VeltCommentDialogWf).
+// Not mounted: ThreadCard.Reply, and the thread-level kebab and Resolve pair —
+// the collapsed frames draw none of them, and opening a row switches the panel to
+// the focused thread, whose header carries those. What stays is the per-comment
+// hover kebab from VcCommentActions.
 
 /** The card's own chrome, shared by both branches: `.vc-card` box → `.vc-card-inner`
  *  is the Body slot, so this helper only draws the outer box. */

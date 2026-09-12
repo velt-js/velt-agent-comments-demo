@@ -14,35 +14,13 @@ import { VcArrowBendDownRightIcon, VcSidebarSimpleIcon } from "./VcIcons";
 import { VcOptionsMenu } from "./VcOptionsMenu";
 import { VcDialogComposer } from "./VeltComposerWf";
 
-// ═══ fam-comment-dialog-states / surface-dialog ═══════════════════════════════
+// The floating pin popover. This is the base (no-variant) registration, which is
+// what the SDK falls back to for any dialog context without its own variant — the
+// sidebar's rows and drawer each have one, so the fallback is the popover.
 //
-//   figma 872:21857 — the 358x248 floating popover, expanded + selected
-//   mock:  .velt-customize/phases/WYAWuEm8DrIk-872-20766-A/mocks/fam-comment-dialog-states.html
-//
-// This is the BASE (no-variant) registration, and per the SDK's variant fallback rule
-// ("if no wireframe matches the active variant, Velt falls back to the base wireframe")
-// it is what the FLOATING dialog renders — exactly the pattern wireframes.md §3c
-// documents ("base look (used for the floating dialog)" + `variant="sidebar"` for the
-// list rows). The sidebar's collapsed rows are served by VeltSidebarCardWf, selected by
-// the host's `<VeltCommentsSidebar dialogVariant="sidebar">`.
-//
-// DI-1: the design's two frames disagree on width (368 flat card vs 358 bordered popover
-// with a header, a shadow and a composer) because they are two SURFACES, not two states.
-//
-// ── The dialog has TWO mutually exclusive layouts, switched by the SDK itself
-// (comment-dialog isSuggestionComment() → shouldShowSuggestion; since the 2026-07 SDK
-// rename+gate change the card renders for ANY suggestion-typed annotation, agent-authored
-// or human-authored — annotation.agent is no longer required):
-//
-//   annotation.type === 'suggestion' || annotation.commentType === 'suggestion'
-//
-// TRUE  → only the <Suggestion> subtree renders (suggestion card).
-// FALSE → only the normal layout renders (thread cards + composer).
-//
-// No VeltIf is needed — the gate is native, and LIVE-VERIFIED to fire in both this
-// surface and the sidebar rows. DI-4 keeps the full accept/reject suggestion card HERE
-// (the demo's core agent surface) while the sidebar variant draws agent rows as the
-// ordinary cards the design shows.
+// Two mutually exclusive layouts, switched by the SDK itself rather than a VeltIf:
+// isSuggestionComment() renders only the <Suggestion> subtree for a
+// suggestion-typed annotation, and only the normal thread layout otherwise.
 
 export function VeltCommentDialogWf() {
     return (
@@ -108,30 +86,12 @@ export function VeltCommentDialogWf() {
                     Self-gating: nothing renders on an unassigned thread. */}
                 <VcAssigneeBanner />
 
-                {/* NOT MOUNTED — `VisibilityBanner` (R7: omitted, never
-                    display:none).
-                    REPORTED: the black `🔒 Only visible to 1 Team` pill appears on
-                    the Vercel preview but never locally. It is not a styling
-                    regression and not environment-specific chrome — it is a
-                    SELF-GATING slot that only paints when the SDK resolves the
-                    annotation's audience as RESTRICTED, and the two environments
-                    resolve audience by different routes:
-                      local   — `permissionProvider.dev: true` +
-                                `resolvePermissions` runs IN THE BROWSER
-                                (app/page.tsx), and nothing narrows the audience;
-                                the console even reports "Permission provider not
-                                configured".
-                      preview — Velt's backend IGNORES the browser resolver for a
-                                production key and calls the registered
-                                server-to-server Real-Time Permission Provider
-                                instead (app/api/velt/check-permissions/route.ts —
-                                its own header says exactly this). That resolves to
-                                a narrower audience, so the banner has something to
-                                say and paints.
-                    No Altana frame draws a visibility banner on any surface, so
-                    the fix that holds in BOTH environments is not to mount it.
-                    Its chrome is still in styles.css under "Visibility banner" if
-                    it is ever wanted back. */}
+                {/* VisibilityBanner is deliberately not mounted. No Altana frame draws
+                    one, and it only paints when the SDK resolves an annotation's
+                    audience as restricted — which the browser-side permission
+                    resolver we use locally never does, but the server-side one the
+                    deployed app uses does. That made it appear on preview only.
+                    Its chrome is still in styles.css if it's ever wanted. */}
 
                 <VeltCommentDialogWireframe.Body className="vc-dialog-body">
                     <VeltCommentDialogWireframe.Threads className="vc-thread">

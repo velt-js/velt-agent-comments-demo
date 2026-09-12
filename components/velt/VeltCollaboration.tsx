@@ -14,17 +14,14 @@ import { ContactsRegistrar } from "./ContactsRegistrar";
 import { VeltCommentContext } from "./VeltCommentContext";
 import { VeltCustomization } from "./ui-customization/VeltCustomization";
 import {
-  CANCEL_COMPOSER_BUTTON,
   DISPLAY_MARK_ALL_READ,
   DISPLAY_OPTIONS_BUTTON,
   OPEN_SIDEBAR_BUTTON,
 } from "./ui-customization/vcButtonIds";
 
-// Right-anchored comments drawer hosting the embedded page-mode sidebar.
-// Ported from altana-wireframes: sorting, the resolved view, and the "Only your
-// mentions" filter are SDK-native (MinimalFilterDropdown items in the sidebar
-// wireframe), so the only host logic left is the Cancel escape hatch and the
-// "C" keyboard shortcut.
+// Right-anchored drawer hosting the embedded page-mode sidebar. Sorting,
+// filtering and the resolved view are all SDK-native, so what's left here is the
+// glue the SDK can't own: opening/closing the host drawer, and the display menu.
 function Panel({
   open,
   setSidebarOpen,
@@ -37,46 +34,28 @@ function Panel({
   const { client } = useVeltClient();
   const annotations = useCommentAnnotations();
 
-  // "Open in sidebar" (the vc-open-sidebar VeltButtonWireframe in the comment
-  // dialog header, figma 872:21857 @ 331,23) → open the host's comments drawer.
-  //
-  // The button lives inside a Velt wireframe, so it cannot carry a React onClick
-  // (R4). Velt's veltButtonClick event is the bridge: the same mechanism the
-  // hw-cancel button below already uses. Open-only, never toggle — the design's
-  // affordance reveals the sidebar, and a thread that is already listed there
-  // should stay visible if the control is pressed twice.
+  // The comment dialog's "open in sidebar" button. It lives inside a wireframe,
+  // so it can't take a React onClick — veltButtonClick is the only way across.
+  // Open-only, not a toggle: pressing it twice shouldn't hide the thread.
   useEffect(() => {
     if (buttonEvent?.buttonContext?.clickedButtonId !== OPEN_SIDEBAR_BUTTON) return;
     setSidebarOpen(() => true);
   }, [buttonEvent, setSidebarOpen]);
 
-  // ── the band's Sliders button → the display-options menu ───────────────────
-  //
-  // The menu is WIREFRAME markup (VeltCommentSidebarWf), so it cannot gate on
-  // React state. The host owns the open/closed bit and publishes it as a class on
-  // the rail, which the stylesheet keys off — the same direction as the ✕ listener
-  // below: host code on a host element, never a React handler inside a wireframe.
-  //
-  // The class is toggled IMPERATIVELY rather than held in `useState`, for two
-  // reasons: updating a DOM node the effect owns is what effects are for, and a
-  // state change here would re-render `<VeltCommentsSidebar>` — a large Angular
-  // component — every time the menu opens, for a class nothing in React reads.
+  // The display-options menu is wireframe markup, so it can't read React state.
+  // The host publishes open/closed as a class instead and the stylesheet keys off
+  // it. Kept out of useState so opening the menu doesn't re-render the sidebar.
   const setDisplayMenuOpen = useCallback((open: boolean) => {
-    // `.hw-rail-inner`, not `.hw-rail`: the rail's own className is a React
-    // expression now (it carries `hw-rail--open`), and every re-render would
-    // clobber a class added imperatively to the same element. The inner div's
-    // className is a static string, so nothing overwrites it.
+    // `.hw-rail-inner`, not `.hw-rail`: the rail's className is a React
+    // expression, so a re-render would wipe a class set imperatively on it.
     railRef.current
       ?.querySelector(".hw-rail-inner")
       ?.classList.toggle("hw-display-open", open);
   }, []);
 
-  // ONE press must run the handler ONCE. `useVeltEventCallback` returns the last
-  // event and HOLDS it, so any effect listing something that changes identity on
-  // re-render — `client` does — re-runs on the SAME press. Measured: "Mark all as
-  // read" ran twice per click. It is idempotent so nothing broke there, but the
-  // toggle below would have cancelled itself. The event object is the identity to
-  // deduplicate on.
+  // useVeltEventCallback holds the last event, so an effect that also depends on
+  // something with an unstable identity (`client`) fires again for the same press.
+  // Dedupe on the event object so one press runs the handler once.
   const handledEventRef = useRef<unknown>(null);
   const takeButtonEvent = useCallback(
     (id: string) => {
@@ -95,11 +74,8 @@ function Panel({
       ?.classList.toggle("hw-display-open");
   }, [takeButtonEvent]);
 
-  // Close on a press anywhere that is not the button or the menu. Capture phase so
-  // it runs before Velt's own handlers and cannot be swallowed by them. Always
-  // mounted — `classList.toggle(cls, false)` on an already-closed menu is a no-op,
-  // and a listener that mounts and unmounts with the menu would have to re-subscribe
-  // on every open.
+  // Close on an outside press. Capture phase, so Velt's own handlers can't
+  // swallow it first.
   useEffect(() => {
     const onDocClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement | null;
@@ -110,13 +86,9 @@ function Panel({
     return () => document.removeEventListener("click", onDocClick, true);
   }, [setDisplayMenuOpen]);
 
-  // ── the menu's one row → mark every thread read ────────────────────────────
-  //
-  // There is no bulk API: `CommentElement` exposes `markAsRead(annotationId)` and
-  // nothing wider, so this walks the threads the panel already has and calls it per
-  // thread. Listing `annotations` in the deps is safe BECAUSE of the dedup above —
-  // a re-run triggered by the comment stream finds the event already handled and
-  // returns before touching anything.
+  // "Mark all as read". There's no bulk API — only markAsRead(annotationId) — so
+  // walk the threads the panel already has. Safe to depend on `annotations`
+  // because of the dedupe above.
   useEffect(() => {
     if (!takeButtonEvent(DISPLAY_MARK_ALL_READ)) return;
     const commentElement = client?.getCommentElement();
@@ -127,57 +99,10 @@ function Panel({
     setDisplayMenuOpen(false);
   }, [takeButtonEvent, client, annotations, setDisplayMenuOpen]);
 
-  // Cancel (hw-cancel VeltButtonWireframe) → clear + collapse the composer.
-  // Deferred via timeout: the hook delivers an external event, not derived
-  // state.
-  useEffect(() => {
-    if (buttonEvent?.buttonContext?.clickedButtonId !== CANCEL_COMPOSER_BUTTON) return;
-    const apply = window.setTimeout(() => {
-      // clearComposer() requires a targetComposerElementId the v1 composers
-      // don't expose. Clearing via editing commands fires the input events
-      // Velt listens to, then the blur collapses the composer. The event
-      // carries commentAnnotation when Cancel sits in a thread's reply
-      // composer — scope to that dialog; otherwise it's the page-mode composer.
-      const scope = buttonEvent?.commentAnnotation
-        ? railRef.current?.querySelector(
-            ".velt-comment-dialog--sidebar-mode.velt-comment-dialog--selected",
-          )
-        : railRef.current?.querySelector(".velt-sidebar-page-mode-composer");
-      const input = scope?.querySelector<HTMLElement>(
-        ".velt-comment-dialog-composer.velt-composer-open .velt-composer-input--message, .velt-composer-input--message",
-      );
-      if (input && (input.textContent ?? "").length > 0) {
-        input.focus();
-        document.execCommand("selectAll", false);
-        document.execCommand("delete", false);
-      }
-      // Escape collapses Velt's composer-open state; blur drops the caret.
-      input?.dispatchEvent(
-        new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
-      );
-      (document.activeElement as HTMLElement | null)?.blur();
-      input?.blur();
-      // Velt resets composerInOpenState in its dialog click handler only when
-      // the composer is empty — Cancel's own click ran before the clear, so
-      // re-dispatch a click outside the composer now that it is.
-      scope
-        ?.querySelector(".hw-card")
-        ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    }, 0);
-    return () => window.clearTimeout(apply);
-  }, [buttonEvent]);
-
-  // The sidebar header's ✕ (and the focused-thread drawer's) → collapse the host
-  // drawer as well as Velt's own panel.
-  //
-  // NOT via `<VeltCommentsSidebar onSidebarClose>`. That callback reports Velt's
-  // OWN panel state, which in embedMode is not the same thing as "the user pressed
-  // the ✕" — it can fire while the sidebar settles, and anything it drives then
-  // fights the host's toggle. A capture-phase click listener keyed to the
-  // CloseButton slot is exact: it fires for a real press on that control and
-  // nothing else, and it leaves Velt's own handler on the element untouched. This
-  // is host code listening on a host element, not a React handler smuggled into
-  // wireframe markup (R4).
+  // The sidebar's ✕ has to collapse the host drawer too. Not via onSidebarClose:
+  // in embedMode that reports Velt's own panel state and can fire while the
+  // sidebar settles, which fights the host toggle. Keying off a real press on the
+  // CloseButton slot is exact.
   useEffect(() => {
     const rail = railRef.current;
     if (!rail) return;
@@ -190,23 +115,11 @@ function Panel({
     return () => rail.removeEventListener("click", onClick, true);
   }, [setSidebarOpen]);
 
-  // Clicking a comment pin closes the drawer.
-  //
-  // WHY. The popover and the side sheet are mutually exclusive IN THE DESIGN:
-  // 890:22822 ("comment tag click") draws the popover with no side sheet, and
-  // every side-sheet frame draws no popover. Velt agrees for a harder reason —
-  // only the SELECTED comment's dialog renders a composer, and while the sidebar
-  // is open it owns selection, so the pin popover came up in its collapsed form:
-  // MEASURED `velt-comment-dialog-body--closed` on the body, the composer host at
-  // 356x24 with no children, i.e. a header, a comment, and a dead 24px band where
-  // the Reply pill belongs.
-  //
-  // Closing the drawer on a pin click restores the design's flow and hands
-  // selection back to the popover, which then renders its composer (verified:
-  // body loses `--closed`, field 324x32). The reverse direction already exists —
-  // the dialog header's panel icon opens the drawer.
-  //
-  // Listener is on `document`, not the rail: pins live in the table, outside it.
+  // Clicking a pin closes the drawer: the popover and the side sheet are
+  // alternatives, not companions. Practically it also matters because only the
+  // selected thread's dialog gets a composer, and an open sidebar owns selection —
+  // leave it open and the popover comes up with no Reply field.
+  // On `document`, not the rail: pins live in the table.
   useEffect(() => {
     const onClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement | null;
@@ -244,12 +157,9 @@ function Panel({
 
   return (
     <div
-      /* `hw-rail--open` is read by the stylesheet, which suppresses the floating
-         pin popover while the drawer owns the thread (popover XOR side sheet).
-         It has to be the OPEN state, not merely the drawer's markup: the focused
-         thread's DOM survives inside the collapsed rail, so a selector keyed to
-         that alone kept the popover hidden after a pin click had closed the rail
-         — measured, rail 0px wide and the popover `visibility: hidden`. */
+      /* The stylesheet keys off `hw-rail--open` to hide the pin popover while the
+         drawer owns the thread. It has to be the open flag rather than the
+         drawer's markup, which survives inside the collapsed rail. */
       className={`hw-rail${open ? " hw-rail--open" : ""}`}
       ref={railRef}
       style={{
@@ -265,62 +175,26 @@ function Panel({
           defaultMinimalFilter="open"
           sortBy="createdAt"
           sortOrder="desc"
-          /* ── FOCUSED THREAD (figma 872:21603 · Figma comment #3) ───────────
-             Opening a row must REPLACE the list with the "Comment Thread"
-             drawer, not expand the row in place. `focusedThreadMode` turns that
-             view on; `openAnnotationInFocusMode` makes a row click the thing
-             that enters it. Without the second prop the mode exists but nothing
-             ever navigates into it. */
+          /* Opening a row replaces the list with the thread drawer.
+             `focusedThreadMode` turns the view on; `openAnnotationInFocusMode` is
+             what navigates into it. */
           focusedThreadMode={true}
-          /* GATED ON THE PANEL BEING OPEN, not `true`.
-             `openAnnotationInFocusMode` makes SELECTING an annotation enter focus
-             mode — and a pin click selects one, so with it always on, clicking a
-             pin while the panel is shut drove the sidebar's focused thread to the
-             same annotation behind the collapsed rail. Measured: `.vc-focus`
-             400x765 holding the very thread the popover was showing, with its own
-             composer, and both composers marked `velt-composer-open`. Velt's
-             `userMentions` tool then resolved to that one — hence the popover's @
-             collapsing its own field and anchoring the picker at the rail's edge.
-             Every reference demo that uses this tool (harvey-demo-next,
-             notion-style, the dashboard samples) registers exactly ONE comment
-             dialog, so the tool has only one composer to find and the ambiguity
-             never arises.
-             With the panel open the drawer IS the surface the design wants, and
-             the floating popover is suppressed there anyway (see the
-             `body:has(.hw-rail--open …)` rule), so one composer is live either
-             way. Figma #3's row-click-opens-the-thread behaviour is unaffected:
-             a row can only be clicked while the panel is open. */
+          /* Gated on the panel being open. This acts on SELECTING an annotation,
+             and a pin click selects one — left always on, clicking a pin while the
+             panel was shut also drove the focused thread behind the collapsed rail,
+             giving two live composers. Velt's @ tool then targeted the wrong one.
+             Row clicks only happen with the panel open, so nothing is lost. */
           openAnnotationInFocusMode={open}
           replyPlaceholder="Reply"
           commentPlaceholder="New Comment"
-          /* Figma #9 — the designers accepted Velt's default search
-             ("I think that would work for us, then! We can customize the CSS
-             later"), so the sidebar's own Search slot is mounted and this is its
-             placeholder. */
+          /* Velt's own search, per design review. */
           searchPlaceholder="Search Comments"
-          /* ENABLES the funnel's filter panel. `Filter` and `FilterButton` are
-             declared in the wireframe, but every filter is off by default, so the
-             panel rendered 0x0 and the button looked inert — measured, the live
-             `.hw-filter` stayed 0x0 through a real click.
-             `involved` is the one that replaces the removed `For You` pill: it
-             covers authored + mentioned + assigned, which is what "threads that
-             concern me" means. The rest are the filters the panel's declared rows
-             expose. */
-          /* `name` is the GROUP HEADING, and it is not optional in practice:
-             `Filter.<Group>.Name` renders the string from here, so with `name`
-             unset the slot cloned in as a real `app-comment-sidebar-filter-name`
-             element measuring 0x0 with no text — which is why the panel read as
-             six identical `All / Me / User 2 / ...` blocks with nothing saying
-             which group was which. The labels say what each group actually
-             filters on, read off the live counts: `people` is the AUTHOR
-             (Me 6 / Altana Review Agent 3 — the two who wrote anything),
-             `involved` is everyone on the thread, `tagged` is @-mentions. */
-          /* BOTTOM SHEET, not a floating menu. `filterPanelLayout` is a real
-             host prop (`IVeltCommentSidebarV2Props`: 'menu' | 'bottomSheet') and
-             it was unset, so the panel defaulted to `menu` — a card hanging off
-             the funnel that overlays the list it is filtering. As a sheet it
-             rises from the bottom of the sidebar instead, which keeps the rows
-             visible above it and gives Reset/Apply a fixed footer to sit in. */
+          /* Every filter is off by default, so the funnel's panel needs these to
+             render at all. `name` is the group heading — leave it out and the
+             panel is six unlabelled All/Me blocks. `involved` covers authored +
+             mentioned + assigned; `people` is the author. */
+          /* a sheet rising from the bottom of the panel, rather than a card
+             overlaying the list it filters. */
           filterPanelLayout="bottomSheet"
           filterConfig={{
             involved: { enable: true, name: "Involved" },
@@ -331,13 +205,11 @@ function Panel({
             tagged: { enable: true, name: "Tagged" },
           }}
           pageModeComposerVariant="pageModeComposer"
-          /* selects the `comment-dialog---sidebar` wireframe for every list row.
-             Without it the rows fall back to the BASE dialog template and the
-             368px collapsed card can never render (plan-structure HC-2 / DI-1). */
+          /* picks the list row's dialog template; without it rows fall back to
+             the base one. */
           dialogVariant="sidebar"
-          /* selects `comment-dialog---focusedThread` for the drawer. Same trap as
-             dialogVariant: unset, the focused thread renders the floating
-             popover's chrome (its own title bar + border) inside the drawer. */
+          /* same for the drawer; unset, it renders the popover's chrome inside
+             the panel. */
           focusedThreadDialogVariant="focusedThread"
         />
       </div>
@@ -400,44 +272,22 @@ export function VeltCollaboration({
       {/* Turns `commentActionClicked` into real backend writes (progress + actions demo). */}
       <AgentRunController />
       <ContactsRegistrar />
-      {/* Attaches the product name to annotations created on a product cell, so the
-          design's "Product Name" row (872:21785) has data to render. */}
+      {/* Attaches the product name to annotations on a product cell, so the card's
+          context row has something to show. */}
       <VeltCommentContext />
-      {/* `For You | Everything` (872:21415) → commentElement.setCommentSidebarFilters(). */}
       {/* Popover comments for the product table: a VeltCommentTool with a
-          targetElementId pins a thread to a Name cell and Velt draws the
-          triangle indicator in that cell's top-right corner. Text comments in
-          the document stay on (textMode defaults to true).
-          NOTE: keep this note OUTSIDE the tag — a `>` inside a JSX comment in
-          the attribute block truncates verify-host-wiring.mjs's parse. */}
+          targetElementId pins a thread to a Name cell. Text comments in the
+          document stay on (textMode defaults to true). */}
       <VeltComments
         shadowDom={false}
         popoverMode={true}
         commentPlaceholder="Comment or tag others with @"
-        /* design-gated (R24): frame 872:22157 draws the literal 'Reply'. */
+        /* the design's literal placeholder. */
         replyPlaceholder="Reply"
-        /* NO `collapsedComments` / `collapsedRepliesPreview` — removed, not
-           merely unset.
-           They produce Velt's MoreReply control ("Show N replies"), which
-           expands the replies inline underneath itself. A thread therefore
-           rendered the root comment, a live "Show 6 replies" link, AND every
-           reply below it — three things where the design has one.
-           The design's affordance is a TOGGLE, not a reveal-in-place: the
-           collapsed card shows the root comment plus `↳ 1 reply`
-           (872:21735 `Frame 427321038` = ArrowBendDownRight + "1 reply"), which is
-           ToggleReply's behaviour — so the props come off and the wireframes mount
-           ToggleReply only (DI-5 is resolved in ToggleReply's favour; see
-           VeltSidebarCardWf).
-           CORRECTION, measured: the frames 872:21857 (popover) and 872:21603
-           (drawer) draw every comment with no control, but that is the SELECTED
-           state. The floating dialog also opens UNSELECTED — body gets
-           `velt-comment-dialog-body--closed` and shows the root comment only — and
-           reading those frames as "this surface never needs the row" is what left
-           the pin dialog with its replies hidden and no way to reach them. The
-           popover mounts ToggleReply too (VeltCommentDialogWf); Velt's own
-           `!commentDialogSelected` gate keeps it out of the expanded state, so both
-           frames still match. The drawer genuinely needs none: it is only ever
-           reached selected. */
+        /* Deliberately no `collapsedComments` / `collapsedRepliesPreview`: those
+           give you MoreReply, which reveals the replies inline. The design wants a
+           toggle (`↳ 1 reply`), which is ToggleReply — mounted in the wireframes
+           instead. */
         paginatedContactList={true}
         visibilityOptions={true}
       />
