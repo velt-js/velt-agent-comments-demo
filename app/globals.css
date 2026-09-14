@@ -34,10 +34,7 @@ button {
   color: inherit;
 }
 
-/* ============================================================
-   App shell + document viewer backdrop (host DOM, not Velt).
-   Ported from altana-wireframes/components/altana/altana-app.css.
-   ============================================================ */
+/* App shell + document viewer backdrop (host DOM, not Velt) */
 
 .hw-app {
   display: flex;
@@ -46,8 +43,7 @@ button {
   overflow: hidden;
 }
 
-/* Full-width app bar spanning the document AND the comments panel, with an
-   edge-to-edge bottom divider. */
+/* Full-width app bar spanning the document and the comments panel */
 .hw-topbar {
   display: flex;
   align-items: center;
@@ -55,12 +51,7 @@ button {
   gap: 16px;
   flex-shrink: 0;
   padding: 12px 20px;
-  /* THE DESIGN'S APP HEADER, not a dark bar. `App Header / Generic` (37:21174)
-     is white with a 1px `Border/Border` hairline under it — pixel-sampled off
-     that node's own render: ground rgb(255,255,255), last row rgb(230,230,230).
-     This is what lets the sidebar button use the design's literal #333333 in
-     both states; on the old #161513 bar the solid state measured 1.04:1 and
-     would have vanished. */
+  /* `App Header / Generic` (37:21174) is white with a 1px hairline under it */
   background: #ffffff;
   border-bottom: 1px solid #e6e6e6;
 }
@@ -81,9 +72,7 @@ button {
   width: 22px;
   height: 22px;
   border-radius: 6px;
-  /* `App Icon Corner Radius` 6, and the glyph is `Icons/Icon Primary Inverse`
-     #f9f9f9 — i.e. the logo stays a dark tile with a light letter even on the
-     white bar, which is how 37:21174 draws it. */
+  /* Radius 6, and the glyph is `Icons/Icon Primary Inverse` #f9f9f9 */
   background: #333333;
   color: #f9f9f9;
   font-size: 12px;
@@ -156,8 +145,7 @@ button {
   position: relative;
 }
 
-/* Comments panel as a right-anchored drawer: hidden off-screen by default,
-   slides in right-to-left when the sidebar toggle is pressed. */
+/* Comments panel as a right-anchored drawer, sliding in on the sidebar toggle */
 .hw-rail {
   flex: 0 0 auto;
   width: 0;
@@ -170,16 +158,10 @@ button {
   z-index: 20;
 }
 
-/* Fixed-width inner pinned to the right edge so the panel reveals right-to-left
-   as the rail width animates, without the comments content reflowing. */
+/* Fixed-width inner pinned right, so the panel reveals without reflowing */
 .hw-rail-inner {
-  /* 400px = the Normal Sidebar design frame (872:21663). At 354 the cards
-     rendered 321px against a 368px design — the 47px delta that blocked 5 of
-     8 blocks in pass 1. Both this and the inline width in VeltCollaboration
-     must agree; changing only one leaves the panel pinned. */
-  /* 401 = 400 content + the 1px border-left below. box-sizing is border-box
-     globally, so a flat 400 leaves 399 of content and clamps cards to 367
-     against a 368px design. */
+  /* 400px, the Normal Sidebar frame (872:21663); must match VeltCollaboration */
+  /* 401 = 400 content + the 1px border-left, since box-sizing is border-box */
   flex: 0 0 401px;
   width: 401px;
   height: 100%;
@@ -187,7 +169,7 @@ button {
   border-left: 1px solid #e8e6e1;
 }
 
-/* "Viewing as" / "Sign in as" demo control in the top bar. */
+/* "Viewing as" / "Sign in as" demo control in the top bar */
 .hw-user-switcher {
   display: flex;
   align-items: center;
@@ -218,20 +200,8 @@ button {
   font-weight: 500;
 }
 
-/* Sidebar (comments) toggle — `VeltSidebarButton`, templated by
-   VeltSidebarButtonWf. This span is the HOST wrapper: it carries the hit area,
-   the hover wash and the React onClick that moves the drawer, because the button
-   itself lives inside a wireframe and cannot take one (R4).
-
-   The design (2:7495, App Header → Actions) draws this control with NO plate —
-   a bare glyph, unlike every other chip in that row, which all sit on a filled
-   rounded square. It used to be a 34x34 beige plate holding a panel-toggle
-   glyph; the plate is gone and only the hover wash remains.
-
-   THE DESIGN'S OWN TONE, now that the bar is white: `Icons/Icon Primary`
-   #333333, pixel-confirmed as rgb(51,51,51) in 37:21174's header. The earlier
-   note here explained why the glyph had to be light instead — that reason is
-   gone with the dark bar. */
+/* Sidebar toggle. The drawer is embedded, so this is a plain host button.
+   37:20702 carries the state in the glyph's weight, not its colour. */
 .hw-sidebar-toggle {
   position: relative;
   display: inline-flex;
@@ -250,67 +220,7 @@ button {
   background: #f9f9f9;
 }
 
-/* Open state. The earlier note here said the design "draws this control exactly
-   as it draws it closed" and changed only the glyph's strength. Node 37:20702
-   says otherwise: it gives the control two weights of the same silhouette —
-   OUTLINED shut, SOLID open. Pixel-sampled from that board's app header, the
-   solid form is one flat shape with the blue badge at its top right.
-   The tone is the SAME in both states — `Icons/Icon Primary` #333333 — because
-   that is what the design does: the weight alone carries the state. (It used to
-   go to #ffffff on open, which was a workaround for the dark bar.) */
-.hw-sidebar-toggle--active {
-  color: #333333;
-}
-
-/* ── the two weights ────────────────────────────────────────────────────────
-   Both are rendered (see VeltSidebarButtonWf: the wireframe cannot read the
-   host's open state, so the swap has to be CSS). They stack in the same 20px
-   box rather than sitting side by side, so neither one shifts the badge. */
-.hw-sb-glyph {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-}
-
-.hw-sidebar-toggle .hw-sb-glyph--outline {
-  display: inline-flex;
-}
-
-.hw-sidebar-toggle--active .hw-sb-glyph--outline {
-  display: none;
-}
-
-.hw-sidebar-toggle--active .hw-sb-glyph--fill {
-  display: inline-flex;
-}
-
-/* Velt's own hosts between the wrapper and our span carry no box of their own. */
-.hw-sidebar-toggle velt-sidebar-button,
-.hw-sidebar-toggle .velt-sidebar-button {
-  display: contents;
-}
-
-/* The glyph + its badge. `position: relative` here rather than on the 34px
-   wrapper so the dot hangs off the ICON's corner, which is what the design
-   draws — on the wrapper it would sit 7px away in the empty hit area. */
-/* 24px, not 20. The design's icon box is 24 (every `Icon / …` instance in that
-   file is, and the glyph pixel-sampled out of node 37:20702's app header runs
-   ~22px of ink inside it). At 20 the Phosphor teardrop — which occupies 200 of
-   its 256 grid — rendered only ~15.6px of ink, visibly smaller than the design's.
-   NOTE for a pixel-exact pass: Phosphor's 78% fill still leaves ours ~19px
-   against the design's ~22, because that artwork sits tighter in its box than
-   Phosphor's does. Closing the last 3px needs the exported vector, not a resize. */
-.hw-sb-btn {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-}
-
+/* 24px, not 20 — the design's icon box is 24 */
 .hw-sb-icon {
   display: flex;
   align-items: center;
@@ -322,34 +232,24 @@ button {
 .hw-sb-icon svg {
   width: 24px;
   height: 24px;
-  /* the path is `fill: currentColor`, so the wrapper's color drives it and the
-     hover/active states above need no separate icon rule. */
+  /* The path is `fill: currentColor`, so the wrapper's color drives it */
 }
 
-/* The unread badge. `UnreadIcon` self-gates — Velt renders it only while the
-   signed-in user has unread comments — so this whole block is inert on a read
-   inbox and no host state decides it. */
-.hw-sb-unread {
-  position: absolute;
-  top: -2px;
-  right: -2px;
-  display: flex;
-}
-
+/* The unread badge, gated on useUnreadCommentAnnotationCountOnCurrentDocument */
 .hw-sb-dot {
+  position: absolute;
+  top: 3px;
+  right: 3px;
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  /* Same blue as the sidebar cards' unread dot (`--vc-unread-dot`), so one
-     unread colour reads across the product. The ring is the app bar's own
-     background, which is what separates the dot from the dark glyph under it. */
+  /* Same blue as the sidebar cards' unread dot (`--vc-unread-dot`) */
   background: #0589ff;
-  /* the ring is the app bar's own ground, which is what separates the dot from
-     the glyph under it — white now, not #161513. */
+  /* The ring is the app bar's own ground, separating the dot from the glyph */
   box-shadow: 0 0 0 2px #ffffff;
 }
 
-/* ---------- Document viewer ---------- */
+/* Document viewer */
 
 .hv-doc {
   flex: 1;
@@ -360,7 +260,7 @@ button {
   position: relative;
 }
 
-/* Document type tabs + last-edited metadata under the app bar. */
+/* Document type tabs + last-edited metadata under the app bar */
 .hv-doc-tabs {
   display: flex;
   align-items: center;
@@ -393,7 +293,7 @@ button {
   color: #6f6d67;
 }
 
-/* Floating page/zoom toolbar, centered over the document stage. */
+/* Floating page/zoom toolbar, centered over the document stage */
 .hv-doc-toolbar {
   position: absolute;
   left: 50%;
@@ -456,14 +356,12 @@ button {
   flex-direction: column;
   align-items: center;
   gap: 24px;
-  /* Extra bottom room so the floating page/zoom toolbar never covers the
-     last table row. */
+  /* Extra bottom room so the floating toolbar never covers the last table row */
   padding: 24px 24px 76px;
 }
 
 .hv-doc-page {
-  /* flex-shrink:0 — the stage is a column flex container, so without this the
-     page and the table below it get squashed instead of scrolling. */
+  /* flex-shrink:0 — the stage is a flex column, so its children must not squash */
   flex-shrink: 0;
   width: min(640px, 100%);
   background: #fdfdfc;
@@ -496,8 +394,7 @@ button {
   margin-bottom: 10px;
 }
 
-/* Commented-text highlight: override Velt's default amber/underline with a
-   blue background, normal text color, and no underline. */
+/* Commented-text highlight, replacing Velt's default amber underline with blue */
 snippyly-comment-text.comment-text-highlight,
 .comment-text-highlight {
   background: #dbeafe !important;
@@ -506,7 +403,7 @@ snippyly-comment-text.comment-text-highlight,
   text-decoration: none !important;
 }
 
-/* ---------- Product review table ---------- */
+/* Product review table */
 
 .hv-table-card {
   flex-shrink: 0;
@@ -595,7 +492,7 @@ snippyly-comment-text.comment-text-highlight,
   white-space: nowrap;
 }
 
-/* Status chip: amber for work outstanding, blue once the passport is ready. */
+/* Status chip: amber for work outstanding, blue once the passport is ready */
 .hv-status {
   display: inline-block;
   padding: 2px 8px;
@@ -615,7 +512,7 @@ snippyly-comment-text.comment-text-highlight,
   color: #1d4ed8;
 }
 
-/* Passport review counters — one pill per non-zero category. */
+/* Passport review counters — one pill per non-zero category */
 .hv-review {
   display: flex;
   align-items: center;
@@ -657,36 +554,21 @@ snippyly-comment-text.comment-text-highlight,
   color: #8b8983;
 }
 
-/* ---------- Name cell: kebab menu + Velt popover comment anchor ---------- */
+/* Name cell: kebab menu + Velt popover comment anchor */
 
-/* position:relative anchors both the dropdown and Velt's popover triangle,
-   which the SDK injects into the top-right corner of the target element. */
+/* position:relative anchors the dropdown and Velt's popover triangle */
 .hv-cell-commentable {
   position: relative;
   padding-right: 34px;
 }
 
-/* The commented cell is OUTLINED while its dialog is the selected one.
-   Velt marks exactly that cell — `data-velt-comment-pin-active="true"` appears
-   only on the one whose dialog is open; the other commented cells get
-   `data-velt-comment-disabled="auto"` and nothing else.
-
-   `box-shadow: inset`, not `border`: the table is `border-collapse: collapse`,
-   so a real border on one `td` collapses against its neighbours and nudges the
-   row. An inset ring is layout-neutral, follows `border-radius`, and draws just
-   inside the cell — which is where the design puts it, with the pin tucked into
-   the top-right corner INSIDE the ring.
-
-   `#0589ff` is the product accent, the same blue the composer's focus ring and
-   the "mine" reaction chip use. */
+/* The commented cell is outlined while its dialog is the selected one */
 .hv-cell-commentable[data-velt-comment-pin-active="true"] {
   border-radius: 6px;
   box-shadow: inset 0 0 0 1px #0589ff;
 }
 
-/* The transform here creates a stacking context, so the dropdown's own z-index
-   is scoped inside it — the open menu has to be lifted above the neighbouring
-   (position:relative) cells or the row below swallows the clicks. */
+/* The transform makes a stacking context, so the open menu needs lifting */
 .hv-cell-menu {
   position: absolute;
   top: 50%;
@@ -736,14 +618,7 @@ snippyly-comment-text.comment-text-highlight,
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
-/* The Comment Tool renders VeltCommentToolWf's row; the host element itself is
-   the click target, so it must fill the dropdown.
-
-   THE HOST IS NOT THE ONLY BOX. Velt puts its own `div.velt-comment-tool`
-   between the host and our row, and that div is `display: inline-block`, so it
-   shrink-wraps to the words: measured 119px inside a 160px content box, which
-   is why the hover wash stopped short of the menu's right edge instead of
-   filling the row. Both boxes have to be told to fill. */
+/* The Comment Tool's host is the click target, so it must fill the dropdown */
 .hv-cell-dropdown velt-comment-tool,
 .hv-cell-dropdown velt-comment-tool .velt-comment-tool {
   display: block;
@@ -752,11 +627,7 @@ snippyly-comment-text.comment-text-highlight,
   cursor: pointer;
 }
 
-/* Belt and braces for the empty-pill bug: Velt's comment tool hides its own
-   content while a comment is being composed, so this container could be left
-   holding nothing but its 4px padding and 1px border — a 168x10 white pill
-   floating under the SKU. No row, no menu. (The real cause is fixed in
-   ProductsTable's onClickCapture; this makes the state unpaintable either way.) */
+/* Never paint an empty pill: Velt's comment tool hides its own content mid-compose */
 .hv-cell-dropdown:not(:has(.hv-menu-row)) {
   display: none !important;
 }

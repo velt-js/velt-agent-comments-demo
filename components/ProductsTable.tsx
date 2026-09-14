@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import { VeltCommentTool } from "@veltdev/react";
 import { KebabIcon } from "./icons";
 
-// Static Altana-style product review table (host DOM, not Velt). Sits below the
-// document viewer so the demo has a second, table-shaped surface to annotate.
+// Static Altana-style product review table (host DOM, not Velt)
 
 type ReviewKey = "flag" | "ai" | "pending" | "done" | "todo";
 
@@ -93,7 +92,7 @@ const products: Product[] = [
   },
 ];
 
-// Order matters: pills render left-to-right in this sequence, skipping zeros.
+// Order matters: pills render left-to-right in this sequence, skipping zeros
 const reviewOrder: ReviewKey[] = ["flag", "ai", "pending", "done", "todo"];
 
 const reviewIcons: Record<ReviewKey, React.ReactNode> = {
@@ -136,19 +135,16 @@ const reviewIcons: Record<ReviewKey, React.ReactNode> = {
   ),
 };
 
-// [Velt] Popover comments live on the Name cell. The cell id is the anchor:
-// <VeltCommentTool targetElementId> pins the thread to it, and Velt draws the
-// triangle indicator in that cell's top-right corner once a comment exists.
+// [Velt] Popover comments live on the Name cell
 const cellId = (productId: string) => `product-name-${productId}`;
 
 export function ProductsTable() {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
 
-  // Dismiss the kebab dropdown on outside click or Escape.
+  // Dismiss the kebab dropdown on outside click or Escape
   useEffect(() => {
     if (!openMenu) return;
-    // Capture phase, so the "is this inside the menu?" test runs before any
-    // page handler (Velt's included) can move or detach the event target.
+    // Capture phase, so the "inside the menu?" test runs before any other handler
     const onPointerDown = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
       if (!target.closest(".hv-cell-menu")) setOpenMenu(null);
@@ -206,24 +202,15 @@ export function ProductsTable() {
                   >
                     <KebabIcon />
                   </button>
-                  {/* Hidden with CSS rather than unmounted: unmounting the
-                      Comment Tool tears down the pin portal Velt just mounted
-                      on the cell, closing the composer with it. */}
-                  {/* onClickCapture on the CONTAINER, not `onClick` on the tool.
-                      `<VeltCommentTool onClick>` never fires once a wireframe is
-                      registered for the tool — the click lands on the wireframe's
-                      own markup — so the menu stayed open after "Add comment".
-                      Velt's tool then hides itself while a comment is being
-                      composed, leaving this container with a 0-height child: the
-                      168x10 empty bordered pill under the SKU that got reported.
-                      Capturing here closes the menu for any click inside it. */}
+                  {/* Hidden with CSS rather than unmounted, to keep Velt's tool alive */}
+                  {/* onClickCapture on the CONTAINER, not `onClick` on the tool */}
                   <div
                     className="hv-cell-dropdown"
                     role="menu"
                     style={{ display: openMenu === product.id ? "block" : "none" }}
                     onClickCapture={() => setOpenMenu(null)}
                   >
-                    {/* Rendered by VeltCommentToolWf as an "Add comment" row. */}
+                    {/* Rendered by VeltCommentToolWf as an "Add comment" row */}
                     <VeltCommentTool targetElementId={cellId(product.id)} />
                   </div>
                 </div>
