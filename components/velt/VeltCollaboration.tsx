@@ -6,7 +6,6 @@ import VeltUnstyledMode from "./VeltUnstyledMode";
 import SeedAgentComments from "./SeedAgentComments";
 import { AgentRunController } from "./AgentRunController";
 import { ContactsRegistrar } from "./ContactsRegistrar";
-import { VeltCommentContext } from "./VeltCommentContext";
 import { VeltCustomization } from "./ui-customization";
 import { CommentsPanel } from "./CommentsPanel";
 
@@ -22,7 +21,6 @@ export function VeltCollaboration({
     <>
       <VeltUnstyledMode /> {/* [Velt] Author against the unstyled DOM */}
       <VeltInitializeDocument /> {/* [Velt] Initialize the document */}
-      <VeltCommentContext /> {/* [Velt] Attach the product name to new annotations */}
       <SeedAgentComments /> {/* Seeds the demo's agent findings */}
       <AgentRunController /> {/* Turns action-chip clicks into backend writes */}
       <ContactsRegistrar /> {/* Registers the demo's @mention contacts */}
