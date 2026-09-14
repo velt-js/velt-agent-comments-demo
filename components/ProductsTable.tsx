@@ -210,8 +210,13 @@ export function ProductsTable() {
                     style={{ display: openMenu === product.id ? "block" : "none" }}
                     onClickCapture={() => setOpenMenu(null)}
                   >
-                    {/* Rendered by VeltCommentToolWf as an "Add comment" row */}
-                    <VeltCommentTool targetElementId={cellId(product.id)} />
+                    {/* Rendered by VeltCommentToolWf as an "Add comment" row.
+                        `context` lands on the annotation, which is what fills the
+                        card's "Product Name" row. */}
+                    <VeltCommentTool
+                      targetElementId={cellId(product.id)}
+                      context={{ productName: product.name }}
+                    />
                   </div>
                 </div>
               </td>
