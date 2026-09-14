@@ -1,14 +1,6 @@
 "use client";
 
-// [Velt] The host half of the comment progress + actions demo.
-//
-// Velt renders customer-defined action chips from `comment.actions` and emits
-// `commentActionClicked` when one is pressed. It writes NOTHING itself — every
-// consequence below is ours. That is the whole contract, and it is what makes
-// these chips safe to put on an agent comment: no accidental annotation mutation.
-//
-// This component owns the run's PACING (see AGENT_STEP_INTERVAL_MS) so that
-// "Stop" can genuinely stop it. All writes go through /api/velt/agent-run.
+// [Velt] The host half of the comment progress + actions demo
 
 import { useCallback, useEffect, useRef } from "react";
 import {
@@ -33,7 +25,7 @@ interface RunState {
   stepIndex: number;
   timer: number | null;
   cancelled: boolean;
-  /** Which script this run follows — decides the step count and the copy. */
+  /* Which script this run follows — decides the step count and the copy */
   script: "deep-dive" | "re-analyze";
 }
 
@@ -54,16 +46,11 @@ async function postRun(payload: Record<string, unknown>) {
 export function AgentRunController() {
   const actionEvent = useCommentActionCallback("commentActionClicked");
 
-  // Public client API (SDK 6.0.8+). These perform exactly the write Velt's own
-  // ✓/✗ buttons perform — `suggestion.status` AND the `type` flip that retires
-  // the card — so a customer who replaces the built-ins with their own chips
-  // loses nothing. Earlier this demo had to go through a server-side REST call,
-  // which needed a workspace key and could never have shipped to a browser.
+  // These perform exactly the write Velt's own accept/reject buttons do
   const { acceptSuggestion } = useAcceptSuggestion();
   const { rejectSuggestion } = useRejectSuggestion();
 
-  // One run at a time is enough for a demo, and a single ref keeps Stop simple:
-  // it has exactly one timer to clear and one comment to cancel.
+  // One run at a time is enough for a demo, and a single ref keeps Stop simple
   const runRef = useRef<RunState | null>(null);
 
   const clearRunTimer = useCallback(() => {
@@ -74,16 +61,10 @@ export function AgentRunController() {
     }
   }, []);
 
-  // Stop the timer if the page goes away mid-run.
+  // Stop the timer if the page goes away mid-run
   useEffect(() => clearRunTimer, [clearRunTimer]);
 
-  /**
-   * A sleep that Stop can interrupt.
-   *
-   * The timeout id is parked on the run so `stopRun` can clear it, and the
-   * promise resolves `false` when the run was cancelled — which is what lets the
-   * driver below bail out between steps instead of finishing a stopped run.
-   */
+  /* A sleep that Stop can interrupt */
   const pause = useCallback((run: RunState, ms: number) => {
     return new Promise<boolean>((resolve) => {
       run.timer = window.setTimeout(() => {
@@ -108,8 +89,7 @@ export function AgentRunController() {
       const stepCount = script === "re-analyze" ? RE_ANALYZE_STEPS.length : DEEP_DIVE_STEPS.length;
       runRef.current = run;
 
-      // One linear driver rather than a self-scheduling callback: the whole run
-      // reads top-to-bottom, and every await is a place Stop can win.
+      // One linear driver rather than a self-scheduling callback
       for (let step = 1; step <= stepCount; step++) {
         const alive = await pause(run, AGENT_STEP_INTERVAL_MS);
         if (!alive || run.cancelled) return;
@@ -121,7 +101,7 @@ export function AgentRunController() {
           continue;
         }
 
-        // Past the last step: the answer lands on the SAME comment.
+        // Past the last step: the answer lands on the SAME comment
         await postRun({ phase: "complete", annotationId, commentId, script });
       }
 
@@ -130,17 +110,7 @@ export function AgentRunController() {
     [pause],
   );
 
-  /**
-   * Stop a run — including one this component never started.
-   *
-   * `fallback` is the target carried by the Stop chip's own click event. It is
-   * what makes the button work at all after a reload: the pacing lives in this
-   * component, so `runRef` is empty on a fresh page, and the previous version
-   * returned early whenever it was — which is exactly the reported "Stop does
-   * nothing". The progress row belongs to a real comment on the server, so the
-   * cancel has to be sent from whatever identifiers are to hand, not only from
-   * local state.
-   */
+  /* Stop a run — including one this component never started */
   const stopRun = useCallback(
     async (fallback?: { annotationId?: string; commentId?: number }) => {
       const run = runRef.current;
@@ -148,8 +118,7 @@ export function AgentRunController() {
       const commentId = run?.commentId ?? fallback?.commentId;
 
       if (run) {
-        // Flip the flag BEFORE clearing the timer and before the await: a pause
-        // that resolves during the network round trip must see a cancelled run.
+        // Flip the flag before clearing the timer and before the await
         run.cancelled = true;
         clearRunTimer();
         runRef.current = null;
@@ -161,26 +130,7 @@ export function AgentRunController() {
     [clearRunTimer],
   );
 
-  // ── REAP ORPHANED RUNS ──────────────────────────────────────────────────────
-  //
-  // `phase: 'start'` ADDS A COMMENT whose only content is the progress object,
-  // and every later phase UPDATES that comment. The pacing, though, lives in
-  // this component — so a run interrupted by a reload or a closed tab can never
-  // advance or complete, and its comment is stranded at `state: 'active'`
-  // forever. That is the "it's always visible" report: the rows on screen were
-  // real comments left behind by runs whose browser had gone away, and nothing
-  // in the system was ever going to finish them.
-  //
-  // Reaped from the FIRST annotations emission only, and never again. A run
-  // cannot outlive the page, so anything already active when this component
-  // mounts is orphaned by definition — while anything that appears later was
-  // started by this session and must be left alone.
-  //
-  // Doing it per-emission instead was tried and broke Re-analyze outright:
-  // `startRun` sets `runRef` only AFTER the start round-trip returns, so between
-  // the server creating the comment and the ref being assigned there is a window
-  // where a perfectly live run looks orphaned — and the reaper cancelled the run
-  // it had just started. Measured: the progress row never appeared at all.
+  // Reap orphaned runs
   const annotations = useCommentAnnotations();
   const reapedRef = useRef(false);
 
@@ -216,26 +166,23 @@ export function AgentRunController() {
         break;
 
       case ACTION_IDS.STOP:
-        // Pass the event's own target: on a fresh page this is the ONLY way to
-        // reach the comment the row belongs to.
+        // Pass the event's own target — on a fresh page it is the only handle we get
         void stopRun({ annotationId, commentId });
         break;
 
       case ACTION_IDS.COPY_RESPONSE:
-        // The chip is ours to interpret however we like — Velt only told us it
-        // was pressed.
+        // The chip is ours to interpret; Velt only reports that it was pressed
         void navigator.clipboard?.writeText(DEEP_DIVE_ANSWER.text).catch(() => {});
         console.log("[AgentRun] response copied to clipboard");
         break;
 
       case ACTION_IDS.SHARE_SLACK:
-        // Stub: a real integration would POST to the customer's Slack webhook.
+        // Stub: a real integration would POST to the customer's Slack webhook
         console.log("[AgentRun] would share to Slack:", DEEP_DIVE_ANSWER.text.slice(0, 80) + "…");
         break;
 
       case ACTION_IDS.RE_ANALYZE:
-        // Runs ON the suggestion card. The card keeps rendering its finding while
-        // the progress row reports underneath it — one annotation, both rows.
+        // Runs on the suggestion card, which keeps its finding readable throughout
         void startRun(annotationId, "re-analyze");
         break;
 
@@ -266,8 +213,7 @@ export function AgentRunController() {
       default:
         console.log("[AgentRun] unhandled action", actionId);
     }
-    // `actionEvent` is an external event, not derived state — react to each new
-    // object identity and nothing else.
+    // `actionEvent` is an external event, not derived state
   }, [actionEvent, startRun, stopRun, acceptSuggestion, rejectSuggestion]);
 
   return null;

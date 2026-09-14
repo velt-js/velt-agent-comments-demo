@@ -1,8 +1,13 @@
 "use client";
 
 import type { User } from "@veltdev/types";
-import { useVeltClient, VeltNotificationsTool, VeltSidebarButton } from "@veltdev/react";
+import {
+  useUnreadCommentAnnotationCountOnCurrentDocument,
+  useVeltClient,
+  VeltNotificationsTool,
+} from "@veltdev/react";
 import { users, setDocumentsConfigByUserId } from "./velt/users";
+import { ChatTeardropIcon, ChatTeardropOutlineIcon } from "./icons";
 
 interface HeaderProps {
   user: User | undefined;
@@ -11,10 +16,7 @@ interface HeaderProps {
   setSidebarOpen: (updater: (open: boolean) => boolean) => void;
 }
 
-// Altana-style full-width app bar. The breadcrumb + action chips are the static
-// document chrome; the "Viewing as" control is wired to the existing Velt login
-// flow (token-based sign-in via setCurrentUserId, logout via signOutUser), and
-// the toggle drives the right-anchored comments drawer.
+// Altana-style full-width app bar
 export function Header({
   user,
   setCurrentUserId,
@@ -22,10 +24,9 @@ export function Header({
   setSidebarOpen,
 }: HeaderProps) {
   const { client } = useVeltClient();
+  const unread = useUnreadCommentAnnotationCountOnCurrentDocument();
 
-  // [Velt] Sign the Velt session out *before* clearing the local userId.
-  // Otherwise the SDK's underlying auth session (and any open subscriptions)
-  // outlives the React state change and may leak into the next sign-in.
+  // [Velt] Sign the Velt session out *before* clearing the local userId
   const handleLogout = async () => {
     if (client) {
       try {
@@ -94,22 +95,19 @@ export function Header({
           </div>
         )}
         <VeltNotificationsTool enableCrossOrganization={true} />
-        {/* [Velt] The SDK's own sidebar button, templated by
-            VeltSidebarButtonWf — the design draws a bare chat-bubble glyph with
-            an unread dot here, and `UnreadIcon` is a slot only this component
-            has, so the host button that used to sit here could never show it.
-
-            The click is bridged on a HOST wrapper rather than passed into the
-            wireframe (R4): `VeltSidebarButton` toggles VELT's panel, and this
-            app's drawer is the host-owned `.hw-rail` whose width React controls,
-            so the rail has to be told as well. The wrapper is our element, so its
-            onClick is ordinary React. */}
-        <span
-          className={`hw-sidebar-toggle${sidebarOpen ? " hw-sidebar-toggle--active" : ""}`}
+        {/* The drawer is embedded, so the host owns open/close */}
+        <button
+          className="hw-sidebar-toggle"
+          type="button"
+          aria-label="Comments"
+          aria-pressed={sidebarOpen}
           onClick={() => setSidebarOpen((o) => !o)}
         >
-          <VeltSidebarButton />
-        </span>
+          <span className="hw-sb-icon">
+            {sidebarOpen ? <ChatTeardropIcon /> : <ChatTeardropOutlineIcon />}
+          </span>
+          {unread?.count ? <span className="hw-sb-dot" aria-hidden="true" /> : null}
+        </button>
       </div>
     </header>
   );

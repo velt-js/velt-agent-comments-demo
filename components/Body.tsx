@@ -4,8 +4,6 @@ import { DownloadIcon } from "./icons";
 import { ProductsTable } from "./ProductsTable";
 
 // Static stand-in for the legal document viewer behind the comments panel
-// (ported from the altana-wireframes reference). This component owns the
-// document chrome: the type tabs, the page, and the floating page/zoom toolbar.
 export function Body() {
   return (
     <div className="hv-doc">
