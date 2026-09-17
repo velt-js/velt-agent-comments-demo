@@ -8,6 +8,7 @@ import {
 } from "@veltdev/react";
 import { ArrowBendDownRightIcon, SparklesIcon } from "./icons";
 import { VeltAssigneeBannerWf } from "./VeltAssigneeBannerWf";
+import { VeltVisibilityBannerWf } from "./VeltVisibilityBannerWf";
 import { VeltAuthorAvatarWf, VeltAuthorNameWf } from "./VeltAuthorWf";
 import { VeltCommentActionsWf, VeltEditComposerWf, VeltReactionsWf } from "./VeltCommentActionsWf";
 import { VeltComposerWf } from "./VeltComposerWf";
@@ -54,6 +55,7 @@ export function VeltSidebarCardWf() {
 
             <VeltIf className="vc-card-normal" condition="{annotation.type} !== 'suggestion'">
                 <div className="vc-card">
+                    <VeltVisibilityBannerWf />
                     <VeltAssigneeBannerWf />
                     <VeltCommentDialogWireframe.Body
                         className="vc-card-inner"

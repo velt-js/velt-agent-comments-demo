@@ -10,6 +10,7 @@ import { VeltAuthorAvatarWf, VeltAuthorNameWf } from "./VeltAuthorWf";
 import { VeltCommentActionsWf, VeltEditComposerWf, VeltReactionsWf } from "./VeltCommentActionsWf";
 import { VeltAgentCardWf } from "./VeltAgentCardWf";
 import { VeltAssigneeBannerWf } from "./VeltAssigneeBannerWf";
+import { VeltVisibilityBannerWf } from "./VeltVisibilityBannerWf";
 import { ArrowBendDownRightIcon, SidebarSimpleIcon } from "./icons";
 import { VeltOptionsMenuWf } from "./VeltOptionsMenuWf";
 import { VeltComposerWf } from "./VeltComposerWf";
@@ -21,6 +22,9 @@ export function VeltCommentDialogWf() {
 
             <VeltIf condition="{annotation.type} !== 'suggestion'">
             <div className="vc-dialog">
+                {/* 82:14236 draws it full-bleed above the header band */}
+                <VeltVisibilityBannerWf />
+
                 <VeltCommentDialogWireframe.Header className="vc-dialog-header">
                     <span className="vc-dialog-title">Comment</span>
                     <div className="vc-dialog-actions">

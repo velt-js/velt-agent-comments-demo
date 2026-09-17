@@ -50,8 +50,9 @@
   padding: 0 16px;
 }
 
-/* The SDK renders the .Panel slot as a plain block <app-comment-sidebar-panel> */
-.hw-panel > app-comment-sidebar-panel {
+/* The SDK renders the .Panel slot as a plain block host plus its own container */
+.hw-panel > velt-comment-sidebar-panel-v2-internal,
+.hw-panel > velt-comment-sidebar-panel-v2-internal > .velt-comment-sidebar-panel-container {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
@@ -66,14 +67,27 @@
   padding: 0;
 }
 
-.hw-panel-body app-comment-sidebar-list {
+.hw-panel-body velt-comment-sidebar-list-v2-internal {
   display: block !important;
   height: 100% !important;
-  /* 16px on every side, from node 872:21416. Moved off `.hw-panel-body`, whose */
-  padding: 16px !important;
+}
+
+/* The virtual-scroll viewport is the list's one scroller */
+.hw-panel-body cdk-virtual-scroll-viewport.velt-sidebar-content {
+  display: block !important;
+  height: 100% !important;
+  overflow-y: auto !important;
   box-sizing: border-box !important;
   /* Reserve the scrollbar's track on both edges so the cards never shift */
   scrollbar-gutter: stable both-edges !important;
+}
+
+/* 16px on every side, from node 872:21416. It goes on the content wrapper: the */
+/* wrapper is absolutely positioned, so the viewport's own padding never reaches it */
+.hw-panel-body .cdk-virtual-scroll-content-wrapper {
+  width: 100% !important;
+  padding: 16px !important;
+  box-sizing: border-box !important;
 }
 
 /* Icon buttons (24px, radius 6, 12–16px glyphs) */
@@ -212,13 +226,14 @@
 
 /* Sidebar shell + SDK wrapper neutralization */
 
-velt-comments-sidebar {
+velt-comments-sidebar-v2,
+velt-comments-sidebar-v2 .velt-sidebar-container,
+velt-comments-sidebar-v2 .velt-sidebar {
   height: 100% !important;
   display: block !important;
 }
 
-.velt-sidebar--container,
-.velt-sidebar--panel {
+velt-comments-sidebar-v2 .velt-sidebar {
   background: #ffffff !important;
   box-shadow: none !important;
   border: none !important;
@@ -228,26 +243,16 @@ velt-comments-sidebar {
   padding: 0 !important;
 }
 
-.velt-sidebar--comments-hr {
+.velt-sidebar-list-item-hr {
   display: none !important;
 }
 
-/* The list is the card column: the design's 8px inter-card rhythm lives here */
-.velt-sidebar--comments {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 8px !important;
+velt-comment-sidebar-list-v2-internal,
+.velt-sidebar-list-item {
   padding: 0 !important;
 }
 
-app-comment-sidebar-comments,
-app-comment-sidebar-list,
-.velt-sidebar--comments-block {
-  padding: 0 !important;
-}
-
-app-comment-sidebar-page-mode-composer,
-.velt-sidebar-page-mode-composer {
+velt-comment-sidebar-page-mode-composer-v2-internal {
   padding: 0 !important;
 }
 
@@ -681,179 +686,254 @@ velt-autocomplete-option-description-internal {
   color: #ffffff !important;
 }
 
-/* Visibility banner (Figma node 14955-235188) */
+/* Visibility banner (82:14236) */
 
-.velt-visibility-banner-wrapper {
-  background: #181f21 !important;
-  padding: 4px 16px !important;
-  gap: 4px !important;
+/* Velt's shell is the strip: `.velt-visibility-banner-wrapper` is its flex row */
+.vc-visibility,
+.vc-visibility .velt-visibility-banner {
+  display: block !important;
+  align-self: stretch !important;
 }
 
-/* Outer flex carries a 4px gap (text↔pill in Figma); add 4px on the icon to */
-.velt-visibility-banner-wrapper
-  > velt-comment-dialog-visibility-banner-icon-internal {
-  margin-right: 4px !important;
+/* full-bleed; the card's and the popover's own 8px radius clip its top corners */
+.vc-visibility .velt-visibility-banner-wrapper {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 6px !important;
+  padding: 8px 12px !important;
+  background: #1a1a1a !important;
+  box-sizing: border-box !important;
+  font-family: 'Inter', var(--hw-font) !important;
 }
 
-.velt-visibility-banner-icon svg {
-  width: 14px !important;
-  height: 14px !important;
+.vc-visibility .velt-visibility-banner-icon {
+  display: flex !important;
+  align-items: center !important;
+  flex: none !important;
 }
 
-.velt-visibility-banner-text {
-  color: #ffffff !important;
-  font-family: var(--hw-font) !important;
-  font-size: 14px !important;
-  font-weight: 500 !important;
+.vc-visibility .velt-visibility-banner-icon svg {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+/* "Only visible to" — Body/SM on the banner's own ground */
+.vc-visibility .velt-visibility-banner-text {
+  flex: none !important;
+  color: #feffff !important;
+  font-family: 'Inter', var(--hw-font) !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
   line-height: 20px !important;
 }
 
-.velt-visibility-banner-dropdown-trigger {
-  background: rgba(255, 255, 255, 0.08) !important;
-  border-radius: 32px !important;
-  padding: 4px 8px 4px 10px !important;
+/* the chip sits next to the label, not out at the far edge */
+.vc-visibility velt-comment-dialog-visibility-banner-dropdown-internal {
+  display: flex !important;
+  align-items: center !important;
+  flex: none !important;
+  margin-right: auto !important;
+}
+
+/* the audience chip: a 4px tile on a 12% white wash, NOT the SDK's pill */
+.vc-visibility .velt-visibility-banner-dropdown-trigger {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
   gap: 4px !important;
+  padding: 6px 8px !important;
+  border: 0 !important;
+  border-radius: 4px !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+  box-sizing: border-box !important;
+  cursor: pointer !important;
 }
 
-.velt-visibility-banner-dropdown-trigger
-  velt-comment-dialog-visibility-banner-dropdown-trigger-label-internal,
-.velt-visibility-banner-dropdown-trigger
-  velt-comment-dialog-visibility-banner-dropdown-trigger-label-internal * {
-  color: #ffffff !important;
-  font-family: var(--hw-font) !important;
-  font-size: 13px !important;
-  font-weight: 600 !important;
-  line-height: 1.2 !important;
+.vc-visibility .velt-visibility-banner-dropdown-trigger:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
 }
 
-/* Kill the SDK's indigo border/ring on the chip while the menu is open */
+/* the SDK rings the trigger while its menu is open; the design does not */
+.vc-visibility .velt-visibility-banner-dropdown-trigger.velt-trigger-open,
 #velt-dropdown-trigger-visibility .velt-visibility-banner-dropdown-trigger,
-.velt-visibility-banner-dropdown-trigger {
+.vc-visibility .velt-visibility-banner-dropdown-trigger:focus-visible,
+.vc-visibility .velt-visibility-banner-dropdown-trigger *:focus-visible {
   border-color: transparent !important;
-}
-
-#velt-dropdown-trigger-visibility:focus-visible,
-#velt-dropdown-trigger-visibility .velt-visibility-banner-dropdown-trigger:focus-visible {
   outline: none !important;
   box-shadow: none !important;
 }
 
-/* Visibility dropdowns (no Figma — themed to match Altana) */
+/* Label / RG at 13px, semibold, on the chip's own ground */
+.vc-visibility velt-comment-dialog-visibility-banner-dropdown-trigger-label-internal,
+.vc-visibility velt-comment-dialog-visibility-banner-dropdown-trigger-label-internal * {
+  color: #feffff !important;
+  font-family: 'Inter', var(--hw-font) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+}
 
-/* Audience-type menu (Me / Selected People / Selected Teams / Everyone) */
+.vc-visibility velt-comment-dialog-visibility-banner-dropdown-trigger-icon-internal {
+  display: flex !important;
+  align-items: center !important;
+  flex: none !important;
+}
+
+.vc-visibility velt-comment-dialog-visibility-banner-dropdown-trigger-icon-internal svg {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.vc-visibility velt-comment-dialog-visibility-banner-dropdown-trigger-icon-internal svg path {
+  stroke: #feffff !important;
+}
+
+/* An empty host (a thread everyone can see) reserves nothing */
+.vc-visibility:not(:has(.velt-visibility-banner-wrapper)) {
+  display: none !important;
+}
+
+/* Visibility dropdowns (no Figma — the app's own menu chrome) */
+
+/* Audience menu (Me / Selected People / Selected Teams / Everyone) */
 /* Anchored on .cdk-overlay-pane to out-specify Velt's runtime-injected navy */
-.cdk-overlay-pane
-  .velt-comment-visibility-banner-dropdown-container
-  .mat-mdc-menu-content {
+.cdk-overlay-pane .velt-comment-visibility-banner-dropdown-container .mat-mdc-menu-content,
+.velt-comment-dialog-visibility-banner-dropdown-content {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  width: 200px !important;
+  padding: 4px !important;
+  border-radius: 6px !important;
+  border: 1px solid #e6e6e6 !important;
+  box-shadow: 0px 2px 12px 8px #0000000f !important;
   background: #ffffff !important;
-  border-radius: 12px !important;
-  box-shadow: var(--hw-shadow-menu) !important;
-  padding: 6px !important;
-  font-family: var(--hw-font) !important;
+  box-sizing: border-box !important;
+  font-family: 'Inter', var(--hw-font) !important;
 }
 
-.velt-comment-visibility-banner-dropdown-container
-  .velt-comment-dialog-visibility-banner-dropdown-content-item {
-  border-radius: 8px !important;
-  padding: 8px 10px !important;
+.velt-comment-dialog-visibility-banner-dropdown-content-item {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 8px !important;
+  min-height: 40px !important;
+  padding: 8px 12px !important;
+  border-radius: 4px !important;
+  box-sizing: border-box !important;
+  cursor: pointer !important;
+  font-size: 15px !important;
+  font-weight: 400 !important;
+  line-height: 24px !important;
+  color: #050505 !important;
 }
 
-.velt-comment-visibility-banner-dropdown-container .velt-option-text {
-  color: var(--hw-text) !important;
-  font-family: var(--hw-font) !important;
-  font-size: 14px !important;
-  line-height: 20px !important;
+.velt-comment-dialog-visibility-banner-dropdown-content-item:hover {
+  background: #f9f9f9 !important;
 }
 
-.velt-comment-visibility-banner-dropdown-container
-  .velt-comment-dialog-visibility-banner-dropdown-content-item:hover {
-  background: var(--hw-surface-pressed) !important;
+/* the selected row takes the accent the rest of the app uses for state */
+.velt-comment-dialog-visibility-banner-dropdown-content-item.selected,
+.velt-comment-dialog-visibility-banner-dropdown-content-item.selected
+  velt-comment-dialog-visibility-banner-dropdown-content-item-label-internal {
+  color: #0589ff !important;
 }
 
-.velt-comment-visibility-banner-dropdown-container
-  .velt-comment-dialog-visibility-banner-dropdown-content-item.selected {
-  background: rgba(34, 114, 119, 0.08) !important;
+.velt-comment-dialog-visibility-banner-dropdown-content-item
+  velt-comment-dialog-visibility-banner-dropdown-content-item-label-internal {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
+  color: #050505 !important;
+  font-family: 'Inter', var(--hw-font) !important;
+  font-size: 15px !important;
+  line-height: 24px !important;
 }
 
-.velt-comment-visibility-banner-dropdown-container
-  .velt-comment-dialog-visibility-banner-dropdown-content-item.selected
-  .velt-option-text {
-  color: var(--hw-teal) !important;
+velt-comment-dialog-visibility-banner-dropdown-content-item-icon-internal {
+  display: flex !important;
+  align-items: center !important;
+  flex: none !important;
+  width: 16px !important;
+  height: 16px !important;
 }
 
-/* Leading glyph (e.g */
-.velt-comment-visibility-banner-dropdown-container
-  velt-comment-dialog-visibility-banner-dropdown-content-item-icon-internal svg,
-.velt-comment-visibility-banner-dropdown-container
-  velt-comment-dialog-visibility-banner-dropdown-content-item-icon-internal svg path {
-  stroke: var(--hw-text) !important;
-  color: var(--hw-text) !important;
+velt-comment-dialog-visibility-banner-dropdown-content-item-icon-internal svg,
+velt-comment-dialog-visibility-banner-dropdown-content-item-icon-internal svg path {
+  width: 16px !important;
+  height: 16px !important;
+  stroke: #333333 !important;
+  color: #333333 !important;
 }
 
-/* The selected row's check (and a selected leading glyph) goes teal */
-.velt-comment-visibility-banner-dropdown-container
-  .velt-comment-dialog-visibility-banner-dropdown-content-item.selected svg,
-.velt-comment-visibility-banner-dropdown-container
-  .velt-comment-dialog-visibility-banner-dropdown-content-item.selected svg path {
-  stroke: var(--hw-teal) !important;
-  color: var(--hw-teal) !important;
+/* the selected row's check (and its leading glyph) takes the accent too */
+.velt-comment-dialog-visibility-banner-dropdown-content-item.selected svg,
+.velt-comment-dialog-visibility-banner-dropdown-content-item.selected svg path,
+.velt-option-check {
+  stroke: #0589ff !important;
+  color: #0589ff !important;
 }
 
-.velt-comment-visibility-banner-dropdown-container .velt-visibility-separator {
-  background: var(--hw-border-strong) !important;
+.velt-visibility-separator {
+  background: #e6e6e6 !important;
 }
 
-/* User picker + Team picker (shared velt-autocomplete-* internals) */
+/* People picker + Team picker (shared velt-autocomplete-* internals) */
 .velt-org-picker-overlay,
 .velt-user-picker-overlay {
-  border-radius: 12px !important;
-  box-shadow: var(--hw-shadow-menu) !important;
-  font-family: var(--hw-font) !important;
+  border-radius: 6px !important;
+  border: 1px solid #e6e6e6 !important;
+  box-shadow: 0px 2px 12px 8px #0000000f !important;
+  background: #ffffff !important;
+  font-family: 'Inter', var(--hw-font) !important;
 }
 
 .velt-org-picker-overlay input,
 .velt-user-picker-overlay input {
-  font-family: var(--hw-font) !important;
-  font-size: 14px !important;
-  color: var(--hw-text) !important;
+  font-family: 'Inter', var(--hw-font) !important;
+  font-size: 15px !important;
+  line-height: 24px !important;
+  color: #050505 !important;
 }
 
 .velt-autocomplete-panel {
-  font-family: var(--hw-font) !important;
+  font-family: 'Inter', var(--hw-font) !important;
 }
 
 .velt-autocomplete-panel--selected-count {
-  color: var(--hw-text-muted) !important;
-  font-size: 12px !important;
+  color: #666666 !important;
+  font-size: 13px !important;
+  line-height: 20px !important;
 }
 
 .velt-autocomplete-panel--unselect-all {
-  color: var(--hw-teal) !important;
+  color: #0589ff !important;
 }
 
 .velt-autocomplete-option--container,
 .velt-autocomplete-inline-option {
-  border-radius: 8px !important;
+  border-radius: 4px !important;
 }
 
 .velt-autocomplete-inline-option:hover {
-  background: var(--hw-surface-pressed) !important;
+  background: #f9f9f9 !important;
 }
 
 .velt-autocomplete-inline-option.selected,
 .velt-autocomplete-inline-option[aria-selected="true"] {
-  background: var(--hw-surface) !important;
+  background: #f1f1f1 !important;
 }
 
-.velt-autocomplete-option--check {
-  background: rgba(34, 114, 119, 0.08) !important;
-  color: var(--hw-teal) !important;
-}
-
+.velt-autocomplete-option--check,
 .velt-autocomplete-option--check svg,
 .velt-autocomplete-option--check svg path {
-  stroke: var(--hw-teal) !important;
-  color: var(--hw-teal) !important;
+  color: #0589ff !important;
+  stroke: #0589ff !important;
 }
 
 /* Comment progress + customer-defined action chips (SDK 6.0.8+) */
@@ -2192,10 +2272,7 @@ velt-comment-dialog-options-dropdown-content-delete-comment-internal,
 .vc-options .v-dropdown-menu-trigger { width: 16px !important; height: 16px !important; overflow: visible !important; opacity: 1 !important; pointer-events: auto !important; }
 
 /* Sidebar scrollport: pin the flex chain so the list is the one scroller */
-velt-comments-sidebar { height: 100% !important; max-height: 100% !important; min-height: 0 !important; overflow: hidden !important; }
-.vc-panel, app-comment-sidebar-panel.vc-panel { flex: 1 1 0 !important; min-height: 0 !important; overflow: hidden !important; height: 100% !important; }
-.vc-list, app-comment-sidebar-list.vc-list { flex: 1 1 0 !important; min-height: 0 !important; overflow: auto !important; }
-.velt-sidebar-content { flex: 0 0 auto !important; height: auto !important; overflow: visible !important; }
+velt-comments-sidebar-v2 { height: 100% !important; max-height: 100% !important; min-height: 0 !important; overflow: hidden !important; }
 
 /* Composition mechanism: where an SDK host sits, whether an empty host still */
 
@@ -2256,23 +2333,15 @@ velt-comments-sidebar { height: 100% !important; max-height: 100% !important; mi
   display: none !important;
 }
 
-/* Sidebar scrollport. `app-comment-sidebar-list` already scrolls; these only */
+/* Sidebar scrollport. The list's virtual-scroll viewport already scrolls; these only */
 .hw-panel,
 .hw-panel-body {
   min-height: 0 !important;
 }
 
-.velt-sidebar-content {
-  height: auto !important;
-  overflow: visible !important;
-}
-
 /* Inter-card rhythm in the sidebar list */
-app-comment-sidebar-list-item-dialog-container {
-  display: block !important;
-}
-
-app-comment-sidebar-list-item {
+velt-comment-sidebar-list-item-v2-internal,
+.velt-sidebar-list-item {
   display: block !important;
 }
 
@@ -2351,17 +2420,6 @@ app-comment-sidebar-list-item {
 .vc-menu-item-copylink *:focus-visible,
 .vc-menu-item-delete *:focus-visible {
   outline: none !important;
-}
-
-/* The sidebar row wrapper must not paint Chrome's UA focus ring */
-.velt-sidebar--comments-block:focus-visible {
-  outline: none !important;
-}
-
-.velt-sidebar--comments-block:focus-visible .vc-card {
-  outline: 1px solid #e6e6e6 !important;
-  outline-offset: -1px !important;
-  border-radius: 8px !important;
 }
 
 /* Per-comment Edit + per-thread Resolve (VeltCommentActionsWf.tsx) */
@@ -2886,11 +2944,12 @@ app-comment-sidebar-list-item {
   content: none !important;
 }
 
-.hw-focus-back p {
+.hw-focus-back span[role="text"] {
   display: none !important;
 }
 
 .hw-focus-back {
+  display: flex !important;
   width: auto !important;
   flex: none !important;
 }
@@ -4110,26 +4169,8 @@ body:has(.hw-rail--open .vc-focus-header-row) .cdk-overlay-pane:has(velt-comment
   box-sizing: border-box !important;
 }
 
-/* the tool's host adds no box, so its inner div is the menu's flex child */
-.hw-display-menu velt-comment-tool {
-  display: contents !important;
-}
-
-/* `.hv-menu-row` carries the products-table dropdown's own box and its 12px
-   type; inside this menu the row chrome comes from `.velt-comment-tool` */
-.hw-display-menu .hv-menu-row {
-  display: contents !important;
-  font-size: 15px !important;
-}
-
-/* label-only rows, like the comment kebab menu this menu borrows its chrome from */
-.hw-display-menu .hv-menu-row svg {
-  display: none !important;
-}
-
-/* one menu row — our own button, or the comment tool's own inner div */
-.hw-display-row,
-.hw-display-menu velt-comment-tool .velt-comment-tool {
+/* one menu row */
+.hw-display-row {
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
@@ -4146,8 +4187,7 @@ body:has(.hw-rail--open .vc-focus-header-row) .cdk-overlay-pane:has(velt-comment
   text-align: left !important;
 }
 
-.hw-display-row:hover,
-.hw-display-menu velt-comment-tool .velt-comment-tool:hover {
+.hw-display-row:hover {
   background: #f9f9f9 !important;
 }
 
@@ -4164,18 +4204,37 @@ body:has(.hw-rail--open .vc-focus-header-row) .cdk-overlay-pane:has(velt-comment
 /* The filter panel (funnel) and the sort/view menu (sliders) */
 
 /* the filter panel: a bottom sheet on the sidebar */
+/* The host and Velt's overlay span the sidebar but take no clicks, so the list */
+/* above the sheet stays live while it is open; only the sheet itself does */
 .hw-filter {
   position: absolute !important;
-  top: auto !important;
-  bottom: 0 !important;
-  right: 0 !important;
-  left: 0 !important;
+  inset: 0 !important;
   z-index: 40 !important;
+  display: block !important;
+  pointer-events: none !important;
+  font-family: 'Inter', var(--hw-font) !important;
+}
+
+.hw-filter .velt-sidebar-filter-panel-overlay {
+  position: absolute !important;
+  inset: 0 !important;
   display: flex !important;
   flex-direction: column !important;
-  /* HUG the content. `max-height` on this element with `flex: 1 1 auto` + */
+  justify-content: flex-end !important;
+  align-items: stretch !important;
+  background: transparent !important;
+  pointer-events: none !important;
+}
+
+.hw-filter .velt-sidebar-filter-panel {
+  position: static !important;
+  display: flex !important;
+  flex-direction: column !important;
+  /* HUG the content, capped at 70% of the VIEWPORT height; the body scrolls */
   height: auto !important;
+  max-height: 70vh !important;
   width: auto !important;
+  min-height: 0 !important;
   padding: 4px !important;
   /* A sheet attaches to the bottom edge: only the top corners round */
   border-radius: 12px 12px 0 0 !important;
@@ -4184,15 +4243,7 @@ body:has(.hw-rail--open .vc-focus-header-row) .cdk-overlay-pane:has(velt-comment
   box-shadow: 0px -2px 12px 8px #0000000f !important;
   background: #ffffff !important;
   box-sizing: border-box !important;
-  font-family: 'Inter', var(--hw-font) !important;
-}
-
-/* Cap the sheet at 70% of the VIEWPORT height and let the body scroll */
-.hw-filter > .velt-sidebar-filter--container {
-  max-height: 70vh !important;
-  display: flex !important;
-  flex-direction: column !important;
-  min-height: 0 !important;
+  pointer-events: auto !important;
 }
 
 /* the panel is positioned against the sidebar, so the sidebar is the anchor */
@@ -4200,18 +4251,9 @@ body:has(.hw-rail--open .vc-focus-header-row) .cdk-overlay-pane:has(velt-comment
   position: relative !important;
 }
 
-/* Velt wraps the declared markup in TWO containers of its own */
-.hw-filter .velt-sidebar-filter--container {
+/* Velt wraps the declared markup in a scroll container of its own */
+.hw-filter .velt-sidebar-filter-panel-content {
   position: static !important;
-  display: flex !important;
-  flex-direction: column !important;
-  width: 100% !important;
-  height: auto !important;
-  max-height: none !important;
-  inset: auto !important;
-}
-
-.hw-filter .velt-sidebar-filters {
   display: flex !important;
   flex-direction: column !important;
   width: 100% !important;
@@ -4219,6 +4261,7 @@ body:has(.hw-rail--open .vc-focus-header-row) .cdk-overlay-pane:has(velt-comment
   max-height: none !important;
   flex: 1 1 auto !important;
   min-height: 0 !important;
+  overflow: hidden !important;
 }
 
 .hw-filter-head {
@@ -4231,8 +4274,14 @@ body:has(.hw-rail--open .vc-focus-header-row) .cdk-overlay-pane:has(velt-comment
   padding: 8px 12px !important;
 }
 
+.hw-filter-title-row {
+  display: flex !important;
+  align-items: center !important;
+  height: 32px !important;
+}
+
 .hw-filter-title,
-.hw-filter-title .velt-comment-sidebar-filter-title {
+.hw-filter-title-row {
   font-size: 15px !important;
   font-weight: 600 !important;
   line-height: 24px !important;
@@ -4272,7 +4321,8 @@ body:has(.hw-rail--open .vc-focus-header-row) .cdk-overlay-pane:has(velt-comment
 
 /* Each filter group — Involved / Assigned / Created by / Status / Priority / Tagged */
 .hw-filter-group,
-.hw-filter-group > .velt-sidebar-filter {
+.hw-filter-group > .velt-filter-section,
+.hw-filter-group .velt-filter-checkbox-list {
   display: flex !important;
   flex-direction: column !important;
   align-self: stretch !important;
@@ -4280,12 +4330,13 @@ body:has(.hw-rail--open .vc-focus-header-row) .cdk-overlay-pane:has(velt-comment
 }
 
 /* Nothing between the group and its rows may add a box: Velt puts every option */
-.hw-filter-group .velt-sidebar-filter--option {
+.hw-filter-group velt-comment-sidebar-filter-container-v2-section-field-internal,
+.hw-filter-group velt-comment-sidebar-filter-container-v2-section-option-list-internal {
   display: contents !important;
 }
 
 /* the group's heading */
-.hw-filter-group app-comment-sidebar-filter-name {
+.hw-filter-group .velt-filter-section-label {
   display: block !important;
   padding: 8px 12px 4px !important;
   font-size: 12px !important;
@@ -4297,7 +4348,7 @@ body:has(.hw-rail--open .vc-focus-header-row) .cdk-overlay-pane:has(velt-comment
 }
 
 /* an empty heading (a group whose config carries no `name`) must not reserve */
-.hw-filter-group app-comment-sidebar-filter-name:empty {
+.hw-filter-group .velt-filter-section-label:empty {
   display: none !important;
 }
 
@@ -4336,7 +4387,7 @@ body:has(.hw-rail--open .vc-focus-header-row) .cdk-overlay-pane:has(velt-comment
 }
 
 .hw-filter-check,
-.hw-filter-check .velt-comment-sidebar-filter-item--icon-container {
+.hw-filter-check svg {
   flex: none !important;
   width: 16px !important;
   height: 16px !important;
@@ -4344,8 +4395,8 @@ body:has(.hw-rail--open .vc-focus-header-row) .cdk-overlay-pane:has(velt-comment
 }
 
 /* the CHECKED box. Velt draws it as `checkbox-checked-internal > svg > g > */
-.hw-filter-check velt-comment-sidebar-filter-item-checkbox-checked-internal rect {
-  fill: #0589ff !important;
+.hw-filter-check {
+  color: #0589ff !important;
 }
 
 .hw-filter-item-name {
@@ -4358,7 +4409,7 @@ body:has(.hw-rail--open .vc-focus-header-row) .cdk-overlay-pane:has(velt-comment
 
 /* the count sits hard right, in the card's secondary text */
 .hw-filter-item-count,
-.hw-filter-item-count .velt-comment-sidebar-filter-item--count-container {
+.hw-filter-item-count .velt-filter-option-count {
   flex: none !important;
   margin-left: auto !important;
   font-size: 13px !important;
@@ -4375,6 +4426,18 @@ body:has(.hw-rail--open .vc-focus-header-row) .cdk-overlay-pane:has(velt-comment
   flex: none !important;
   padding: 8px 12px !important;
   border-top: 1px solid #e6e6e6 !important;
+}
+
+/* the pair splits the footer evenly */
+.hw-filter-reset,
+.hw-filter-done {
+  flex: 1 0 0 !important;
+}
+
+.hw-filter-reset > button,
+.hw-filter-done > button {
+  flex: 1 1 0 !important;
+  justify-content: center !important;
 }
 
 .hw-filter-reset,
@@ -4411,6 +4474,13 @@ body:has(.hw-rail--open .vc-focus-header-row) .cdk-overlay-pane:has(velt-comment
 .hw-filter-done:hover {
   border-color: #0477dd !important;
   background: #0477dd !important;
+}
+
+.hw-filter-btn-label {
+  display: flex !important;
+  flex: 1 0 0 !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 .hw-filter-reset svg,
@@ -4767,7 +4837,7 @@ html[data-vc-assign="figma"] .vc-card-inner {
 }
 
 /* The hairlines. Velt ALREADY draws them: each card sits in its own */
-html[data-vc-assign="figma"] hr.velt-sidebar--comments-hr {
+html[data-vc-assign="figma"] hr.velt-sidebar-list-item-hr {
   display: block !important;
   height: 0 !important;
   margin: 0 16px !important;

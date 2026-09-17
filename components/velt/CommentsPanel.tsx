@@ -2,8 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  VeltCommentsSidebar,
-  VeltCommentTool,
+  VeltCommentsSidebarV2,
   useCommentAnnotations,
   useVeltClient,
 } from "@veltdev/react";
@@ -11,6 +10,17 @@ import {
   DISPLAY_OPTIONS_BUTTON,
   OPEN_SIDEBAR_BUTTON,
 } from "./ui-customization/buttonIds";
+
+// The filter sheet's sections, in the order the design lists them. No priority
+// section: this document's comments carry no priority, so it would only ever
+// offer "Not set" (an explicit `filters` list opts out of the SDK's own gating).
+const SIDEBAR_FILTERS = [
+  { field: "involved", label: "Involved" },
+  { field: "assigned", label: "Assigned to" },
+  { field: "people", label: "Created by" },
+  { field: "status", label: "Status" },
+  { field: "tagged", label: "Tagged" },
+];
 
 // Right-anchored drawer hosting the embedded page-mode sidebar. The host owns
 // open/close; sorting, filtering and the resolved view are all SDK-native.
@@ -74,6 +84,22 @@ export function CommentsPanel({
     return () => rail.removeEventListener("click", onClick, true);
   }, [setSidebarOpen]);
 
+  // Opening a thread dismisses the filter sheet, which is a sibling overlay of
+  // the panel and would otherwise sit over the thread. Watching for the thread
+  // rather than the press: closing mid-click swallows the press that opens it.
+  useEffect(() => {
+    const rail = railRef.current;
+    if (!rail) return;
+    const observer = new MutationObserver(() => {
+      const close = rail.querySelector<HTMLElement>(".hw-filter-close button");
+      if (!close) return; // the sheet is shut: nothing to dismiss
+      if (!rail.querySelector(".hw-focus .vc-focus, .hw-focus .vc-agent")) return;
+      close.click();
+    });
+    observer.observe(rail, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
+
   // Clicking a pin closes the drawer — the popover and side sheet are alternatives
   useEffect(() => {
     const onClick = (event: MouseEvent) => {
@@ -102,8 +128,8 @@ export function CommentsPanel({
       }}
     >
       <div className="hw-rail-inner">
-        <VeltCommentsSidebar
-          embedMode={true}
+        <VeltCommentsSidebarV2
+          embedMode="true"
           pageMode={true}
           shadowDom={false}
           defaultMinimalFilter="open"
@@ -118,27 +144,19 @@ export function CommentsPanel({
           searchPlaceholder="Search Comments"
           /* a sheet rising from the bottom, rather than a card over the list */
           filterPanelLayout="bottomSheet"
-          /* every filter is off by default, so the funnel needs these to render */
-          filterConfig={{
-            involved: { enable: true, name: "Involved" },
-            assigned: { enable: true, name: "Assigned to" },
-            people: { enable: true, name: "Created by" },
-            status: { enable: true, name: "Status" },
-            priority: { enable: true, name: "Priority" },
-            tagged: { enable: true, name: "Tagged" },
-          }}
+          /* each section as an inline checkbox list, not a collapsed select */
+          filterOptionLayout="checkbox"
+          filters={SIDEBAR_FILTERS}
           pageModeComposerVariant="pageModeComposer"
           /* picks the list row's dialog template, and the drawer's */
           dialogVariant="sidebar"
           focusedThreadDialogVariant="focusedThread"
         />
 
-        {/* Host DOM, not wireframe markup, so the menu is plain React state and
-            can host a live VeltCommentTool. The trigger stays in the control
-            band, which is templated. */}
+        {/* Host DOM, not wireframe markup, so the menu is plain React state.
+            The trigger stays in the control band, which is templated. */}
         {displayMenuOpen ? (
           <div className="hw-display-menu" role="menu">
-            <VeltCommentTool />
             <button className="hw-display-row" type="button" onClick={markAllAsRead}>
               <span className="hw-display-label">Mark all as read</span>
             </button>
