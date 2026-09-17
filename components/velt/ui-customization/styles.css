@@ -686,179 +686,254 @@ velt-autocomplete-option-description-internal {
   color: #ffffff !important;
 }
 
-/* Visibility banner (Figma node 14955-235188) */
+/* Visibility banner (82:14236) */
 
-.velt-visibility-banner-wrapper {
-  background: #181f21 !important;
-  padding: 4px 16px !important;
-  gap: 4px !important;
+/* Velt's shell is the strip: `.velt-visibility-banner-wrapper` is its flex row */
+.vc-visibility,
+.vc-visibility .velt-visibility-banner {
+  display: block !important;
+  align-self: stretch !important;
 }
 
-/* Outer flex carries a 4px gap (text↔pill in Figma); add 4px on the icon to */
-.velt-visibility-banner-wrapper
-  > velt-comment-dialog-visibility-banner-icon-internal {
-  margin-right: 4px !important;
+/* full-bleed; the card's and the popover's own 8px radius clip its top corners */
+.vc-visibility .velt-visibility-banner-wrapper {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 6px !important;
+  padding: 8px 12px !important;
+  background: #1a1a1a !important;
+  box-sizing: border-box !important;
+  font-family: 'Inter', var(--hw-font) !important;
 }
 
-.velt-visibility-banner-icon svg {
-  width: 14px !important;
-  height: 14px !important;
+.vc-visibility .velt-visibility-banner-icon {
+  display: flex !important;
+  align-items: center !important;
+  flex: none !important;
 }
 
-.velt-visibility-banner-text {
-  color: #ffffff !important;
-  font-family: var(--hw-font) !important;
-  font-size: 14px !important;
-  font-weight: 500 !important;
+.vc-visibility .velt-visibility-banner-icon svg {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+/* "Only visible to" — Body/SM on the banner's own ground */
+.vc-visibility .velt-visibility-banner-text {
+  flex: none !important;
+  color: #feffff !important;
+  font-family: 'Inter', var(--hw-font) !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
   line-height: 20px !important;
 }
 
-.velt-visibility-banner-dropdown-trigger {
-  background: rgba(255, 255, 255, 0.08) !important;
-  border-radius: 32px !important;
-  padding: 4px 8px 4px 10px !important;
+/* the chip sits next to the label, not out at the far edge */
+.vc-visibility velt-comment-dialog-visibility-banner-dropdown-internal {
+  display: flex !important;
+  align-items: center !important;
+  flex: none !important;
+  margin-right: auto !important;
+}
+
+/* the audience chip: a 4px tile on a 12% white wash, NOT the SDK's pill */
+.vc-visibility .velt-visibility-banner-dropdown-trigger {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
   gap: 4px !important;
+  padding: 6px 8px !important;
+  border: 0 !important;
+  border-radius: 4px !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+  box-sizing: border-box !important;
+  cursor: pointer !important;
 }
 
-.velt-visibility-banner-dropdown-trigger
-  velt-comment-dialog-visibility-banner-dropdown-trigger-label-internal,
-.velt-visibility-banner-dropdown-trigger
-  velt-comment-dialog-visibility-banner-dropdown-trigger-label-internal * {
-  color: #ffffff !important;
-  font-family: var(--hw-font) !important;
-  font-size: 13px !important;
-  font-weight: 600 !important;
-  line-height: 1.2 !important;
+.vc-visibility .velt-visibility-banner-dropdown-trigger:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
 }
 
-/* Kill the SDK's indigo border/ring on the chip while the menu is open */
+/* the SDK rings the trigger while its menu is open; the design does not */
+.vc-visibility .velt-visibility-banner-dropdown-trigger.velt-trigger-open,
 #velt-dropdown-trigger-visibility .velt-visibility-banner-dropdown-trigger,
-.velt-visibility-banner-dropdown-trigger {
+.vc-visibility .velt-visibility-banner-dropdown-trigger:focus-visible,
+.vc-visibility .velt-visibility-banner-dropdown-trigger *:focus-visible {
   border-color: transparent !important;
-}
-
-#velt-dropdown-trigger-visibility:focus-visible,
-#velt-dropdown-trigger-visibility .velt-visibility-banner-dropdown-trigger:focus-visible {
   outline: none !important;
   box-shadow: none !important;
 }
 
-/* Visibility dropdowns (no Figma — themed to match Altana) */
+/* Label / RG at 13px, semibold, on the chip's own ground */
+.vc-visibility velt-comment-dialog-visibility-banner-dropdown-trigger-label-internal,
+.vc-visibility velt-comment-dialog-visibility-banner-dropdown-trigger-label-internal * {
+  color: #feffff !important;
+  font-family: 'Inter', var(--hw-font) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+}
 
-/* Audience-type menu (Me / Selected People / Selected Teams / Everyone) */
+.vc-visibility velt-comment-dialog-visibility-banner-dropdown-trigger-icon-internal {
+  display: flex !important;
+  align-items: center !important;
+  flex: none !important;
+}
+
+.vc-visibility velt-comment-dialog-visibility-banner-dropdown-trigger-icon-internal svg {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.vc-visibility velt-comment-dialog-visibility-banner-dropdown-trigger-icon-internal svg path {
+  stroke: #feffff !important;
+}
+
+/* An empty host (a thread everyone can see) reserves nothing */
+.vc-visibility:not(:has(.velt-visibility-banner-wrapper)) {
+  display: none !important;
+}
+
+/* Visibility dropdowns (no Figma — the app's own menu chrome) */
+
+/* Audience menu (Me / Selected People / Selected Teams / Everyone) */
 /* Anchored on .cdk-overlay-pane to out-specify Velt's runtime-injected navy */
-.cdk-overlay-pane
-  .velt-comment-visibility-banner-dropdown-container
-  .mat-mdc-menu-content {
+.cdk-overlay-pane .velt-comment-visibility-banner-dropdown-container .mat-mdc-menu-content,
+.velt-comment-dialog-visibility-banner-dropdown-content {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  width: 200px !important;
+  padding: 4px !important;
+  border-radius: 6px !important;
+  border: 1px solid #e6e6e6 !important;
+  box-shadow: 0px 2px 12px 8px #0000000f !important;
   background: #ffffff !important;
-  border-radius: 12px !important;
-  box-shadow: var(--hw-shadow-menu) !important;
-  padding: 6px !important;
-  font-family: var(--hw-font) !important;
+  box-sizing: border-box !important;
+  font-family: 'Inter', var(--hw-font) !important;
 }
 
-.velt-comment-visibility-banner-dropdown-container
-  .velt-comment-dialog-visibility-banner-dropdown-content-item {
-  border-radius: 8px !important;
-  padding: 8px 10px !important;
+.velt-comment-dialog-visibility-banner-dropdown-content-item {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 8px !important;
+  min-height: 40px !important;
+  padding: 8px 12px !important;
+  border-radius: 4px !important;
+  box-sizing: border-box !important;
+  cursor: pointer !important;
+  font-size: 15px !important;
+  font-weight: 400 !important;
+  line-height: 24px !important;
+  color: #050505 !important;
 }
 
-.velt-comment-visibility-banner-dropdown-container .velt-option-text {
-  color: var(--hw-text) !important;
-  font-family: var(--hw-font) !important;
-  font-size: 14px !important;
-  line-height: 20px !important;
+.velt-comment-dialog-visibility-banner-dropdown-content-item:hover {
+  background: #f9f9f9 !important;
 }
 
-.velt-comment-visibility-banner-dropdown-container
-  .velt-comment-dialog-visibility-banner-dropdown-content-item:hover {
-  background: var(--hw-surface-pressed) !important;
+/* the selected row takes the accent the rest of the app uses for state */
+.velt-comment-dialog-visibility-banner-dropdown-content-item.selected,
+.velt-comment-dialog-visibility-banner-dropdown-content-item.selected
+  velt-comment-dialog-visibility-banner-dropdown-content-item-label-internal {
+  color: #0589ff !important;
 }
 
-.velt-comment-visibility-banner-dropdown-container
-  .velt-comment-dialog-visibility-banner-dropdown-content-item.selected {
-  background: rgba(34, 114, 119, 0.08) !important;
+.velt-comment-dialog-visibility-banner-dropdown-content-item
+  velt-comment-dialog-visibility-banner-dropdown-content-item-label-internal {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
+  color: #050505 !important;
+  font-family: 'Inter', var(--hw-font) !important;
+  font-size: 15px !important;
+  line-height: 24px !important;
 }
 
-.velt-comment-visibility-banner-dropdown-container
-  .velt-comment-dialog-visibility-banner-dropdown-content-item.selected
-  .velt-option-text {
-  color: var(--hw-teal) !important;
+velt-comment-dialog-visibility-banner-dropdown-content-item-icon-internal {
+  display: flex !important;
+  align-items: center !important;
+  flex: none !important;
+  width: 16px !important;
+  height: 16px !important;
 }
 
-/* Leading glyph (e.g */
-.velt-comment-visibility-banner-dropdown-container
-  velt-comment-dialog-visibility-banner-dropdown-content-item-icon-internal svg,
-.velt-comment-visibility-banner-dropdown-container
-  velt-comment-dialog-visibility-banner-dropdown-content-item-icon-internal svg path {
-  stroke: var(--hw-text) !important;
-  color: var(--hw-text) !important;
+velt-comment-dialog-visibility-banner-dropdown-content-item-icon-internal svg,
+velt-comment-dialog-visibility-banner-dropdown-content-item-icon-internal svg path {
+  width: 16px !important;
+  height: 16px !important;
+  stroke: #333333 !important;
+  color: #333333 !important;
 }
 
-/* The selected row's check (and a selected leading glyph) goes teal */
-.velt-comment-visibility-banner-dropdown-container
-  .velt-comment-dialog-visibility-banner-dropdown-content-item.selected svg,
-.velt-comment-visibility-banner-dropdown-container
-  .velt-comment-dialog-visibility-banner-dropdown-content-item.selected svg path {
-  stroke: var(--hw-teal) !important;
-  color: var(--hw-teal) !important;
+/* the selected row's check (and its leading glyph) takes the accent too */
+.velt-comment-dialog-visibility-banner-dropdown-content-item.selected svg,
+.velt-comment-dialog-visibility-banner-dropdown-content-item.selected svg path,
+.velt-option-check {
+  stroke: #0589ff !important;
+  color: #0589ff !important;
 }
 
-.velt-comment-visibility-banner-dropdown-container .velt-visibility-separator {
-  background: var(--hw-border-strong) !important;
+.velt-visibility-separator {
+  background: #e6e6e6 !important;
 }
 
-/* User picker + Team picker (shared velt-autocomplete-* internals) */
+/* People picker + Team picker (shared velt-autocomplete-* internals) */
 .velt-org-picker-overlay,
 .velt-user-picker-overlay {
-  border-radius: 12px !important;
-  box-shadow: var(--hw-shadow-menu) !important;
-  font-family: var(--hw-font) !important;
+  border-radius: 6px !important;
+  border: 1px solid #e6e6e6 !important;
+  box-shadow: 0px 2px 12px 8px #0000000f !important;
+  background: #ffffff !important;
+  font-family: 'Inter', var(--hw-font) !important;
 }
 
 .velt-org-picker-overlay input,
 .velt-user-picker-overlay input {
-  font-family: var(--hw-font) !important;
-  font-size: 14px !important;
-  color: var(--hw-text) !important;
+  font-family: 'Inter', var(--hw-font) !important;
+  font-size: 15px !important;
+  line-height: 24px !important;
+  color: #050505 !important;
 }
 
 .velt-autocomplete-panel {
-  font-family: var(--hw-font) !important;
+  font-family: 'Inter', var(--hw-font) !important;
 }
 
 .velt-autocomplete-panel--selected-count {
-  color: var(--hw-text-muted) !important;
-  font-size: 12px !important;
+  color: #666666 !important;
+  font-size: 13px !important;
+  line-height: 20px !important;
 }
 
 .velt-autocomplete-panel--unselect-all {
-  color: var(--hw-teal) !important;
+  color: #0589ff !important;
 }
 
 .velt-autocomplete-option--container,
 .velt-autocomplete-inline-option {
-  border-radius: 8px !important;
+  border-radius: 4px !important;
 }
 
 .velt-autocomplete-inline-option:hover {
-  background: var(--hw-surface-pressed) !important;
+  background: #f9f9f9 !important;
 }
 
 .velt-autocomplete-inline-option.selected,
 .velt-autocomplete-inline-option[aria-selected="true"] {
-  background: var(--hw-surface) !important;
+  background: #f1f1f1 !important;
 }
 
-.velt-autocomplete-option--check {
-  background: rgba(34, 114, 119, 0.08) !important;
-  color: var(--hw-teal) !important;
-}
-
+.velt-autocomplete-option--check,
 .velt-autocomplete-option--check svg,
 .velt-autocomplete-option--check svg path {
-  stroke: var(--hw-teal) !important;
-  color: var(--hw-teal) !important;
+  color: #0589ff !important;
+  stroke: #0589ff !important;
 }
 
 /* Comment progress + customer-defined action chips (SDK 6.0.8+) */

@@ -7,6 +7,7 @@ import {
 } from "@veltdev/react";
 import { VeltAgentCardWf } from "./VeltAgentCardWf";
 import { VeltAssigneeBannerWf } from "./VeltAssigneeBannerWf";
+import { VeltVisibilityBannerWf } from "./VeltVisibilityBannerWf";
 import { VeltAuthorAvatarWf, VeltAuthorNameWf } from "./VeltAuthorWf";
 import { VeltCommentActionsWf, VeltEditComposerWf, VeltReactionsWf } from "./VeltCommentActionsWf";
 import {
@@ -47,6 +48,8 @@ export function VeltFocusedThreadWf() {
 
             <VeltIf condition="{annotation.type} !== 'suggestion'">
             <div className="vc-focus">
+                <VeltVisibilityBannerWf />
+
                 <FocusHeader />
 
                 <VeltAssigneeBannerWf />
