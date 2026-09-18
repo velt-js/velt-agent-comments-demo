@@ -34,6 +34,8 @@ export function CommentsPanel({
   const { client } = useVeltClient();
   const annotations = useCommentAnnotations();
   const [displayMenuOpen, setDisplayMenuOpen] = useState(false);
+  // The thread a dialog's sidebar button asked to open, until its row is focused
+  const [focusRequest, setFocusRequest] = useState<string | null>(null);
 
   // These triggers live inside wireframes, which can't take a React onClick, so
   // their `veltButtonClick` id is the only way across. Subscribing gives one
@@ -43,12 +45,58 @@ export function CommentsPanel({
     const subscription = client.on("veltButtonClick").subscribe((event) => {
       const id = event?.buttonContext?.clickedButtonId;
       // The drawer changes only on these two buttons and the toolbar button
-      if (id === OPEN_SIDEBAR_BUTTON) setSidebarOpen((open) => !open);
-      if (id === CLOSE_SIDEBAR_BUTTON) setSidebarOpen(() => false);
+      if (id === OPEN_SIDEBAR_BUTTON) {
+        setSidebarOpen(() => true);
+        setFocusRequest(event?.commentAnnotation?.annotationId ?? null);
+        // The pin dialog gives way to the drawer, found or not
+        client.getCommentElement()?.selectCommentByAnnotationId();
+      }
+      if (id === CLOSE_SIDEBAR_BUTTON) {
+        setSidebarOpen(() => false);
+        // A request still pending must not fire on the next open
+        setFocusRequest(null);
+      }
       if (id === DISPLAY_OPTIONS_BUTTON) setDisplayMenuOpen((open) => !open);
     });
     return () => subscription.unsubscribe();
   }, [client, setSidebarOpen]);
+
+  // Open the requested thread in the drawer's focused view. V2 (6.0.11) enters it
+  // only from a click on the thread's list row, so leave any open thread for the
+  // list, then click that row. The pin dialog is closed once the thread shows.
+  useEffect(() => {
+    if (!open || !focusRequest) return;
+    let timer: number | undefined;
+    let tries = 0;
+    const attempt = () => {
+      const rail = document.querySelector(".hw-rail");
+      const focused = rail?.querySelector(".hw-focus .vc-annotation-id");
+      // Already open on this thread: nothing to do
+      if (focused?.textContent?.trim() === focusRequest) {
+        setFocusRequest(null);
+        return;
+      }
+      const back = rail?.querySelector<HTMLElement>(
+        ".hw-focus .velt-comments-sidebar-focused-thread-back-button-container",
+      );
+      const row = [...(rail?.querySelectorAll(".hw-panel-body .vc-annotation-id") ?? [])]
+        .find((node) => node.textContent?.trim() === focusRequest)
+        ?.closest<HTMLElement>(".velt-sidebar-list-item");
+      if (row) {
+        row.click();
+        // The row click selects the thread; keep the pin dialog closed
+        client?.getCommentElement()?.selectCommentByAnnotationId();
+        setFocusRequest(null);
+        return;
+      }
+      if (back) back.click();
+      // Filtered out of the list (e.g. resolved): the drawer still opens
+      if (++tries < 30) timer = window.setTimeout(attempt, 100);
+      else setFocusRequest(null);
+    };
+    attempt();
+    return () => window.clearTimeout(timer);
+  }, [open, focusRequest, client]);
 
   // Close the menu on an outside press, in the capture phase so Velt's own
   // handlers can't swallow it first.
