@@ -88,7 +88,7 @@
   display: none !important;
 }
 
-/* 16px on every side, from node 872:21416. It goes on the content wrapper: the
+/* 16px on every side. It goes on the content wrapper: the
    wrapper is absolutely positioned, so padding on the viewport would not move it */
 .hw-panel-body .cdk-virtual-scroll-content-wrapper {
   width: 100% !important;
@@ -118,8 +118,6 @@
 .hw-icon-btn:hover {
   background: var(--hw-surface-pressed);
 }
-
-/* No MinimalFilterDropdown in the control band. It is a multi-thread comment */
 
 /* Skeleton (loading) */
 
@@ -229,7 +227,6 @@
   max-width: 323px;
 }
 
-
 /* Sidebar shell + SDK wrapper neutralization */
 
 velt-comments-sidebar-v2 {
@@ -284,8 +281,6 @@ velt-comment-sidebar-page-mode-composer-v2-internal,
   border-radius: 0 !important;
   background: transparent !important;
 }
-
-/* The mention-chip tooltip is styled in one place, next to the mention rules */
 
 /* Edited / Draft indicators (out-of-scope states, kept) */
 
@@ -369,8 +364,6 @@ div:has(> velt-comment-dialog-options-dropdown-content-internal) {
 /* Agent suggestion card */
 
 /* The wireframe's top-level VeltIf branches clone into the dialog as app-if */
-app-if.hw-agent-suggestion,
-app-if.hw-normal-comment,
 .velt-comment-dialog > app-if {
   display: contents;
 }
@@ -558,28 +551,6 @@ velt-comment-dialog-suggestion-banner-internal .velt-suggestion-banner--rejected
   height: auto !important;
 }
 
-.custom-button {
-  display: inline-flex;
-  align-items: center;
-  height: 24px;
-  padding: 0 8px;
-  border-radius: 6px;
-  background: var(--hw-surface-pressed);
-  color: var(--hw-text);
-  font-family: var(--hw-font);
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 16px;
-  cursor: pointer;
-  transition: background 0.12s ease;
-}
-
-.custom-button:hover {
-  background: var(--hw-border-strong);
-}
-
-/* Accept/Reject take the action chips' pill near the foot of this file */
-
 /* Hide the composer extras the design does not draw */
 /* `velt-autocomplete-tool-internal` is the @ — Velt's mention tool */
 velt-comment-dialog-custom-annotation-dropdown-internal {
@@ -644,12 +615,14 @@ velt-autocomplete-option-description-internal {
 
 /* Confirm dialog (delete thread/comment) — theme match */
 
+/* The comment dialog's own chrome: 8px corners, #e6e6e6 border, the soft shadow */
 .velt-confirm-dialog {
   font-family: var(--hw-font) !important;
-  border-radius: 12px !important;
+  border-radius: 8px !important;
+  border: 1px solid #e6e6e6 !important;
   padding: 20px !important;
   background: #ffffff !important;
-  box-shadow: var(--hw-shadow-menu) !important;
+  box-shadow: 0px 2px 12px 8px #0000000f !important;
 }
 
 .velt-confirm-dialog .velt-confirm-dialog-title {
@@ -683,9 +656,17 @@ velt-autocomplete-option-description-internal {
   font-size: 14px !important;
   font-weight: 500 !important;
   height: 34px !important;
-  border-radius: 8px !important;
+  border-radius: 6px !important;
   border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
   cursor: pointer !important;
+}
+
+/* The dialog focuses Delete when it opens; the ring is for keyboard focus only */
+.velt-confirm-dialog button.velt-confirm-dialog--reject:focus-visible,
+.velt-confirm-dialog button.velt-confirm-dialog--approve:focus-visible {
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px rgba(5, 137, 255, 0.45) !important;
 }
 
 .velt-confirm-dialog button.velt-confirm-dialog--reject {
@@ -1175,7 +1156,7 @@ velt-comment-dialog-progress-internal .velt-progress-dots > span:nth-child(3) {
   50% { opacity: 1; }
 }
 
-/* A run is legible from the label and the Stop button alone, so the motion is */
+/* A run is legible from its label and the Stop button, so reduced motion drops the dots' animation */
 @media (prefers-reduced-motion: reduce) {
   velt-comment-dialog-progress-internal .velt-progress-dots > span {
     animation: none;
@@ -1206,7 +1187,7 @@ velt-comment-dialog-progress-internal .velt-progress__actions .velt-action-chip 
   line-height: 20px;
 }
 
-/* Card, dialog and composer chrome, from the Figma states board (872:20766) */
+/* Card, dialog and composer chrome, from the Figma states board */
 
 :root {
   --vc-font: 'Inter';
@@ -1253,8 +1234,6 @@ velt-comment-dialog-progress-internal .velt-progress__actions .velt-action-chip 
   --vc-send-size: 24px;
   --vc-send-icon: 16px;
 }
-
-/* 872:21719 */
 .vc-card {
   display:flex !important;
   flex-direction:column !important;
@@ -1264,8 +1243,6 @@ velt-comment-dialog-progress-internal .velt-progress__actions .velt-action-chip 
   overflow:hidden !important;
   font-family:'Inter' !important;
 }
-
-/* 872:21720 */
 .vc-card-inner {
   display:flex !important;
   flex-direction:column !important;
@@ -1285,22 +1262,16 @@ velt-comment-dialog-progress-internal .velt-progress__actions .velt-action-chip 
   min-height:0 !important;
   width:100% !important;
 }
-
-/* 872:21721 */
 .vc-card-body {
   display:flex !important;
   flex-direction:column !important;
   align-self:stretch !important;
 }
-
-/* 872:21721 */
 .vc-card-head .velt-thread-card--container {
   display:flex !important;
   flex-direction:column !important;
   gap:4px !important;
 }
-
-/* 872:21722 */
 .vc-card-headrow {
   display:flex !important;
   flex-direction:row !important;
@@ -1308,8 +1279,6 @@ velt-comment-dialog-progress-internal .velt-progress__actions .velt-action-chip 
   gap:10px !important;
   align-self:stretch !important;
 }
-
-/* 872:21723 */
 .vc-avatar {
   display:flex !important;
   flex-direction:row !important;
@@ -1342,8 +1311,6 @@ snippyly-user-avatar {
   overflow:hidden !important;
   flex:none !important;
 }
-
-/* 872:21723 */
 .velt-user-avatar--initial-container {
   width:20px !important;
   height:20px !important;
@@ -1353,8 +1320,6 @@ snippyly-user-avatar {
   justify-content:center !important;
   align-items:center !important;
 }
-
-/* I872:21723;2932:15799 */
 .velt-user-avatar--initial {
   display:flex !important;
   align-items:center !important;
@@ -1368,8 +1333,6 @@ snippyly-user-avatar {
   text-align:center !important;
   align-content:center !important;
 }
-
-/* I872:21723;2932:15799 */
 .velt-user-avatar--initial-container .velt-user-avatar--initial::before {
   content:attr(data-modal-author-initial) !important;
   color:#f9f9f9 !important;
@@ -1380,8 +1343,6 @@ snippyly-user-avatar {
   text-align:center !important;
   align-content:center !important;
 }
-
-/* 872:21724 */
 .vc-name {
   flex:1 1 0 !important;
   min-width:0 !important;
@@ -1398,8 +1359,6 @@ snippyly-user-avatar {
   text-overflow: ellipsis !important;
   white-space: nowrap !important;
 }
-
-/* 872:21725 */
 .vc-name .velt-thread-card--name {
   color:#1a1a1a !important;
   font-family:'Inter' !important;
@@ -1411,8 +1370,6 @@ snippyly-user-avatar {
   text-overflow:ellipsis !important;
   white-space:nowrap !important;
 }
-
-/* 872:21726 */
 .vc-meta {
   display:flex !important;
   flex-direction:row !important;
@@ -1425,8 +1382,6 @@ snippyly-user-avatar {
 velt-comment-dialog-thread-card-unread-internal {
   display:contents !important;
 }
-
-/* 872:21727 */
 .vc-unread-dot {
   width:8px !important;
   height:8px !important;
@@ -1435,8 +1390,6 @@ velt-comment-dialog-thread-card-unread-internal {
   flex:none !important;
   display:block !important;
 }
-
-/* 872:21728 */
 .vc-time {
   color:#666666 !important;
   font-family:'Inter' !important;
@@ -1446,8 +1399,6 @@ velt-comment-dialog-thread-card-unread-internal {
   flex:none !important;
   white-space:nowrap !important;
 }
-
-/* 872:21728 */
 .vc-time .velt-thread-card--time {
   color:#666666 !important;
   font-family:'Inter' !important;
@@ -1456,8 +1407,6 @@ velt-comment-dialog-thread-card-unread-internal {
   line-height:20px !important;
   margin:0 !important;
 }
-
-/* 872:21731 */
 .vc-message {
   align-self:stretch !important;
   color:#1a1a1a !important;
@@ -1484,8 +1433,6 @@ velt-comment-dialog-thread-card-unread-internal {
 .vc-card-inner {
   min-width: 0 !important;
 }
-
-/* 872:21731 */
 .vc-message .velt-thread-card--message {
   color:#1a1a1a !important;
   font-family:'Inter' !important;
@@ -1501,8 +1448,6 @@ velt-comment-dialog-thread-card-unread-internal {
   padding:0 !important;
   border:0 !important;
 }
-
-/* 872:21747 */
 .velt-autocomplete--contact-chip {
   color:#0589ff !important;
   background:none !important;
@@ -1513,8 +1458,6 @@ velt-comment-dialog-thread-card-unread-internal {
   font-size:15px !important;
   line-height:24px !important;
 }
-
-/* assigned collapsed · 872:21791 */
 .vc-assignee-banner {
   display:flex !important;
   flex-direction:row !important;
@@ -1524,8 +1467,6 @@ velt-comment-dialog-thread-card-unread-internal {
   align-self:stretch !important;
   background:#fdf1fa !important;
 }
-
-/* assigned collapsed · 872:21792 */
 .vc-assignee-row {
   display:flex !important;
   flex-direction:row !important;
@@ -1534,8 +1475,6 @@ velt-comment-dialog-thread-card-unread-internal {
   gap:6px !important;
   flex:1 1 0 !important;
 }
-
-/* assigned collapsed · 872:21793 */
 .vc-assignee-avatar {
   display:flex !important;
   flex-direction:row !important;
@@ -1545,8 +1484,6 @@ velt-comment-dialog-thread-card-unread-internal {
   border-radius:56px !important;
   overflow:hidden !important;
 }
-
-/* assigned collapsed · I872:21793;247:15966 */
 .vc-assignee-avatar .velt-user-avatar--initial-container {
   width:20px !important;
   height:20px !important;
@@ -1556,8 +1493,6 @@ velt-comment-dialog-thread-card-unread-internal {
   justify-content:center !important;
   align-items:center !important;
 }
-
-/* assigned collapsed · 872:21794 */
 .vc-assigned-label {
   flex:1 1 0 !important;
   color:#666666 !important;
@@ -1566,8 +1501,6 @@ velt-comment-dialog-thread-card-unread-internal {
   font-weight:400 !important;
   line-height:20px !important;
 }
-
-/* unread 1reply collapsed · 872:21749 */
 .vc-toggle-reply {
   display:flex !important;
   flex-direction:row !important;
@@ -1575,8 +1508,6 @@ velt-comment-dialog-thread-card-unread-internal {
   align-items:center !important;
   gap:4px !important;
 }
-
-/* unread 1reply collapsed · 872:21751 */
 .vc-toggle-reply {
   color:#0589ff !important;
   font-family:'Inter' !important;
@@ -1584,16 +1515,12 @@ velt-comment-dialog-thread-card-unread-internal {
   font-weight:400 !important;
   line-height:20px !important;
 }
-
-/* agent collapsed · 872:21759 */
 .vc-card.vc-agent .vc-card-head {
   display:flex !important;
   flex-direction:column !important;
   gap:4px !important;
   align-self:stretch !important;
 }
-
-/* agent collapsed · 872:21760 */
 velt-comment-dialog-suggestion-agent-internal {
   display:flex !important;
   flex-direction:row !important;
@@ -1602,8 +1529,6 @@ velt-comment-dialog-suggestion-agent-internal {
   flex:1 1 0 !important;
   min-width:0 !important;
 }
-
-/* agent collapsed · I872:21761;251:24493 */
 .vc-card.vc-agent .vc-avatar {
   display:flex !important;
   flex-direction:row !important;
@@ -1616,8 +1541,6 @@ velt-comment-dialog-suggestion-agent-internal {
   background: var(--vc-agent-disc) !important;
   flex:none !important;
 }
-
-/* agent collapsed · I872:21761;251:24497 */
 .vc-avatar-glyph {
   width:12px !important;
   height:12px !important;
@@ -1626,20 +1549,14 @@ velt-comment-dialog-suggestion-agent-internal {
   justify-content:center !important;
   flex:none !important;
 }
-
-/* agent collapsed · I872:21761;251:24497 */
 .vc-avatar-glyph > svg {
   width:12px !important;
   height:12px !important;
   display:block !important;
 }
-
-/* agent collapsed · I872:21761;251:24497;2932:337 */
 .vc-avatar-glyph path {
   fill:#f9f9f9 !important;
 }
-
-/* agent collapsed · 872:21763 */
 .velt-suggestion__name {
   color:#1a1a1a !important;
   font-family:'Inter' !important;
@@ -1647,8 +1564,6 @@ velt-comment-dialog-suggestion-agent-internal {
   font-weight:500 !important;
   line-height:24px !important;
 }
-
-/* agent collapsed · 872:21766 */
 .velt-suggestion__time {
   color:#666666 !important;
   font-family:'Inter' !important;
@@ -1656,8 +1571,6 @@ velt-comment-dialog-suggestion-agent-internal {
   font-weight:400 !important;
   line-height:20px !important;
 }
-
-/* agent collapsed · 872:21769 */
 .vc-card.vc-agent .vc-message {
   align-self:stretch !important;
   color:#1a1a1a !important;
@@ -1666,8 +1579,6 @@ velt-comment-dialog-suggestion-agent-internal {
   font-weight:400 !important;
   line-height:24px !important;
 }
-
-/* agent collapsed · 872:21768 */
 .velt-suggestion-body {
   display:flex !important;
   flex-direction:column !important;
@@ -1675,8 +1586,6 @@ velt-comment-dialog-suggestion-agent-internal {
   padding:0 !important;
   margin:0 !important;
 }
-
-/* agent collapsed · 872:21769 */
 .velt-suggestion-body__text {
   color:#1a1a1a !important;
   font-family:'Inter' !important;
@@ -1685,8 +1594,6 @@ velt-comment-dialog-suggestion-agent-internal {
   line-height:24px !important;
   align-self:stretch !important;
 }
-
-/* expanded selected · 872:21801 */
 .vc-dialog {
   display:flex !important;
   flex-direction:column !important;
@@ -1698,8 +1605,6 @@ velt-comment-dialog-suggestion-agent-internal {
   font-family:'Inter' !important;
   overflow:hidden !important;
 }
-
-/* expanded selected · I872:21801;251:19532 */
 .vc-dialog-header {
   display:flex !important;
   flex-direction:row !important;
@@ -1709,8 +1614,6 @@ velt-comment-dialog-suggestion-agent-internal {
   align-self:stretch !important;
   box-shadow:inset 0px -1px 0px #e6e6e6 !important;
 }
-
-/* expanded selected · I872:21801;251:24336 */
 .vc-dialog-title {
   color:#1a1a1a !important;
   font-family:'Inter' !important;
@@ -1720,8 +1623,6 @@ velt-comment-dialog-suggestion-agent-internal {
   margin:0 !important;
   flex:none !important;
 }
-
-/* expanded selected · I872:21801;251:19660 */
 .vc-dialog-actions {
   display:flex !important;
   flex-direction:row !important;
@@ -1766,8 +1667,6 @@ velt-comment-dialog-suggestion-agent-internal {
   border:0 !important;
   cursor:pointer !important;
 }
-
-/* expanded selected · I872:21801;251:19661 */
 .vc-options-trigger {
   width:24px !important;
   height:24px !important;
@@ -1777,20 +1676,14 @@ velt-comment-dialog-suggestion-agent-internal {
   flex:none !important;
   cursor:pointer !important;
 }
-
-/* expanded selected · I872:21801;251:19661 */
 .vc-options-trigger > svg {
   width:24px !important;
   height:24px !important;
   display:block !important;
 }
-
-/* expanded selected · I872:21801;251:19661;2932:5303 */
 .vc-options-trigger path {
   fill:#333333 !important;
 }
-
-/* expanded selected · I872:21801;251:19666 */
 .vc-panel-toggle {
   width:24px !important;
   height:24px !important;
@@ -1815,15 +1708,11 @@ velt-comment-dialog-suggestion-agent-internal {
   background:none !important;
   border:0 !important;
 }
-
-/* expanded selected · I872:21801;251:19666 */
 .vc-panel-toggle svg {
   width:24px !important;
   height:24px !important;
   display:block !important;
 }
-
-/* expanded selected · I872:21801;251:19666;2932:3904 */
 .vc-panel-toggle path {
   stroke:#333333 !important;
   fill:none !important;
@@ -1855,15 +1744,11 @@ velt-comment-dialog-suggestion-agent-internal {
   flex-direction:column !important;
   align-self:stretch !important;
 }
-
-/* expanded selected · I872:21801;251:19670 */
 .vc-comment {
   display:flex !important;
   flex-direction:row !important;
   align-self:stretch !important;
 }
-
-/* expanded selected · I872:21801;251:19685 */
 .vc-comment .velt-thread-card--container {
   display:flex !important;
   flex-direction:row !important;
@@ -1872,8 +1757,6 @@ velt-comment-dialog-suggestion-agent-internal {
   flex:1 1 auto !important;
   min-width:0 !important;
 }
-
-/* expanded selected rail · I872:21801;251:19670;251:17172 */
 .vc-comment-rail {
   display:flex !important;
   flex-direction:row !important;
@@ -1882,16 +1765,12 @@ velt-comment-dialog-suggestion-agent-internal {
   align-self:stretch !important;
   flex:none !important;
 }
-
-/* expanded selected main · I872:21801;251:19670;251:17174 */
 .vc-comment-main {
   display:flex !important;
   flex-direction:column !important;
   flex:1 1 0 !important;
   min-width:0 !important;
 }
-
-/* expanded selected head · I872:21801;251:19670;251:17249 */
 .vc-comment-head {
   display:flex !important;
   flex-direction:row !important;
@@ -1899,8 +1778,6 @@ velt-comment-dialog-suggestion-agent-internal {
   align-items:center !important;
   align-self:stretch !important;
 }
-
-/* expanded selected headrow · I872:21801;251:19670;251:17175 */
 .vc-comment-headrow {
   display:flex !important;
   flex-direction:row !important;
@@ -1913,8 +1790,6 @@ velt-comment-dialog-suggestion-agent-internal {
   flex:none !important;
   min-width:0 !important;
 }
-
-/* composer dialog strip · I872:21801;251:19749 */
 .vc-composer {
   display:flex !important;
   flex-direction:row !important;
@@ -1933,8 +1808,6 @@ velt-comment-dialog-suggestion-agent-internal {
   border:0 !important;
   min-width:0 !important;
 }
-
-/* composer dialog · 872:22124 */
 .vc-composer-field {
   display:flex !important;
   flex-direction:row !important;
@@ -1947,14 +1820,10 @@ velt-comment-dialog-suggestion-agent-internal {
   background:#ffffff !important;
   box-sizing:border-box !important;
 }
-
-/* I872:21801;251:19749;2932:14811 */
 .vc-dialog .vc-composer-field {
   flex:1 1 0 !important;
   min-width:0 !important;
 }
-
-/* composer page mode · 872:22140 */
 .vc-composer-page-field {
   display:flex !important;
   flex-direction:row !important;
@@ -1982,8 +1851,6 @@ velt-comment-dialog-suggestion-agent-internal {
   border:0 !important;
   min-width:0 !important;
 }
-
-/* composer dialog input · I872:22124;16835:64016 */
 .vc-composer-input {
   display:flex !important;
   flex-direction:column !important;
@@ -1991,8 +1858,6 @@ velt-comment-dialog-suggestion-agent-internal {
   flex:1 1 0 !important;
   min-width:0 !important;
 }
-
-/* composer page input · I872:22140;16835:64016 */
 .vc-composer-page-input {
   display:flex !important;
   flex-direction:column !important;
@@ -2022,8 +1887,6 @@ velt-comment-dialog-suggestion-agent-internal {
   padding:0 !important;
   margin:0 !important;
 }
-
-/* composer dialog inkbox · I872:22124;16835:63979 */
 /* `display: block`, NOT flex — a flex container makes every run inside a flex item */
 .velt-composer-input--message {
   display:block !important;
@@ -2036,8 +1899,6 @@ velt-comment-dialog-suggestion-agent-internal {
   width:100% !important;
   outline:none !important;
 }
-
-/* composer page inkbox · I872:22140;16835:63979 */
 .vc-composer-page-field .velt-composer-input--message {
   display:block !important;
 }
@@ -2045,8 +1906,6 @@ velt-comment-dialog-suggestion-agent-internal {
 .velt-composer-input--message {
   outline:none !important;
 }
-
-/* composer dialog placeholder · I872:22124;16835:63980 */
 .vc-composer-field .velt-composer-input .velt-composer-input--message:empty::before {
   content:attr(placeholder) !important;
   color:#767676 !important;
@@ -2057,8 +1916,6 @@ velt-comment-dialog-suggestion-agent-internal {
   display:block !important;
   pointer-events:none !important;
 }
-
-/* composer page placeholder · I872:22140;16835:63980 */
 .vc-composer-page-field .velt-composer-input .velt-composer-input--message:empty::before {
   content:attr(placeholder) !important;
   color:#767676 !important;
@@ -2069,8 +1926,6 @@ velt-comment-dialog-suggestion-agent-internal {
   display:block !important;
   pointer-events:none !important;
 }
-
-/* send slot · I872:22124;16836:16222 */
 .vc-send-slot {
   display:flex !important;
   flex-direction:row !important;
@@ -2082,8 +1937,6 @@ velt-comment-dialog-suggestion-agent-internal {
   flex:none !important;
   width:24px !important;
 }
-
-/* send button · I872:22124;14544:410091 */
 .vc-send {
   display:flex !important;
   flex-direction:row !important;
@@ -2116,8 +1969,6 @@ velt-comment-dialog-suggestion-agent-internal {
   font:inherit !important;
   color:inherit !important;
 }
-
-/* menu open · 872:22294 */
 .vc-options-menu {
   display:flex !important;
   flex-direction:column !important;
@@ -2158,7 +2009,7 @@ velt-comment-dialog-suggestion-agent-internal {
   cursor:pointer !important;
 }
 
-/* `Mark as Unread` is the row itself (872:22295). It used to be */
+/* The Mark as Unread row */
 .vc-menu-item-markasread {
   display:flex !important;
   flex-direction:row !important;
@@ -2177,23 +2028,6 @@ velt-comment-dialog-suggestion-agent-internal {
 .velt-comment-dialog-options-dropdown-content-item {
   display:contents !important;
 }
-
-/* menu open row unread · 872:22295 */
-.vc-menu-item-unread-legacy-unused {
-  display:flex !important;
-  flex-direction:row !important;
-  align-items:center !important;
-  gap:8px !important;
-  padding:8px 12px !important;
-  height:40px !important;
-  align-self:stretch !important;
-  border-radius:4px !important;
-  background:#ffffff !important;
-  box-sizing:border-box !important;
-  cursor:pointer !important;
-}
-
-/* menu open row copylink · 872:22297 */
 .vc-menu-item-copylink {
   display:flex !important;
   flex-direction:row !important;
@@ -2216,8 +2050,6 @@ velt-comment-dialog-suggestion-agent-internal {
 .vc-menu-item-copylink div.s-tooltip {
   display:contents !important;
 }
-
-/* menu open row delete · 872:22298 */
 .vc-menu-item-delete {
   display:flex !important;
   flex-direction:row !important;
@@ -2240,8 +2072,6 @@ velt-comment-dialog-options-dropdown-content-delete-comment-internal,
 .velt-comment-dialog-options-dropdown-content-delete-comment {
   display:contents !important;
 }
-
-/* menu open label · I872:22295;5113:133626 */
 .vc-menu-label {
   flex:1 1 0 !important;
   color:#050505 !important;
@@ -2269,8 +2099,6 @@ velt-comment-dialog-options-dropdown-content-delete-comment-internal,
 .vc-card:hover > .vc-card-inner {
   background:#f0f0f0 !important;
 }
-
-/* expanded selected · I872:21801;251:19670;251:17178 */
 .vc-dialog .vc-message {
   align-self:stretch !important;
   color:#1a1a1a !important;
@@ -2279,8 +2107,6 @@ velt-comment-dialog-options-dropdown-content-delete-comment-internal,
   font-weight:400 !important;
   line-height:24px !important;
 }
-
-/* 872:21785 */
 .vc-context {
   align-self:stretch !important;
   color:#666666 !important;
@@ -2299,60 +2125,6 @@ velt-comment-dialog-options-dropdown-content-delete-comment-internal,
 
 .vc-card velt-if:has(> .vc-context) {
   display:contents !important;
-}
-
-/* menu open row assign */
-.vc-menu-item-assign {
-  display:flex !important;
-  flex-direction:row !important;
-  align-items:center !important;
-  gap:8px !important;
-  padding:8px 12px !important;
-  height:40px !important;
-  align-self:stretch !important;
-  border-radius:4px !important;
-  background:#ffffff !important;
-  box-sizing:border-box !important;
-  cursor:pointer !important;
-}
-
-.vc-menu-item-assign > div.ng-star-inserted {
-  display:flex !important;
-  align-items:center !important;
-  flex:1 1 0 !important;
-  min-width:0 !important;
-  padding:0 !important;
-  margin:0 !important;
-  background:none !important;
-  border:0 !important;
-  cursor:pointer !important;
-}
-
-.vc-menu-item-assign .vc-menu-action {
-  display:flex !important;
-  align-items:center !important;
-  flex:1 1 0 !important;
-  min-width:0 !important;
-  padding:0 !important;
-  margin:0 !important;
-  background:none !important;
-  border:0 !important;
-  cursor:pointer !important;
-  font:inherit !important;
-  color:inherit !important;
-  text-align:left !important;
-}
-
-.vc-menu-item-assign div.velt-button {
-  display:flex !important;
-  align-items:center !important;
-  flex:1 1 0 !important;
-  min-width:0 !important;
-  padding:0 !important;
-  margin:0 !important;
-  background:none !important;
-  border:0 !important;
-  cursor:pointer !important;
 }
 
 /* card hover */
@@ -2379,8 +2151,6 @@ velt-comment-dialog-options-dropdown-content-delete-comment-internal,
   outline-offset:-1px !important;
   border-radius:4px !important;
 }
-
-/* expanded selected · 872:21790 */
 .vc-dialog .velt-hidden-count {
   color:#0589ff !important;
   font-family:'Inter' !important;
@@ -2390,14 +2160,12 @@ velt-comment-dialog-options-dropdown-content-delete-comment-internal,
 }
 
 /* Known SDK quirks */
-
-/* Clip the nudged icon so it cannot overflow */
 /* clip the nudged icon so it can't overflow */ .vc-reply-icon { overflow: hidden !important; }
 
-/* Remove Velt's default mention highlight; the mention's own colour comes from */
+/* Remove Velt's default mention highlight; the mention's colour comes from the mention rules */
 .velt-thread-card--message .velt-mention, [class*='velt-mention'] { background: transparent !important; background-color: transparent !important; }
 
-/* Unstyled mode strips the painter that fills the avatar initial, so the span */
+/* Unstyled mode drops the avatar initial, so it is drawn back from its data attribute */
 .s-user-avatar-initial:empty::before, .velt-user-avatar--initial:empty::before { content: attr(data-modal-author-initial) !important; }
 
 /* Size the Options host so it cannot collapse and clip the design's trigger */
@@ -2409,8 +2177,6 @@ velt-comment-dialog-options-dropdown-content-delete-comment-internal,
 
 /* Sidebar scrollport: pin the flex chain so the list is the one scroller */
 velt-comments-sidebar-v2 { height: 100% !important; max-height: 100% !important; min-height: 0 !important; overflow: hidden !important; }
-
-/* Composition mechanism: where an SDK host sits, whether an empty host still */
 
 /* The options kebab: top-right of the collapsed card, revealed on hover */
 .vc-card {
@@ -2449,7 +2215,7 @@ velt-comments-sidebar-v2 { height: 100% !important; max-height: 100% !important;
   overflow: visible !important;
 }
 
-/* the kebab glyph is a 24px box in the header; on the card it must not */
+/* The card's kebab glyph keeps the header's 24px box */
 .vc-card > .vc-options .vc-options-trigger,
 .vc-card > .vc-options .vc-options-trigger > svg {
   width: 24px !important;
@@ -2469,7 +2235,7 @@ velt-comments-sidebar-v2 { height: 100% !important; max-height: 100% !important;
   display: none !important;
 }
 
-/* Sidebar scrollport. The list's viewport already scrolls; these only */
+/* Sidebar scrollport: the list's viewport scrolls, so its ancestors must be allowed to shrink */
 .hw-panel,
 .hw-panel-body {
   min-height: 0 !important;
@@ -2485,7 +2251,7 @@ velt-comment-sidebar-list-item-v2-internal {
   margin-bottom: 8px !important;
 }
 
-/* The list rhythm is 12px, not 8. Only the sidebar body 872:21416 defines list */
+/* The list rhythm is 12px, not 8. The sidebar body sets the list gap */
 .hw-panel-body .vc-card {
   margin-bottom: 12px !important;
 }
@@ -2518,10 +2284,7 @@ velt-comment-sidebar-list-item-v2-internal {
   display: none !important;
 }
 
-/* Mechanism the block above does not carry */
-
 /* Pointer cursor on the parts of the menu rows the row rules and the Assign */
-.vc-options-menu .vc-menu-item-assign *,
 .vc-options-menu .vc-menu-label {
   cursor: pointer !important;
 }
@@ -2533,20 +2296,15 @@ velt-comment-sidebar-list-item-v2-internal {
   height: auto !important;
 }
 
-/* No MoreReply styling here. `collapsedComments` / `collapsedRepliesPreview` */
-
 /* The sidebar card's reply composer fills the card, like the popover's */
 .vc-card .vc-composer-field {
   flex: 1 1 0 !important;
   min-width: 0 !important;
 }
 
-/* The collapsed-card ROOT frames (872:21719 / 21735 / 21757 / 21775) do bind */
-
 /* The options-menu focus ring lands on the ROW, whichever node takes focus ─ */
 .vc-menu-item-markasread:has(:focus-visible),
 .vc-menu-item-copylink:has(:focus-visible),
-.vc-menu-item-assign:has(:focus-visible),
 .vc-menu-item-delete:has(:focus-visible) {
   outline: 1px solid #e6e6e6 !important;
   outline-offset: -1px !important;
@@ -2597,15 +2355,6 @@ velt-comment-sidebar-list-item-v2-internal {
 .vc-card .vc-comment-actions { right: 52px !important; }
 .vc-comment-head { position: relative !important; }
 .vc-card-head { position: relative !important; }
-.vc-comment-actions .vc-comment-action-label {
-    font-family: 'Inter' !important;
-    font-size: 12px !important;
-    line-height: 20px !important;
-    font-weight: 400 !important;
-    color: #050505 !important;
-    cursor: pointer !important;
-    white-space: nowrap !important;
-}
 .vc-comment-actions .vc-comment-options-trigger {
     display: flex !important;
     width: 24px !important;
@@ -2615,42 +2364,8 @@ velt-comment-sidebar-list-item-v2-internal {
     cursor: pointer !important;
 }
 .vc-comment-actions .vc-comment-options-trigger svg { width: 16px !important; height: 16px !important; }
-.vc-comment-menu {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 2px !important;
-    padding: 4px !important;
-    width: 200px !important;
-    border-radius: 6px !important;
-    border: 1px solid #e6e6e6 !important;
-    box-shadow: 0px 2px 12px 8px #0000000f !important;
-    background: #ffffff !important;
-}
-.vc-comment-menu-row {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    gap: 8px !important;
-    padding: 8px 12px !important;
-    height: 40px !important;
-    align-self: stretch !important;
-    border-radius: 4px !important;
-    background: #ffffff !important;
-    cursor: pointer !important;
-}
-.vc-comment-menu-row:hover { background: #f0f0f0 !important; }
-.vc-comment-menu-label {
-    flex: 1 1 0 !important;
-    font-family: 'Inter' !important;
-    font-size: 15px !important;
-    font-weight: 400 !important;
-    line-height: 24px !important;
-    color: #050505 !important;
-}
 
-/* Flows board 872:20767 — mechanism for the surfaces added in this pass */
-
-/* sidebar band 1: header, 400x48 (872:21412) */
+/* sidebar band 1: header, 400x48 */
 .hw-panel-header {
   height: 48px;
   min-height: 48px;
@@ -2665,7 +2380,7 @@ velt-comment-sidebar-list-item-v2-internal {
   cursor: pointer;
 }
 
-/* sidebar band 2: navigation + search, 400x56 (872:21415) */
+/* sidebar band 2: navigation + search, 400x56 */
 .hw-panel-controls {
   display: flex;
   align-items: center;
@@ -2757,9 +2472,7 @@ velt-comment-sidebar-list-item-v2-internal {
   cursor: text !important;
 }
 
-/* The resting field is NOT transparent. That belonged to the old band, where */
-
-/* the FOCUSED THREAD drawer (872:21662 → 872:21603, 448x884) */
+/* the FOCUSED THREAD drawer (448x884) */
 .hw-focus {
   position: relative;   /* anchor for the dialog's ⋯ ✓ — see .vc-focus-actions */
   display: flex;
@@ -2819,7 +2532,7 @@ velt-comment-sidebar-list-item-v2-internal {
   box-shadow: none !important;
 }
 
-/* the drawer's header band, owned by the DIALOG (872:21603) */
+/* the drawer's header band, owned by the DIALOG */
 .vc-focus-header-row {
   display: flex !important;
   flex-direction: row !important;
@@ -2905,7 +2618,7 @@ velt-comment-sidebar-list-item-v2-internal {
   min-height: 24px !important;
 }
 
-/* per-comment hover row (VeltCommentActionsWf.tsx · 890:23218) */
+/* per-comment hover row (VeltCommentActionsWf.tsx) */
 .vc-card .vc-comment-actions { right: 0 !important; }
 
 .vc-comment-actions .hw-icon-btn svg {
@@ -2985,7 +2698,6 @@ velt-comment-sidebar-list-item-v2-internal {
 /* Every affordance the design treats as clickable gets a pointer, and the icon */
 .vc-card,
 .vc-comment,
-.hw-tab,
 .vc-menu-label,
 .vc-options-trigger,
 .hw-panel-close,
@@ -3006,11 +2718,9 @@ velt-comment-sidebar-list-item-v2-internal {
   display: none !important;
 }
 
-/* The ⋯ menu's position is the CDK overlay's, not ours */
-
 /* SDK slot behaviours this structure has to work around */
 
-/* 1 · The CloseButton slot adopts its class, but Velt ships `display:none` on */
+/* The close button needs an explicit box: Velt's host is display:none by default */
 .hw-panel-close {
   display: flex !important;
   flex: none !important;
@@ -3018,7 +2728,7 @@ velt-comment-sidebar-list-item-v2-internal {
    height: 24px !important;
 }
 
-/* 3 · CloseButton and FocusedThread.BackButton drop their children — the slots */
+/* The close and back buttons draw their glyphs as masks */
 .hw-panel-close::before,
 .hw-focus-close::before,
 .hw-focus-back::before {
@@ -3153,7 +2863,7 @@ velt-comment-sidebar-list-item-v2-internal {
   margin-bottom: 6px !important;
 }
 
-/* 10 · On a sidebar card the hover row lands on the timestamp group, which is */
+/* On a sidebar card the hover actions sit over the timestamp, so the timestamp hides on hover */
 .vc-card:hover .vc-meta,
 .vc-card:focus-within .vc-meta {
   opacity: 0 !important;
@@ -3202,10 +2912,6 @@ velt-comment-sidebar-list-item-v2-internal {
 .vc-composer-page-field:focus-within {
   border-color: #0589ff !important;
 }
-
-/* Values below are verbatim from the design and supersede the by-eye ones */
-
-/* sidebar header · 872:21412 */
 .hw-panel-header {
   padding: 12px 16px !important;
   height: 48px !important;
@@ -3221,14 +2927,13 @@ velt-comment-sidebar-list-item-v2-internal {
   line-height: 24px !important;
   color: #333333 !important;
 }
-
-/* control band · 872:21415 */
 .hw-panel-controls {
   padding: 12px !important;
   gap: 4px !important;
   height: 56px !important;
   min-height: 56px !important;
-  border-top: 1px solid #e6e6e6 !important;
+  /* No top border: the header above already draws that line */
+  border-top: 0 !important;
   border-bottom: 1px solid #e6e6e6 !important;
   box-sizing: border-box !important;
 }
@@ -3251,20 +2956,16 @@ velt-comment-sidebar-list-item-v2-internal {
   width: 16px !important;
   height: 16px !important;
 }
-
-/* sidebar body · 872:21416 */
 .hw-panel-body {
   padding: 0 !important;
 }
-
-/* footer composer band · 872:21490 */
 .hw-panel-composer {
   margin-top: 0 !important;
   padding: 12px 16px !important;
   box-sizing: border-box !important;
 }
 
-/* focused-thread drawer · 872:21603 */
+/* focused-thread drawer */
 .hw-focus-header {
   padding: 12px 16px 12px 8px !important;
   gap: 6px !important;
@@ -3296,8 +2997,6 @@ velt-comment-sidebar-list-item-v2-internal {
   width: 24px !important;
   height: 24px !important;
 }
-
-/* drawer body · I872:21603;244:15255 */
 .vc-focus-body {
   padding: 16px !important;
 }
@@ -3331,82 +3030,14 @@ velt-comment-sidebar-list-item-v2-internal {
   justify-content: space-between !important;
 }
 
-/* `For You | Everything` tab pills · 872:21415 */
-.hw-tabs {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  gap: 4px !important;
-  flex: none !important;
-}
-
-.hw-tab {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 6px !important;
-  height: 32px !important;
-  /* The pill's 8px side padding lives on Velt's own button div, not here — see */
-  padding: 0 !important;
-  border-radius: 4px !important;
-  border: 0 !important;
-  background: transparent !important;
-  cursor: pointer !important;
-  flex: none !important;
-  box-sizing: border-box !important;
-}
-
-.hw-tab-label {
-  font-family: 'Inter', var(--hw-font) !important;
-  font-size: 15px !important;
-  font-weight: 500 !important;
-  line-height: 24px !important;
-  color: #666666 !important;
-  white-space: nowrap !important;
-}
-
-/* Velt's own button host sits between `.hw-tab` and the label */
-.hw-tab > .velt-button {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  justify-content: center !important;
-  flex: 1 1 auto !important;
-  align-self: stretch !important;
-  padding: 0 8px !important;
-  margin: 0 !important;
-  background: none !important;
-  border: 0 !important;
-  box-sizing: border-box !important;
-}
-
-/* Selected. Velt marks the active member of a single-select group with */
-.hw-tab:has(> .velt-button--active) {
-  background: #f1f1f1 !important;
-}
-
-.hw-tab:has(> .velt-button--active) .hw-tab-label {
-  color: #1a1a1a !important;
-}
-
-/* hover */
-.hw-tab:not(:has(> .velt-button--active)):hover {
-  background: #f7f7f7 !important;
-}
-
-.hw-tab:hover .hw-tab-label {
-  color: #1a1a1a !important;
-}
-
-/* `↳ 1 reply` · ToggleReply · 872:21749 */
+/* `↳ 1 reply` · ToggleReply */
 .vc-toggle-reply {
   justify-content: flex-start !important;
   align-items: center !important;
   height: 20px !important;
 }
 
-/* The reply row needs 4px of air above it (4:27936 / 8:28805) */
+/* The reply row needs 4px of air above it */
 .vc-card .vc-toggle-reply {
   margin-top: 4px !important;
 }
@@ -3560,7 +3191,7 @@ velt-comment-sidebar-list-item-v2-internal {
 .vc-assign-user .velt-dropdown-container {
   display: flex !important;
   align-items: center !important;
-  /* `flex: none`, not `min-width: 0`: these wrappers must report their */
+  /* `flex: none`, not `min-width: 0`: these wrappers must keep their own width */
   flex: none !important;
 }
 
@@ -3835,7 +3466,7 @@ velt-comment-sidebar-list-item-v2-internal {
   margin: 0 !important;
 }
 
-/* one chip. `padding: 0 8px` puts the count at x9 over a 1px border, which is */
+/* One reaction chip */
 .vc-reactions .velt-reaction-pin--default {
   display: flex !important;
   /* ROW-REVERSE, because 4:28068 puts the count before the emoji */
@@ -4089,7 +3720,7 @@ velt-comment-sidebar-list-item-v2-internal {
 
 /* Agent / suggestion card in the focused-thread drawer */
 
-/* 1 · the name row. Velt's `suggestion-header-internal` computes to */
+/* The agent card's name row */
 /* Inline, not space-between: 8:28925 puts the timestamp 4px after the name */
 .hw-agent-card velt-comment-dialog-suggestion-header-internal {
   display: flex !important;
@@ -4108,12 +3739,11 @@ velt-comment-sidebar-list-item-v2-internal {
   min-width: 0 !important;
 }
 
-.hw-agent-card velt-comment-dialog-suggestion-header-timestamp-internal,
 .hw-agent-card .vc-time {
   flex: none !important;
 }
 
-/* 2 · the avatar. The disc was only ever declared as */
+/* The agent card's avatar disc */
 .hw-agent-card .vc-avatar {
   display: flex !important;
   align-items: center !important;
@@ -4130,7 +3760,7 @@ velt-comment-sidebar-list-item-v2-internal {
 }
 
 /* 3 · the action chips */
-/* The `.hw-suggestion-actions` div declared in the wireframe is DROPPED by */
+/* The agent card's action chips */
 /* LEFT, not right. 8:28954 puts `Frame 1707479093` at x=0 of the agent */
 .hw-suggestion-actions,
 .hw-agent-card .velt-suggestion-actions,
@@ -4356,8 +3986,6 @@ velt-comment-sidebar-list-item-v2-internal {
   text-overflow: ellipsis !important;
 }
 
-/* Closed = no chrome */
-
 /* The filter panel (funnel) and the sort/view menu (sliders) */
 
 /* the filter panel: a bottom sheet on the sidebar. The host stays mounted while
@@ -4525,7 +4153,7 @@ velt-comment-sidebar-list-item-v2-internal {
   color: #848079 !important;
 }
 
-/* ONE CHECKBOX ROW. The row box goes on VELT'S OWN div, not on our */
+/* One checkbox row. The row box goes on Velt's own div inside the option host */
 .hw-filter-item {
   display: block !important;
   align-self: stretch !important;
@@ -4680,8 +4308,6 @@ velt-comment-sidebar-list-item-v2-internal {
   min-height: 0 !important;
 }
 
-/* Design Suggestion board (8:28539) — supersedes the older frames it names */
-
 /* 1 · The assignee band, repositioned */
 .vc-assignee-banner {
   padding: 8px !important;
@@ -4698,7 +4324,7 @@ velt-comment-sidebar-list-item-v2-internal {
   flex: 0 1 auto !important;
 }
 
-/* The drawer's band is the wider one: 12px/16px padding and a 12px gap (8:28660) */
+/* The drawer's band is the wider one: 12px/16px padding and a 12px gap */
 .vc-focus > .vc-assignee-banner {
   padding: 12px 16px !important;
 }
@@ -5002,74 +4628,24 @@ velt-comment-dialog-action-chip-internal .velt-action-chip.velt-action-chip:focu
 .hw-suggestion-actions .velt-suggestion-action-accept__button::after { content: "Accept"; }
 .hw-suggestion-actions .velt-suggestion-action-reject__button::after { content: "Reject"; }
 
-/* 4 · The two alternative assignment treatments */
-
-/* 4a · Bold (8:28726 · 8:28727) */
-html[data-vc-assign="bold"] .vc-assignee-banner {
-  background: #1a1a1a !important;
-}
-
-html[data-vc-assign="bold"] .vc-assigned-label,
-html[data-vc-assign="bold"] .vc-assigned-prefix,
-html[data-vc-assign="bold"] .vc-assignee-name {
-  color: #ffffff !important;
-}
-
-/* `:has(.vc-assignee-row)` — the outline belongs to an assigned card only */
-html[data-vc-assign="bold"] .vc-card:has(.vc-assignee-row) {
-  box-shadow: inset 0 0 0 1px #1a1a1a !important;
-}
-
-/* 4b · Figma-esque (8:28295 · 8:28438 · 8:28514) */
-html[data-vc-assign="figma"] .vc-card {
-  background: transparent !important;
-  border-radius: 0 !important;
-}
-
-html[data-vc-assign="figma"] .vc-card-inner {
-  background: transparent !important;
-  padding: 8px !important;
-}
-
-/* The hairlines. Velt ALREADY draws them: each card sits in its own */
-html[data-vc-assign="figma"] hr.velt-sidebar-list-item-hr {
-  display: block !important;
-  height: 0 !important;
-  margin: 0 16px !important;
-  border: 0 !important;
-  border-top: 1px solid #e6e6e6 !important;
-}
-
-html[data-vc-assign="figma"] .vc-assignee-banner {
-  position: absolute !important;
-  right: 8px !important;
-  bottom: 8px !important;
-  width: auto !important;
-  height: 28px !important;
-  padding: 4px !important;
-  border-radius: 14px !important;
-  background: #fdf1fa !important;
-}
-
-html[data-vc-assign="figma"] .vc-assignee-row {
-  gap: 4px !important;
-}
-
-html[data-vc-assign="figma"] .vc-assigned-label,
-html[data-vc-assign="figma"] .vc-assigned-prefix,
-html[data-vc-assign="figma"] .vc-assignee-name {
-  color: #1a1a1a !important;
-}
-
-/* reserve the pill's strip, on assigned rows only */
-html[data-vc-assign="figma"] .vc-card:has(.vc-assignee-row) .vc-card-inner {
-  padding-bottom: 44px !important;
-}
-
 /* The comment pin's triangle */
 .velt-comment-pin--popover {
   --velt-accent: #0589ff !important;
   border-right-color: #0589ff !important;
+}
+
+/* Flush in the cell's top-right corner. Velt offsets the pin by the cell's width
+   rounded to whole pixels, which left it up to a pixel short of the corner */
+.hv-cell-commentable > snippyly-comment-pin-portal,
+.hv-cell-commentable > snippyly-comment-pin-portal .comment-pin-portal {
+  top: 0 !important;
+  right: 0 !important;
+  left: auto !important;
+}
+
+/* …and when the cell is outlined, the tag follows the outline's rounded corner */
+.hv-cell-commentable[data-velt-comment-pin-active="true"] .velt-comment-pin--popover {
+  border-top-right-radius: 6px !important;
 }
 
 /* The reaction tooltip */

@@ -234,5 +234,3 @@ export const AGENT_COMMENT_SEEDS = [
     ],
   },
 ] as const;
-
-export const AGENT_COMMENT_SEED_COUNT = AGENT_COMMENT_SEEDS.length;
