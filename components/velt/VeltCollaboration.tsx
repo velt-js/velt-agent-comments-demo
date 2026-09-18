@@ -27,6 +27,9 @@ export function VeltCollaboration({
       <VeltComments
         shadowDom={false}
         popoverMode={true}
+        /* Click to open. SDK 6.0.11 drops a hover preview as soon as the pointer
+           leaves the cell, even into the dialog, so it can never be used */
+        dialogOnHover={false}
         commentPlaceholder="Comment or tag others with @"
         replyPlaceholder="Reply"
         paginatedContactList={true}
