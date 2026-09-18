@@ -5149,3 +5149,26 @@ html[data-vc-assign="figma"] .vc-card:has(.vc-assignee-row) .vc-card-inner {
 .vc-focus-unresolve:not(:has(*)) {
   display: none !important;
 }
+
+/* Hover states for the dialog's icon buttons: the resolve button's wash, 24px,
+   radius 6, on the header ⋯ and sidebar buttons, each comment's ⋯, and the
+   composer's @. Send is a bordered button, so it takes the bordered hover */
+.vc-options-trigger,
+.vc-panel-toggle,
+.vc-comment-actions .vc-comment-options-trigger,
+.vc-mention-btn {
+  border-radius: 6px !important;
+  transition: background-color 120ms ease !important;
+}
+
+.vc-options-trigger:hover,
+.vc-panel-toggle:hover,
+.vc-comment-actions .vc-comment-options-trigger:hover,
+.vc-composer-field .vc-mention-btn:hover,
+.vc-composer-page-field .vc-mention-btn:hover {
+  background-color: var(--hw-surface-pressed) !important;
+}
+
+.vc-send button:not([disabled]):hover {
+  background: #f7f7f7 !important;
+}
