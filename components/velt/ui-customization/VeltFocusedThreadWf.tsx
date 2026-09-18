@@ -3,6 +3,7 @@
 import {
     VeltCommentDialogActionsWireframe,
     VeltCommentDialogWireframe,
+    VeltData,
     VeltIf,
 } from "@veltdev/react";
 import { VeltAgentCardWf } from "./VeltAgentCardWf";
@@ -43,11 +44,18 @@ function FocusHeader() {
 export function VeltFocusedThreadWf() {
     return (
         <VeltCommentDialogWireframe variant="focusedThread">
+            {/* Which thread is open, read by CommentsPanel (see VeltSidebarCardWf) */}
+            <span className="vc-annotation-id" hidden>
+                <VeltData field="annotation.annotationId" />
+            </span>
             <VeltAgentCardWf header={<FocusHeader />} />
 
             <VeltIf condition="{annotation.type} !== 'suggestion'">
             <div className="vc-focus">
                 <FocusHeader />
+
+                {/* Under the header band, which the drawer's own header shares */}
+                <VeltCommentDialogWireframe.VisibilityBanner />
 
                 <VeltAssigneeBannerWf />
 

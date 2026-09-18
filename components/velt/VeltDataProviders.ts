@@ -121,18 +121,6 @@ export const reactionDataProvider = {
   },
 } as any;
 
-export const recordingDataProvider = {
-  config: {
-    getConfig: { url: `${BACKEND_URL}/recorders/get`, headers: authHeaders, credentials },
-    saveConfig: { url: `${BACKEND_URL}/recorders/save`, headers: authHeaders, credentials },
-    deleteConfig: { url: `${BACKEND_URL}/recorders/delete`, headers: authHeaders, credentials },
-    resolveTimeout: 15000,
-    getRetryConfig: retry,
-    saveRetryConfig: retry,
-    deleteRetryConfig: retry,
-  },
-} as any;
-
 // The user resolver (users/get) is read-only and intentionally left ungated on the
 // backend, so it keeps the static JSON headers (no token round-trip on this hot path).
 export const userDataProvider = {

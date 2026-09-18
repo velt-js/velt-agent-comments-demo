@@ -25,6 +25,11 @@ function ContextLine() {
 export function VeltSidebarCardWf() {
     return (
         <VeltCommentDialogWireframe variant="sidebar">
+            {/* Which thread this row is. V2 has no API to focus a thread by id, so
+                CommentsPanel finds the row by this and clicks it */}
+            <span className="vc-annotation-id" hidden>
+                <VeltData field="annotation.annotationId" />
+            </span>
             <VeltCommentDialogWireframe.Suggestion>
                 <div className="vc-card vc-agent">
                     <VeltCommentDialogWireframe.Body className="vc-card-inner">
@@ -54,6 +59,7 @@ export function VeltSidebarCardWf() {
 
             <VeltIf className="vc-card-normal" condition="{annotation.type} !== 'suggestion'">
                 <div className="vc-card">
+                    <VeltCommentDialogWireframe.VisibilityBanner />
                     <VeltAssigneeBannerWf />
                     <VeltCommentDialogWireframe.Body
                         className="vc-card-inner"

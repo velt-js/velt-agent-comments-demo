@@ -94,14 +94,15 @@ export function Header({
             </select>
           </div>
         )}
-        <VeltNotificationsTool enableCrossOrganization={true} />
-        {/* The drawer is embedded, so the host owns open/close */}
+        <VeltNotificationsTool shadowDom={false} panelShadowDom={false} enableCrossOrganization={true} />
+        {/* The drawer is embedded, so the host owns it. This button only opens it:
+            closing is the drawer's own X */}
         <button
           className="hw-sidebar-toggle"
           type="button"
           aria-label="Comments"
           aria-pressed={sidebarOpen}
-          onClick={() => setSidebarOpen((o) => !o)}
+          onClick={() => setSidebarOpen(() => true)}
         >
           <span className="hw-sb-icon">
             {sidebarOpen ? <ChatTeardropIcon /> : <ChatTeardropOutlineIcon />}
