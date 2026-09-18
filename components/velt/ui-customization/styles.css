@@ -4772,3 +4772,10 @@ html:has(.velt-autocomplete-panel--autocomplete.mat-mdc-autocomplete-visible) .v
   visibility: visible !important;
   pointer-events: auto !important;
 }
+
+/* Unread dot in the pin dialog and the focused thread: after the time, centred
+   on the name row (which lines up on the text baseline, so the dot opts out) */
+.vc-comment-headrow .vc-unread-slot {
+  display: flex !important;
+  align-self: center !important;
+}

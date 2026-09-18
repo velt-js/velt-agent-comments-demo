@@ -49,6 +49,9 @@ export function VeltCommentDialogWf() {
                                     <div className="vc-comment-headrow">
                                     <VeltAuthorNameWf />
                                         <VeltCommentDialogWireframe.ThreadCard.Time className="vc-time" />
+                                        <VeltCommentDialogWireframe.ThreadCard.Unread className="vc-unread-slot">
+                                            <span className="vc-unread-dot" />
+                                        </VeltCommentDialogWireframe.ThreadCard.Unread>
                                     </div>
                                     <VeltCommentActionsWf />
                                 </div>

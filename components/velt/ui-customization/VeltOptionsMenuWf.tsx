@@ -1,6 +1,6 @@
 "use client";
 
-import { VeltCommentDialogWireframe } from "@veltdev/react";
+import { VeltCommentDialogWireframe, VeltIf } from "@veltdev/react";
 import { DotsThreeIcon } from "./icons";
 
 export function VeltOptionsMenuWf() {
@@ -10,8 +10,14 @@ export function VeltOptionsMenuWf() {
                 <DotsThreeIcon />
             </VeltCommentDialogWireframe.Options.Trigger>
             <VeltCommentDialogWireframe.Options.Content className="vc-options-menu">
+                {/* One row that toggles; Velt passes the thread's state as {unread} */}
                 <VeltCommentDialogWireframe.Options.Content.MarkAsRead className="vc-menu-item-markasread">
-                    <span className="vc-menu-label">Mark as Unread</span>
+                    <VeltIf condition="{unread}">
+                        <span className="vc-menu-label">Mark as Read</span>
+                    </VeltIf>
+                    <VeltIf condition="!{unread}">
+                        <span className="vc-menu-label">Mark as Unread</span>
+                    </VeltIf>
                 </VeltCommentDialogWireframe.Options.Content.MarkAsRead>
                 <VeltCommentDialogWireframe.CopyLink className="vc-menu-item-copylink">
                     <span className="vc-menu-label">Copy Link</span>
