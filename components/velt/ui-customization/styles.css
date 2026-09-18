@@ -1467,6 +1467,24 @@ velt-comment-dialog-thread-card-unread-internal {
   line-height:24px !important;
 }
 
+/* A long unbroken string (a URL, a pasted token) wraps inside the column instead
+   of running out of the dialog, card or drawer */
+.vc-message,
+.vc-message * {
+  overflow-wrap: anywhere !important;
+  word-break: normal !important;
+}
+
+/* …which the flex columns around it allow only if they can shrink */
+.vc-message,
+.vc-comment-main,
+.vc-focus-main,
+.vc-card-head,
+.vc-card-body,
+.vc-card-inner {
+  min-width: 0 !important;
+}
+
 /* 872:21731 */
 .vc-message .velt-thread-card--message {
   color:#1a1a1a !important;
