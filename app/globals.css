@@ -421,11 +421,11 @@ snippyly-comment-text.comment-text-highlight,
   font-size: 12px;
 }
 
+/* The header sits on the card's white; only its rule separates it */
 .hv-table th {
   text-align: left;
   font-weight: 500;
   color: #6f6d67;
-  background: #faf9f7;
   padding: 10px 14px;
   border-bottom: 1px solid #e6e4df;
   white-space: nowrap;
@@ -564,7 +564,6 @@ snippyly-comment-text.comment-text-highlight,
 
 /* The commented cell is outlined while its dialog is the selected one */
 .hv-cell-commentable[data-velt-comment-pin-active="true"] {
-  border-radius: 6px;
   box-shadow: inset 0 0 0 1px #0589ff;
 }
 

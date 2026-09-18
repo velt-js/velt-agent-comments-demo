@@ -130,7 +130,7 @@ export function CommentsPanel({
     >
       <div className="hw-rail-inner">
         <VeltCommentsSidebarV2
-          embedMode="true"
+          embedMode={true}
           pageMode={true}
           shadowDom={false}
           defaultMinimalFilter="open"

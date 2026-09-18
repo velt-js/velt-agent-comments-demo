@@ -841,7 +841,7 @@ velt-comment-dialog-visibility-banner-dropdown-trigger-icon-internal svg {
   white-space: nowrap !important;
 }
 
-/* The selected row: same ground, the label and its glyphs in the accent blue */
+/* The selected row: same ground and ink; the check marks it */
 .velt-comment-visibility-banner-dropdown-container .velt-comment-dialog-visibility-banner-dropdown-content-item.selected {
   background: #ffffff !important;
 }
@@ -851,14 +851,14 @@ velt-comment-dialog-visibility-banner-dropdown-trigger-icon-internal svg {
 }
 
 .velt-comment-visibility-banner-dropdown-container .velt-comment-dialog-visibility-banner-dropdown-content-item.selected .velt-option-text {
-  color: #0589ff !important;
+  color: #050505 !important;
 }
 
 .velt-comment-visibility-banner-dropdown-container .velt-comment-dialog-visibility-banner-dropdown-content-item svg {
   flex: none !important;
   width: 16px !important;
   height: 16px !important;
-  color: #0589ff !important;
+  color: #050505 !important;
 }
 
 .velt-comment-visibility-banner-dropdown-container .velt-comment-dialog-visibility-banner-dropdown-content-item svg path {
@@ -4009,7 +4009,8 @@ velt-comment-sidebar-list-item-v2-internal {
   display: flex !important;
   flex-direction: column !important;
   justify-content: flex-end !important;
-  background: transparent !important;
+  /* dims the list the sheet covers; a click here closes the sheet */
+  background: rgba(10, 10, 10, 0.2) !important;
 }
 
 .hw-filter .velt-sidebar-filter-panel {
@@ -4072,9 +4073,15 @@ velt-comment-sidebar-list-item-v2-internal {
   color: #050505 !important;
 }
 
-/* the funnel glyph and the word, side by side */
+/* the funnel glyph and the word, side by side, centred on each other */
 .hw-filter-title-row {
   display: flex !important;
+  align-items: center !important;
+}
+
+.hw-filter-title-row svg {
+  display: block !important;
+  flex: none !important;
 }
 
 .hw-filter-close {
@@ -4287,16 +4294,14 @@ velt-comment-sidebar-list-item-v2-internal {
   height: 14px !important;
 }
 
-/* the icon/label gap on Reset and Apply: their glyph and text are separate */
-.hw-filter-reset > *,
-.hw-filter-done > * {
-  display: inline-flex !important;
+/* 8px between glyph and label. The label is a bare text node inside Velt's
+   <button>, so the button lays them out */
+.hw-filter-reset button,
+.hw-filter-done button {
+  display: flex !important;
   align-items: center !important;
-}
-
-.hw-filter-reset > * + *,
-.hw-filter-done > * + * {
-  margin-left: 6px !important;
+  justify-content: center !important;
+  gap: 8px !important;
 }
 
 /* Closed = no chrome. Last in the file so it beats the card rules on order */
@@ -4651,11 +4656,6 @@ velt-comment-dialog-action-chip-internal .velt-action-chip.velt-action-chip:focu
   top: 0 !important;
   right: 0 !important;
   left: auto !important;
-}
-
-/* …and when the cell is outlined, the tag follows the outline's rounded corner */
-.hv-cell-commentable[data-velt-comment-pin-active="true"] .velt-comment-pin--popover {
-  border-top-right-radius: 6px !important;
 }
 
 /* The reaction tooltip */
