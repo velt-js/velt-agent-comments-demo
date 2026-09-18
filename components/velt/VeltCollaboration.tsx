@@ -6,6 +6,7 @@ import VeltUnstyledMode from "./VeltUnstyledMode";
 import SeedAgentComments from "./SeedAgentComments";
 import { AgentRunController } from "./AgentRunController";
 import { ContactsRegistrar } from "./ContactsRegistrar";
+import { KeepComposerFocus } from "./KeepComposerFocus";
 import { VeltCustomization } from "./ui-customization";
 import { CommentsPanel } from "./CommentsPanel";
 
@@ -24,6 +25,7 @@ export function VeltCollaboration({
       <SeedAgentComments /> {/* Seeds the demo's agent findings */}
       <AgentRunController /> {/* Turns action-chip clicks into backend writes */}
       <ContactsRegistrar /> {/* Registers the demo's @mention contacts */}
+      <KeepComposerFocus /> {/* Opening a menu leaves the composer as it was */}
       <VeltComments
         shadowDom={false}
         popoverMode={true}
