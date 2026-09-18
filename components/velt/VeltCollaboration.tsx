@@ -2,7 +2,6 @@
 
 import { VeltComments } from "@veltdev/react";
 import VeltInitializeDocument from "./VeltInitializeDocument";
-import VeltUnstyledMode from "./VeltUnstyledMode";
 import SeedAgentComments from "./SeedAgentComments";
 import { AgentRunController } from "./AgentRunController";
 import { ContactsRegistrar } from "./ContactsRegistrar";
@@ -20,7 +19,6 @@ export function VeltCollaboration({
 }) {
   return (
     <>
-      <VeltUnstyledMode /> {/* [Velt] Author against the unstyled DOM */}
       <VeltInitializeDocument /> {/* [Velt] Initialize the document */}
       <SeedAgentComments /> {/* Seeds the demo's agent findings */}
       <AgentRunController /> {/* Turns action-chip clicks into backend writes */}
@@ -39,7 +37,7 @@ export function VeltCollaboration({
         /* the design draws the composer's assign control as a checkbox */
         assignToType="checkbox"
       />
-      <VeltCustomization /> {/* [Velt] Customize the UI */}
+      <VeltCustomization /> {/* [Velt] Unstyled mode + wireframes: how Velt looks */}
       <CommentsPanel open={sidebarOpen} setSidebarOpen={setSidebarOpen} />
     </>
   );
