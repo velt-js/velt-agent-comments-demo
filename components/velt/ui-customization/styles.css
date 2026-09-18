@@ -2025,6 +2025,12 @@ velt-comment-dialog-suggestion-agent-internal {
   cursor:pointer !important;
 }
 
+/* The row holds a Read and an Unread label, one of them empty. The empty one
+   must not take a flex slot, or the gap before it pushes the label right */
+.vc-menu-item-markasread app-if:not(:has(*)) {
+  display:none !important;
+}
+
 .velt-comment-dialog-options-dropdown-content-item {
   display:contents !important;
 }
