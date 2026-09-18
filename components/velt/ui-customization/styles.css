@@ -3710,12 +3710,6 @@ velt-comment-sidebar-list-item-v2-internal {
   background: #f7f7f7 !important;
 }
 
-/* One surface at a time: popover XOR side sheet */
-body:has(.hw-rail--open .vc-focus-header-row) .cdk-overlay-pane:has(velt-comment-dialog-internal) {
-  visibility: hidden !important;
-  pointer-events: none !important;
-}
-
 /* Hover tooltips */
 .velt-tooltip-content,
 .velt-tooltip-content.s-tooltiptext {
@@ -4597,6 +4591,31 @@ body:has(.hw-rail--open .vc-focus-header-row) .cdk-overlay-pane:has(velt-comment
   justify-content: space-between !important;
   gap: 8px !important;
   min-height: 24px !important;
+}
+
+/* Collapse a beat late. The popover opens with its reply field focused, and
+   above its pin it is anchored at the bottom, so collapsing on the blur of a
+   press moved the header out from under the pointer before the click landed.
+   Expanding stays immediate (the focused rules reset the delay) */
+.vc-composer-field,
+.vc-composer-page-field,
+.vc-composer-page-field > .velt-comment-dialog-composer,
+.vc-composer-actions,
+.vc-mention-btn {
+  transition-property: flex-direction, align-items, gap, display !important;
+  transition-duration: 0s !important;
+  transition-delay: 400ms !important;
+  transition-behavior: allow-discrete !important;
+}
+
+.vc-composer-field:focus-within,
+.vc-composer-page-field:focus-within,
+.vc-composer-page-field:focus-within > .velt-comment-dialog-composer,
+.vc-composer-field:focus-within .vc-composer-actions,
+.vc-composer-page-field:focus-within .vc-composer-actions,
+.vc-composer-field:focus-within .vc-mention-btn,
+.vc-composer-page-field:focus-within .vc-mention-btn {
+  transition-delay: 0s !important;
 }
 
 /* The @ is drawn only on the expanded frames */

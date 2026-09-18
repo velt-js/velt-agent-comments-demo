@@ -43,7 +43,8 @@ export function CommentsPanel({
     if (!client) return;
     const subscription = client.on("veltButtonClick").subscribe((event) => {
       const id = event?.buttonContext?.clickedButtonId;
-      if (id === OPEN_SIDEBAR_BUTTON) setSidebarOpen(() => true);
+      // The drawer changes only on these two buttons and the toolbar button
+      if (id === OPEN_SIDEBAR_BUTTON) setSidebarOpen((open) => !open);
       if (id === CLOSE_SIDEBAR_BUTTON) setSidebarOpen(() => false);
       if (id === DISPLAY_OPTIONS_BUTTON) setDisplayMenuOpen((open) => !open);
     });
@@ -72,26 +73,8 @@ export function CommentsPanel({
     setDisplayMenuOpen(false);
   }, [client, annotations]);
 
-  // Clicking a pin closes the drawer — the popover and side sheet are alternatives
-  useEffect(() => {
-    const onClick = (event: MouseEvent) => {
-      const target = event.target as HTMLElement | null;
-      if (
-        !target?.closest?.(
-          "velt-comment-pin-triangle-internal, .velt-comment-pin, .comment-pin-portal",
-        )
-      ) {
-        return;
-      }
-      setSidebarOpen(() => false);
-    };
-    document.addEventListener("click", onClick, true);
-    return () => document.removeEventListener("click", onClick, true);
-  }, [setSidebarOpen]);
-
   return (
     <div
-      /* The stylesheet keys off `hw-rail--open` to hide the pin popover */
       className={`hw-rail${open ? " hw-rail--open" : ""}`}
       style={{
         width: open ? 400 : 0,
