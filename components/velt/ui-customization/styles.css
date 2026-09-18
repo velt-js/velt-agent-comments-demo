@@ -4368,9 +4368,12 @@ velt-comment-sidebar-list-item-v2-internal {
   margin-left: auto !important;
 }
 
+/* Stay expanded while the SDK reports the composer open, and while a menu is open, so opening a menu doesn't collapse it. */
 /* Expanded — on focus, or whenever there is somebody to assign */
 /* The element that has to turn into a column is whatever is the direct flex */
 .vc-composer-field:focus-within,
+[data-velt-composer-expanded="true"] .vc-composer-field,
+body:has(.cdk-overlay-container .mat-mdc-menu-panel) .vc-composer-field,
 .vc-composer-field:has(.velt-dropdown-assign-trigger),
 .vc-composer-page-field:focus-within > .velt-comment-dialog-composer,
 .vc-composer-page-field:has(.velt-dropdown-assign-trigger) > .velt-comment-dialog-composer {
@@ -4388,6 +4391,8 @@ velt-comment-sidebar-list-item-v2-internal {
 
 /* DESCENDANT, not `>`: in the page-mode variant the Composer host IS the pill */
 .vc-composer-field:focus-within .vc-composer-actions,
+[data-velt-composer-expanded="true"] .vc-composer-actions,
+body:has(.cdk-overlay-container .mat-mdc-menu-panel) .vc-composer-field .vc-composer-actions,
 .vc-composer-page-field:focus-within .vc-composer-actions,
 .vc-composer-field:has(.velt-dropdown-assign-trigger) .vc-composer-actions,
 .vc-composer-page-field:has(.velt-dropdown-assign-trigger) .vc-composer-actions {
@@ -4420,7 +4425,10 @@ velt-comment-sidebar-list-item-v2-internal {
 .vc-composer-field:focus-within .vc-composer-actions,
 .vc-composer-page-field:focus-within .vc-composer-actions,
 .vc-composer-field:focus-within .vc-mention-btn,
-.vc-composer-page-field:focus-within .vc-mention-btn {
+.vc-composer-page-field:focus-within .vc-mention-btn,
+[data-velt-composer-expanded="true"] .vc-composer-field,
+[data-velt-composer-expanded="true"] .vc-composer-actions,
+[data-velt-composer-expanded="true"] .vc-mention-btn {
   transition-delay: 0s !important;
 }
 
@@ -4430,6 +4438,8 @@ velt-comment-sidebar-list-item-v2-internal {
 }
 
 .vc-composer-field:focus-within .vc-mention-btn,
+[data-velt-composer-expanded="true"] .vc-mention-btn,
+body:has(.cdk-overlay-container .mat-mdc-menu-panel) .vc-composer-field .vc-mention-btn,
 .vc-composer-page-field:focus-within .vc-mention-btn,
 .vc-composer-field:has(.velt-dropdown-assign-trigger) .vc-mention-btn,
 .vc-composer-page-field:has(.velt-dropdown-assign-trigger) .vc-mention-btn {
