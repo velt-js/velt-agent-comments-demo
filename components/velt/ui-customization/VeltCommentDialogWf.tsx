@@ -21,6 +21,7 @@ export function VeltCommentDialogWf() {
 
             <VeltIf condition="{annotation.type} !== 'suggestion'">
             <div className="vc-dialog">
+                <VeltCommentDialogWireframe.VisibilityBanner />
                 <VeltCommentDialogWireframe.Header className="vc-dialog-header">
                     <span className="vc-dialog-title">Comment</span>
                     <div className="vc-dialog-actions">

@@ -7,6 +7,7 @@ import { VeltSidebarCardWf } from "./VeltSidebarCardWf";
 import { VeltCommentToolWf } from "./VeltCommentToolWf";
 import { VeltPageModeComposerWf } from "./VeltPageModeComposerWf";
 import { VeltFocusedThreadWf } from "./VeltFocusedThreadWf";
+import { VeltVisibilityBannerWf } from "./VeltVisibilityBannerWf";
 
 export function VeltCustomization() {
   return (
@@ -17,6 +18,7 @@ export function VeltCustomization() {
       <VeltFocusedThreadWf />
       <VeltPageModeComposerWf />
       <VeltCommentToolWf />
+      <VeltVisibilityBannerWf />
     </VeltWireframe>
   );
 }

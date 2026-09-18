@@ -49,6 +49,9 @@ export function VeltFocusedThreadWf() {
             <div className="vc-focus">
                 <FocusHeader />
 
+                {/* Under the header band, which the drawer's own header shares */}
+                <VeltCommentDialogWireframe.VisibilityBanner />
+
                 <VeltAssigneeBannerWf />
 
                 <VeltCommentDialogWireframe.Body className="vc-focus-body">

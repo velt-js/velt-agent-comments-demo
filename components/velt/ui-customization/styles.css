@@ -698,55 +698,105 @@ velt-autocomplete-option-description-internal {
   color: #ffffff !important;
 }
 
-/* Visibility banner (Figma node 14955-235188) */
+/* Visibility banner (Figma 82:14236): the dark strip at the top of the dialog */
 
+/* The 16px lock is centred on the 20px comment avatar below it, so it starts 2px
+   in from the avatar's own left edge: 16px gutter + 2 in the popover and drawer */
 .velt-visibility-banner-wrapper {
-  background: #181f21 !important;
-  padding: 4px 16px !important;
-  gap: 4px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 8px 12px 8px 18px !important;
+  background: #1a1a1a !important;
+  font-family: var(--hw-font) !important;
 }
 
-/* Outer flex carries a 4px gap (text↔pill in Figma); add 4px on the icon to */
-.velt-visibility-banner-wrapper
-  > velt-comment-dialog-visibility-banner-icon-internal {
-  margin-right: 4px !important;
+/* …and 12px + 2 on a sidebar card */
+.vc-card .velt-visibility-banner-wrapper {
+  padding-left: 14px !important;
+}
+
+velt-comment-dialog-visibility-banner-icon-internal,
+.velt-visibility-banner-icon {
+  display: flex !important;
+  flex: none !important;
+  width: 16px !important;
+  height: 16px !important;
+  color: #feffff !important;
 }
 
 .velt-visibility-banner-icon svg {
-  width: 14px !important;
-  height: 14px !important;
+  width: 16px !important;
+  height: 16px !important;
 }
 
 .velt-visibility-banner-text {
-  color: #ffffff !important;
-  font-family: var(--hw-font) !important;
-  font-size: 14px !important;
-  font-weight: 500 !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
   line-height: 20px !important;
+  color: #feffff !important;
+  white-space: nowrap !important;
 }
 
+/* the audience pill */
 .velt-visibility-banner-dropdown-trigger {
-  background: rgba(255, 255, 255, 0.08) !important;
-  border-radius: 32px !important;
-  padding: 4px 8px 4px 10px !important;
+  display: flex !important;
+  align-items: center !important;
   gap: 4px !important;
+  padding: 6px 8px !important;
+  border: 0 !important;
+  border-radius: 4px !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #feffff !important;
+  cursor: pointer !important;
 }
 
-.velt-visibility-banner-dropdown-trigger
-  velt-comment-dialog-visibility-banner-dropdown-trigger-label-internal,
-.velt-visibility-banner-dropdown-trigger
-  velt-comment-dialog-visibility-banner-dropdown-trigger-label-internal * {
-  color: #ffffff !important;
-  font-family: var(--hw-font) !important;
+.velt-visibility-banner-dropdown-trigger:hover,
+.velt-visibility-banner-dropdown-trigger.velt-trigger-open {
+  background: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* a non-author sees the pill, but it is not a menu */
+.velt-visibility-banner-readonly .velt-visibility-banner-dropdown-trigger {
+  cursor: default !important;
+}
+
+.velt-visibility-banner-readonly .velt-visibility-banner-dropdown-trigger:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+.velt-visibility-banner-readonly.velt-visibility-banner-clickable .velt-visibility-banner-dropdown-trigger {
+  cursor: pointer !important;
+}
+
+.velt-visibility-banner-readonly velt-comment-dialog-visibility-banner-dropdown-trigger-icon-internal {
+  display: none !important;
+}
+
+.velt-visibility-banner-dropdown-trigger-label {
   font-size: 13px !important;
   font-weight: 600 !important;
-  line-height: 1.2 !important;
+  line-height: 1 !important;
+  color: #feffff !important;
+  white-space: nowrap !important;
 }
 
-/* Kill the SDK's indigo border/ring on the chip while the menu is open */
-#velt-dropdown-trigger-visibility .velt-visibility-banner-dropdown-trigger,
-.velt-visibility-banner-dropdown-trigger {
-  border-color: transparent !important;
+velt-comment-dialog-visibility-banner-dropdown-trigger-icon-internal {
+  display: flex !important;
+  flex: none !important;
+  width: 16px !important;
+  height: 16px !important;
+  color: #feffff !important;
+}
+
+velt-comment-dialog-visibility-banner-dropdown-trigger-icon-internal svg {
+  width: 16px !important;
+  height: 16px !important;
+  transition: transform 120ms ease !important;
+}
+
+.velt-trigger-open velt-comment-dialog-visibility-banner-dropdown-trigger-icon-internal svg {
+  transform: rotate(180deg) !important;
 }
 
 #velt-dropdown-trigger-visibility:focus-visible,
@@ -755,122 +805,253 @@ velt-autocomplete-option-description-internal {
   box-shadow: none !important;
 }
 
-/* Visibility dropdowns (no Figma — themed to match Altana) */
+/* The audience menu (Me / Selected People / Selected Teams / Everyone). No Figma
+   frame: it takes the comment kebab menu's chrome (.vc-options-menu) */
+.cdk-overlay-pane .velt-comment-visibility-banner-dropdown-container.mat-mdc-menu-panel {
+  min-width: 200px !important;
+  max-width: none !important;
+  margin-top: 4px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 6px !important;
+}
 
-/* Audience-type menu (Me / Selected People / Selected Teams / Everyone) */
-/* Anchored on .cdk-overlay-pane to out-specify Velt's runtime-injected navy */
-.cdk-overlay-pane
-  .velt-comment-visibility-banner-dropdown-container
-  .mat-mdc-menu-content {
+.cdk-overlay-pane .velt-comment-visibility-banner-dropdown-container .mat-mdc-menu-content {
+  padding: 4px !important;
+  border: 1px solid #e6e6e6 !important;
+  border-radius: 6px !important;
+  box-shadow: 0px 2px 12px 8px #0000000f !important;
   background: #ffffff !important;
-  border-radius: 12px !important;
-  box-shadow: var(--hw-shadow-menu) !important;
-  padding: 6px !important;
+  box-sizing: border-box !important;
   font-family: var(--hw-font) !important;
 }
 
-.velt-comment-visibility-banner-dropdown-container
-  .velt-comment-dialog-visibility-banner-dropdown-content-item {
-  border-radius: 8px !important;
-  padding: 8px 10px !important;
+.velt-comment-visibility-banner-dropdown-container .velt-comment-dialog-visibility-banner-dropdown-content {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+}
+
+/* one row: icon, label, check — like a kebab-menu row */
+.velt-comment-visibility-banner-dropdown-container .velt-comment-dialog-visibility-banner-dropdown-content-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  min-height: 40px !important;
+  padding: 8px 12px !important;
+  border-radius: 4px !important;
+  background: #ffffff !important;
+  box-sizing: border-box !important;
+  cursor: pointer !important;
+  color: #050505 !important;
+}
+
+.velt-comment-visibility-banner-dropdown-container .velt-comment-dialog-visibility-banner-dropdown-content-item:hover {
+  background: #f9f9f9 !important;
 }
 
 .velt-comment-visibility-banner-dropdown-container .velt-option-text {
-  color: var(--hw-text) !important;
+  flex: 1 1 auto !important;
   font-family: var(--hw-font) !important;
-  font-size: 14px !important;
-  line-height: 20px !important;
+  font-size: 15px !important;
+  font-weight: 400 !important;
+  line-height: 24px !important;
+  color: #050505 !important;
+  white-space: nowrap !important;
 }
 
-.velt-comment-visibility-banner-dropdown-container
-  .velt-comment-dialog-visibility-banner-dropdown-content-item:hover {
-  background: var(--hw-surface-pressed) !important;
+/* The selected row: same ground, the label and its glyphs in the accent blue */
+.velt-comment-visibility-banner-dropdown-container .velt-comment-dialog-visibility-banner-dropdown-content-item.selected {
+  background: #ffffff !important;
 }
 
-.velt-comment-visibility-banner-dropdown-container
-  .velt-comment-dialog-visibility-banner-dropdown-content-item.selected {
-  background: rgba(34, 114, 119, 0.08) !important;
+.velt-comment-visibility-banner-dropdown-container .velt-comment-dialog-visibility-banner-dropdown-content-item.selected:hover {
+  background: #f9f9f9 !important;
 }
 
-.velt-comment-visibility-banner-dropdown-container
-  .velt-comment-dialog-visibility-banner-dropdown-content-item.selected
-  .velt-option-text {
-  color: var(--hw-teal) !important;
+.velt-comment-visibility-banner-dropdown-container .velt-comment-dialog-visibility-banner-dropdown-content-item.selected .velt-option-text {
+  color: #0589ff !important;
 }
 
-/* Leading glyph (e.g */
-.velt-comment-visibility-banner-dropdown-container
-  velt-comment-dialog-visibility-banner-dropdown-content-item-icon-internal svg,
-.velt-comment-visibility-banner-dropdown-container
-  velt-comment-dialog-visibility-banner-dropdown-content-item-icon-internal svg path {
-  stroke: var(--hw-text) !important;
-  color: var(--hw-text) !important;
+.velt-comment-visibility-banner-dropdown-container .velt-comment-dialog-visibility-banner-dropdown-content-item svg {
+  flex: none !important;
+  width: 16px !important;
+  height: 16px !important;
+  color: #0589ff !important;
 }
 
-/* The selected row's check (and a selected leading glyph) goes teal */
-.velt-comment-visibility-banner-dropdown-container
-  .velt-comment-dialog-visibility-banner-dropdown-content-item.selected svg,
-.velt-comment-visibility-banner-dropdown-container
-  .velt-comment-dialog-visibility-banner-dropdown-content-item.selected svg path {
-  stroke: var(--hw-teal) !important;
-  color: var(--hw-teal) !important;
+.velt-comment-visibility-banner-dropdown-container .velt-comment-dialog-visibility-banner-dropdown-content-item svg path {
+  stroke: currentColor !important;
 }
 
 .velt-comment-visibility-banner-dropdown-container .velt-visibility-separator {
-  background: var(--hw-border-strong) !important;
+  height: 1px !important;
+  margin: 2px 0 !important;
+  background: #e6e6e6 !important;
 }
 
-/* User picker + Team picker (shared velt-autocomplete-* internals) */
+/* The Selected People / Selected Teams pickers, in the same chrome */
+.velt-org-picker-overlay-panel,
+.velt-user-picker-overlay-panel {
+  margin-top: 4px !important;
+}
+
 .velt-org-picker-overlay,
 .velt-user-picker-overlay {
-  border-radius: 12px !important;
-  box-shadow: var(--hw-shadow-menu) !important;
+  width: 240px !important;
+  padding: 4px !important;
+  border: 1px solid #e6e6e6 !important;
+  border-radius: 6px !important;
+  box-shadow: 0px 2px 12px 8px #0000000f !important;
+  background: #ffffff !important;
+  box-sizing: border-box !important;
   font-family: var(--hw-font) !important;
+}
+
+.velt-org-picker-overlay .velt-autocomplete-panel--inline,
+.velt-user-picker-overlay .velt-autocomplete-panel--inline {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+}
+
+/* the search row */
+.velt-org-picker-overlay .velt-autocomplete-panel--input,
+.velt-user-picker-overlay .velt-autocomplete-panel--input {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  height: 40px !important;
+  padding: 0 12px !important;
+  margin-bottom: 4px !important;
+  border-bottom: 1px solid #e6e6e6 !important;
+  box-sizing: border-box !important;
+  color: #666666 !important;
+}
+
+.velt-org-picker-overlay .velt-autocomplete-panel--input svg,
+.velt-user-picker-overlay .velt-autocomplete-panel--input svg {
+  flex: none !important;
+  width: 16px !important;
+  height: 16px !important;
 }
 
 .velt-org-picker-overlay input,
 .velt-user-picker-overlay input {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  height: 24px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  outline: none !important;
+  background: transparent !important;
   font-family: var(--hw-font) !important;
-  font-size: 14px !important;
-  color: var(--hw-text) !important;
+  font-size: 15px !important;
+  line-height: 24px !important;
+  color: #050505 !important;
 }
 
-.velt-autocomplete-panel {
+.velt-org-picker-overlay input::placeholder,
+.velt-user-picker-overlay input::placeholder {
+  color: #767676 !important;
+}
+
+/* "1 selected · Unselect all", in the filter sheet's group-label type */
+.velt-autocomplete-panel--multi-select-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 4px 12px !important;
+}
+
+.velt-autocomplete-panel--selected-count,
+.velt-autocomplete-panel--unselect-all {
   font-family: var(--hw-font) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  line-height: 16px !important;
+  letter-spacing: 0.02em !important;
+  text-transform: uppercase !important;
 }
 
 .velt-autocomplete-panel--selected-count {
-  color: var(--hw-text-muted) !important;
-  font-size: 12px !important;
+  color: #848079 !important;
 }
 
 .velt-autocomplete-panel--unselect-all {
-  color: var(--hw-teal) !important;
+  color: #0589ff !important;
+  cursor: pointer !important;
 }
 
-.velt-autocomplete-option--container,
-.velt-autocomplete-inline-option {
-  border-radius: 8px !important;
+.velt-org-picker-overlay .velt-autocomplete-panel--normal-viewport,
+.velt-user-picker-overlay .velt-autocomplete-panel--normal-viewport {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
 }
 
-.velt-autocomplete-inline-option:hover {
-  background: var(--hw-surface-pressed) !important;
+/* one row, like a kebab-menu row */
+.velt-org-picker-overlay .velt-autocomplete-inline-option,
+.velt-user-picker-overlay .velt-autocomplete-inline-option {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  min-height: 40px !important;
+  padding: 8px 12px !important;
+  border-radius: 4px !important;
+  box-sizing: border-box !important;
+  cursor: pointer !important;
 }
 
-.velt-autocomplete-inline-option.selected,
-.velt-autocomplete-inline-option[aria-selected="true"] {
-  background: var(--hw-surface) !important;
+.velt-org-picker-overlay .velt-autocomplete-inline-option:hover,
+.velt-user-picker-overlay .velt-autocomplete-inline-option:hover {
+  background: #f9f9f9 !important;
 }
 
-.velt-autocomplete-option--check {
-  background: rgba(34, 114, 119, 0.08) !important;
-  color: var(--hw-teal) !important;
+.velt-org-picker-overlay velt-autocomplete-option-internal,
+.velt-user-picker-overlay velt-autocomplete-option-internal {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
 }
 
-.velt-autocomplete-option--check svg,
-.velt-autocomplete-option--check svg path {
-  stroke: var(--hw-teal) !important;
-  color: var(--hw-teal) !important;
+.velt-org-picker-overlay .velt-autocomplete-option--container,
+.velt-user-picker-overlay .velt-autocomplete-option--container {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  min-width: 0 !important;
+}
+
+.velt-org-picker-overlay .velt-autocomplete-option-name,
+.velt-user-picker-overlay .velt-autocomplete-option-name {
+  margin: 0 !important;
+  font-family: var(--hw-font) !important;
+  font-size: 15px !important;
+  font-weight: 400 !important;
+  line-height: 24px !important;
+  color: #050505 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.velt-org-picker-overlay .velt-autocomplete-option--check,
+.velt-user-picker-overlay .velt-autocomplete-option--check {
+  flex: none !important;
+  width: 16px !important;
+  height: 16px !important;
+  color: #0589ff !important;
+}
+
+.velt-org-picker-overlay .velt-autocomplete-option--check svg,
+.velt-user-picker-overlay .velt-autocomplete-option--check svg {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.velt-org-picker-overlay .velt-autocomplete-option--check svg path,
+.velt-user-picker-overlay .velt-autocomplete-option--check svg path {
+  stroke: currentColor !important;
 }
 
 /* Comment progress + customer-defined action chips (SDK 6.0.8+) */
@@ -4927,6 +5108,11 @@ html[data-vc-assign="figma"] .vc-card:has(.vc-assignee-row) .vc-card-inner {
 .velt-reaction-pin-tooltip-user-avatar .velt-user-avatar--initial {
   font-size: 8px !important;
   line-height: 16px !important;
+}
+
+/* The card's assignee avatar, aligned with the comment avatar's 12px gutter */
+.vc-card > .vc-assignee-banner {
+  padding: 8px 12px !important;
 }
 
 /* The popover's assignee avatar, aligned with the comment below */

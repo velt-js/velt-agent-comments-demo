@@ -54,6 +54,7 @@ export function VeltSidebarCardWf() {
 
             <VeltIf className="vc-card-normal" condition="{annotation.type} !== 'suggestion'">
                 <div className="vc-card">
+                    <VeltCommentDialogWireframe.VisibilityBanner />
                     <VeltAssigneeBannerWf />
                     <VeltCommentDialogWireframe.Body
                         className="vc-card-inner"
