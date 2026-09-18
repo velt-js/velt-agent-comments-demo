@@ -87,3 +87,47 @@ export function SlidersIcon() {
         </svg>
     );
 }
+
+export function FilterTitleIcon() {
+    return (
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path fillRule="evenodd" clipRule="evenodd" d="M7.66671 19.3333C7.20647 19.3333 6.83337 19.7064 6.83337 20.1666C6.83337 20.6269 7.20647 21 7.66671 21H16.8334C17.2936 21 17.6667 20.6269 17.6667 20.1666C17.6667 19.7064 17.2936 19.3333 16.8334 19.3333H7.66671ZM21.8334 19.3333C21.3731 19.3333 21 19.7064 21 20.1666C21 20.6269 21.3731 21 21.8334 21H24.3334C24.7936 21 25.1667 20.6269 25.1667 20.1666C25.1667 19.7064 24.7936 19.3333 24.3334 19.3333H21.8334Z" fill="currentColor" />
+            <path fillRule="evenodd" clipRule="evenodd" d="M19.3333 21.8333C20.2538 21.8333 21 21.0871 21 20.1666C21 19.2462 20.2538 18.5 19.3333 18.5C18.4129 18.5 17.6667 19.2462 17.6667 20.1666C17.6667 21.0871 18.4129 21.8333 19.3333 21.8333ZM19.3333 23.5C21.1743 23.5 22.6667 22.0076 22.6667 20.1666C22.6667 18.3257 21.1743 16.8333 19.3333 16.8333C17.4924 16.8333 16 18.3257 16 20.1666C16 22.0076 17.4924 23.5 19.3333 23.5Z" fill="currentColor" />
+            <path fillRule="evenodd" clipRule="evenodd" d="M7.66671 11C7.20647 11 6.83337 11.3731 6.83337 11.8333C6.83337 12.2936 7.20647 12.6667 7.66671 12.6667H10.1667C10.6269 12.6667 11 12.2936 11 11.8333C11 11.3731 10.6269 11 10.1667 11H7.66671ZM15.1667 11C14.7065 11 14.3334 11.3731 14.3334 11.8333C14.3334 12.2936 14.7065 12.6667 15.1667 12.6667H24.3334C24.7936 12.6667 25.1667 12.2936 25.1667 11.8333C25.1667 11.3731 24.7936 11 24.3334 11H15.1667Z" fill="currentColor" />
+            <path fillRule="evenodd" clipRule="evenodd" d="M12.6667 13.5C13.5872 13.5 14.3334 12.7538 14.3334 11.8333C14.3334 10.9129 13.5872 10.1667 12.6667 10.1667C11.7462 10.1667 11 10.9129 11 11.8333C11 12.7538 11.7462 13.5 12.6667 13.5ZM12.6667 15.1667C14.5077 15.1667 16 13.6743 16 11.8333C16 9.99238 14.5077 8.5 12.6667 8.5C10.8258 8.5 9.33337 9.99238 9.33337 11.8333C9.33337 13.6743 10.8258 15.1667 12.6667 15.1667Z" fill="currentColor" />
+        </svg>
+    );
+}
+
+export function CloseIcon() {
+    return (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+    );
+}
+
+export function ResetIcon() {
+    return (
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M13.3002 7.33332C13.1316 6.04715 12.5 4.86651 11.5237 4.01241C10.5474 3.1583 9.29328 2.68929 7.99611 2.69317C6.69894 2.69705 5.44765 3.17355 4.47647 4.03348C3.50529 4.8934 2.8808 6.0778 2.71991 7.36496C2.55901 8.65212 2.87274 9.9538 3.60236 11.0263C4.33199 12.0988 5.42748 12.8687 6.68379 13.1918C7.94009 13.5148 9.27107 13.369 10.4276 12.7814C11.5841 12.1939 12.4868 11.2051 12.9668 9.99999M13.3002 13.3333V9.99999H9.96682" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+    );
+}
+
+export function CheckIcon() {
+    return (
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M3.33301 7.99999L6.66634 11.3333L13.333 4.66666" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+    );
+}
+
+export function CaretLeftIcon() {
+    return (
+        <svg width="18" height="19" viewBox="0 0 18 19" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M11.25 5.21387L6.75 9.71387L11.25 14.2139" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+    );
+}

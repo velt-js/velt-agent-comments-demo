@@ -1,16 +1,27 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
-  VeltCommentsSidebar,
+  VeltCommentsSidebarV2,
   VeltCommentTool,
   useCommentAnnotations,
   useVeltClient,
 } from "@veltdev/react";
 import {
+  CLOSE_SIDEBAR_BUTTON,
   DISPLAY_OPTIONS_BUTTON,
   OPEN_SIDEBAR_BUTTON,
 } from "./ui-customization/buttonIds";
+
+// The filter panel's sections, in order. V2 lists only what is passed here.
+// No Priority: priorities are off in this demo, and V2 would show an empty section.
+const SIDEBAR_FILTERS = [
+  { field: "involved", label: "Involved" },
+  { field: "assigned", label: "Assigned to" },
+  { field: "people", label: "Created by" },
+  { field: "status", label: "Status" },
+  { field: "tagged", label: "Tagged" },
+];
 
 // Right-anchored drawer hosting the embedded page-mode sidebar. The host owns
 // open/close; sorting, filtering and the resolved view are all SDK-native.
@@ -21,12 +32,11 @@ export function CommentsPanel({
   open: boolean;
   setSidebarOpen: (updater: (open: boolean) => boolean) => void;
 }) {
-  const railRef = useRef<HTMLDivElement>(null);
   const { client } = useVeltClient();
   const annotations = useCommentAnnotations();
   const [displayMenuOpen, setDisplayMenuOpen] = useState(false);
 
-  // Both triggers live inside wireframes, which can't take a React onClick, so
+  // These triggers live inside wireframes, which can't take a React onClick, so
   // their `veltButtonClick` id is the only way across. Subscribing gives one
   // callback per press, unlike the last-event hook.
   useEffect(() => {
@@ -34,6 +44,7 @@ export function CommentsPanel({
     const subscription = client.on("veltButtonClick").subscribe((event) => {
       const id = event?.buttonContext?.clickedButtonId;
       if (id === OPEN_SIDEBAR_BUTTON) setSidebarOpen(() => true);
+      if (id === CLOSE_SIDEBAR_BUTTON) setSidebarOpen(() => false);
       if (id === DISPLAY_OPTIONS_BUTTON) setDisplayMenuOpen((open) => !open);
     });
     return () => subscription.unsubscribe();
@@ -61,19 +72,6 @@ export function CommentsPanel({
     setDisplayMenuOpen(false);
   }, [client, annotations]);
 
-  // The sidebar's ✕ has to collapse the host drawer too
-  useEffect(() => {
-    const rail = railRef.current;
-    if (!rail) return;
-    const onClick = (event: MouseEvent) => {
-      const target = event.target as HTMLElement | null;
-      if (!target?.closest?.(".hw-panel-close, .hw-focus-close")) return;
-      setSidebarOpen(() => false);
-    };
-    rail.addEventListener("click", onClick, true);
-    return () => rail.removeEventListener("click", onClick, true);
-  }, [setSidebarOpen]);
-
   // Clicking a pin closes the drawer — the popover and side sheet are alternatives
   useEffect(() => {
     const onClick = (event: MouseEvent) => {
@@ -95,15 +93,14 @@ export function CommentsPanel({
     <div
       /* The stylesheet keys off `hw-rail--open` to hide the pin popover */
       className={`hw-rail${open ? " hw-rail--open" : ""}`}
-      ref={railRef}
       style={{
         width: open ? 400 : 0,
         boxShadow: open ? "-10px 0 28px rgba(0, 0, 0, 0.16)" : "none",
       }}
     >
       <div className="hw-rail-inner">
-        <VeltCommentsSidebar
-          embedMode={true}
+        <VeltCommentsSidebarV2
+          embedMode="true"
           pageMode={true}
           shadowDom={false}
           defaultMinimalFilter="open"
@@ -115,18 +112,19 @@ export function CommentsPanel({
           openAnnotationInFocusMode={open}
           replyPlaceholder="Reply"
           commentPlaceholder="New Comment"
+          pageModePlaceholder="New Comment"
           searchPlaceholder="Search Comments"
           /* a sheet rising from the bottom, rather than a card over the list */
           filterPanelLayout="bottomSheet"
-          /* every filter is off by default, so the funnel needs these to render */
-          filterConfig={{
-            involved: { enable: true, name: "Involved" },
-            assigned: { enable: true, name: "Assigned to" },
-            people: { enable: true, name: "Created by" },
-            status: { enable: true, name: "Status" },
-            priority: { enable: true, name: "Priority" },
-            tagged: { enable: true, name: "Tagged" },
-          }}
+          /* a flat checkbox list per section, not a collapsed dropdown */
+          filterOptionLayout="checkbox"
+          filters={SIDEBAR_FILTERS}
+          /* one flat list, no per-location group headers */
+          groupConfig={{ enable: false }}
+          /* Render every row, as V1 did. V2's virtual list forgets its measured row
+             heights after a data refresh (SDK 6.0.11), leaving a blank tail */
+          minBufferPx={100000}
+          maxBufferPx={200000}
           pageModeComposerVariant="pageModeComposer"
           /* picks the list row's dialog template, and the drawer's */
           dialogVariant="sidebar"

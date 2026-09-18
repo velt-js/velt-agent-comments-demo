@@ -50,8 +50,9 @@
   padding: 0 16px;
 }
 
-/* The SDK renders the .Panel slot as a plain block <app-comment-sidebar-panel> */
-.hw-panel > app-comment-sidebar-panel {
+/* The SDK renders the .Panel slot as a host plus one container div of its own */
+.hw-panel > velt-comment-sidebar-panel-v2-internal,
+.hw-panel > velt-comment-sidebar-panel-v2-internal > .velt-comment-sidebar-panel-container {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
@@ -66,14 +67,33 @@
   padding: 0;
 }
 
-.hw-panel-body app-comment-sidebar-list {
+.hw-panel-body velt-comment-sidebar-list-v2-internal {
   display: block !important;
   height: 100% !important;
-  /* 16px on every side, from node 872:21416. Moved off `.hw-panel-body`, whose */
-  padding: 16px !important;
-  box-sizing: border-box !important;
+  padding: 0 !important;
+}
+
+/* The list's virtual-scroll viewport is the scroller */
+.hw-panel-body .velt-sidebar-content {
+  display: block !important;
+  height: 100% !important;
+  overflow-y: auto !important;
   /* Reserve the scrollbar's track on both edges so the cards never shift */
   scrollbar-gutter: stable both-edges !important;
+}
+
+/* Every row is rendered (see CommentsPanel), so the real rows size the scroll
+   area, not the spacer's estimated heights */
+.hw-panel-body .cdk-virtual-scroll-spacer {
+  display: none !important;
+}
+
+/* 16px on every side, from node 872:21416. It goes on the content wrapper: the
+   wrapper is absolutely positioned, so padding on the viewport would not move it */
+.hw-panel-body .cdk-virtual-scroll-content-wrapper {
+  width: 100% !important;
+  padding: 16px !important;
+  box-sizing: border-box !important;
 }
 
 /* Icon buttons (24px, radius 6, 12–16px glyphs) */
@@ -212,41 +232,38 @@
 
 /* Sidebar shell + SDK wrapper neutralization */
 
-velt-comments-sidebar {
+velt-comments-sidebar-v2 {
   height: 100% !important;
   display: block !important;
 }
 
-.velt-sidebar--container,
-.velt-sidebar--panel {
+/* The two shell boxes V2 keeps around the wireframe */
+.velt-sidebar-container,
+.velt-sidebar {
+  height: 100% !important;
+  padding: 0 !important;
   background: #ffffff !important;
   box-shadow: none !important;
   border: none !important;
 }
 
-.velt-sidebar-container {
-  padding: 0 !important;
+.velt-sidebar {
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
 }
 
-.velt-sidebar--comments-hr {
+.velt-sidebar-list-item-hr {
   display: none !important;
 }
 
-/* The list is the card column: the design's 8px inter-card rhythm lives here */
-.velt-sidebar--comments {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 8px !important;
+/* The row adds no box: the card's own margin is the inter-card rhythm */
+.velt-sidebar-list-item {
+  margin: 0 !important;
   padding: 0 !important;
 }
 
-app-comment-sidebar-comments,
-app-comment-sidebar-list,
-.velt-sidebar--comments-block {
-  padding: 0 !important;
-}
-
-app-comment-sidebar-page-mode-composer,
+velt-comment-sidebar-page-mode-composer-v2-internal,
 .velt-sidebar-page-mode-composer {
   padding: 0 !important;
 }
@@ -2192,10 +2209,7 @@ velt-comment-dialog-options-dropdown-content-delete-comment-internal,
 .vc-options .v-dropdown-menu-trigger { width: 16px !important; height: 16px !important; overflow: visible !important; opacity: 1 !important; pointer-events: auto !important; }
 
 /* Sidebar scrollport: pin the flex chain so the list is the one scroller */
-velt-comments-sidebar { height: 100% !important; max-height: 100% !important; min-height: 0 !important; overflow: hidden !important; }
-.vc-panel, app-comment-sidebar-panel.vc-panel { flex: 1 1 0 !important; min-height: 0 !important; overflow: hidden !important; height: 100% !important; }
-.vc-list, app-comment-sidebar-list.vc-list { flex: 1 1 0 !important; min-height: 0 !important; overflow: auto !important; }
-.velt-sidebar-content { flex: 0 0 auto !important; height: auto !important; overflow: visible !important; }
+velt-comments-sidebar-v2 { height: 100% !important; max-height: 100% !important; min-height: 0 !important; overflow: hidden !important; }
 
 /* Composition mechanism: where an SDK host sits, whether an empty host still */
 
@@ -2256,23 +2270,14 @@ velt-comments-sidebar { height: 100% !important; max-height: 100% !important; mi
   display: none !important;
 }
 
-/* Sidebar scrollport. `app-comment-sidebar-list` already scrolls; these only */
+/* Sidebar scrollport. The list's viewport already scrolls; these only */
 .hw-panel,
 .hw-panel-body {
   min-height: 0 !important;
 }
 
-.velt-sidebar-content {
-  height: auto !important;
-  overflow: visible !important;
-}
-
 /* Inter-card rhythm in the sidebar list */
-app-comment-sidebar-list-item-dialog-container {
-  display: block !important;
-}
-
-app-comment-sidebar-list-item {
+velt-comment-sidebar-list-item-v2-internal {
   display: block !important;
 }
 
@@ -2354,11 +2359,11 @@ app-comment-sidebar-list-item {
 }
 
 /* The sidebar row wrapper must not paint Chrome's UA focus ring */
-.velt-sidebar--comments-block:focus-visible {
+.velt-sidebar-list-item:focus-visible {
   outline: none !important;
 }
 
-.velt-sidebar--comments-block:focus-visible .vc-card {
+.velt-sidebar-list-item:focus-visible .vc-card {
   outline: 1px solid #e6e6e6 !important;
   outline-offset: -1px !important;
   border-radius: 8px !important;
@@ -2514,6 +2519,11 @@ app-comment-sidebar-list-item {
 .hw-search-glyph svg {
   width: 16px;
   height: 16px;
+}
+
+/* V2 nests the input in a host of its own, which must not add a line box */
+.hw-search > velt-comment-sidebar-search-v2-input-internal {
+  display: contents !important;
 }
 
 /* Velt's Search host */
@@ -2843,6 +2853,19 @@ app-comment-sidebar-list-item {
   color: var(--hw-text-secondary) !important;
   border-radius: 6px !important;
   transition: background 120ms ease !important;
+}
+
+/* The X is the host's ::before, but Velt's click handler is on its inner div, so
+   that div has to cover the whole button */
+.hw-panel-close,
+.hw-focus-close {
+  position: relative !important;
+}
+
+.hw-panel-close > .velt-button,
+.hw-focus-close > .velt-button {
+  position: absolute !important;
+  inset: 0 !important;
 }
 
 .hw-panel-close:hover,
@@ -4163,19 +4186,39 @@ body:has(.hw-rail--open .vc-focus-header-row) .cdk-overlay-pane:has(velt-comment
 
 /* The filter panel (funnel) and the sort/view menu (sliders) */
 
-/* the filter panel: a bottom sheet on the sidebar */
+/* the filter panel: a bottom sheet on the sidebar. The host stays mounted while
+   the sheet is closed, so it only takes space once Velt renders the panel. Open,
+   it covers the sidebar: Velt's overlay is the click-outside target that closes
+   the sheet, and the sheet itself is Velt's panel, pinned to the bottom edge */
 .hw-filter {
+  display: none !important;
+}
+
+.hw-filter:has(.velt-sidebar-filter-panel) {
   position: absolute !important;
-  top: auto !important;
-  bottom: 0 !important;
-  right: 0 !important;
-  left: 0 !important;
+  inset: 0 !important;
   z-index: 40 !important;
+  display: block !important;
+}
+
+.hw-filter .velt-sidebar-filter-panel-overlay {
+  position: absolute !important;
+  inset: 0 !important;
   display: flex !important;
   flex-direction: column !important;
-  /* HUG the content. `max-height` on this element with `flex: 1 1 auto` + */
+  justify-content: flex-end !important;
+  background: transparent !important;
+}
+
+.hw-filter .velt-sidebar-filter-panel {
+  position: relative !important;
+  inset: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
   height: auto !important;
-  width: auto !important;
+  max-height: none !important;
+  margin: 0 !important;
   padding: 4px !important;
   /* A sheet attaches to the bottom edge: only the top corners round */
   border-radius: 12px 12px 0 0 !important;
@@ -4185,14 +4228,8 @@ body:has(.hw-rail--open .vc-focus-header-row) .cdk-overlay-pane:has(velt-comment
   background: #ffffff !important;
   box-sizing: border-box !important;
   font-family: 'Inter', var(--hw-font) !important;
-}
-
-/* Cap the sheet at 70% of the VIEWPORT height and let the body scroll */
-.hw-filter > .velt-sidebar-filter--container {
-  max-height: 70vh !important;
-  display: flex !important;
-  flex-direction: column !important;
-  min-height: 0 !important;
+  transform: none !important;
+  animation: none !important;
 }
 
 /* the panel is positioned against the sidebar, so the sidebar is the anchor */
@@ -4200,25 +4237,19 @@ body:has(.hw-rail--open .vc-focus-header-row) .cdk-overlay-pane:has(velt-comment
   position: relative !important;
 }
 
-/* Velt wraps the declared markup in TWO containers of its own */
-.hw-filter .velt-sidebar-filter--container {
+/* the panel's scroll region adds no box of its own */
+.hw-filter .velt-sidebar-filter-panel-content {
   position: static !important;
   display: flex !important;
   flex-direction: column !important;
   width: 100% !important;
   height: auto !important;
   max-height: none !important;
-  inset: auto !important;
-}
-
-.hw-filter .velt-sidebar-filters {
-  display: flex !important;
-  flex-direction: column !important;
-  width: 100% !important;
-  height: auto !important;
-  max-height: none !important;
-  flex: 1 1 auto !important;
   min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
 }
 
 .hw-filter-head {
@@ -4231,12 +4262,17 @@ body:has(.hw-rail--open .vc-focus-header-row) .cdk-overlay-pane:has(velt-comment
   padding: 8px 12px !important;
 }
 
-.hw-filter-title,
-.hw-filter-title .velt-comment-sidebar-filter-title {
+.hw-filter-title {
+  display: block !important;
   font-size: 15px !important;
   font-weight: 600 !important;
   line-height: 24px !important;
   color: #050505 !important;
+}
+
+/* the funnel glyph and the word, side by side */
+.hw-filter-title-row {
+  display: flex !important;
 }
 
 .hw-filter-close {
@@ -4260,6 +4296,21 @@ body:has(.hw-rail--open .vc-focus-header-row) .cdk-overlay-pane:has(velt-comment
   height: 16px !important;
 }
 
+/* Velt's click targets in the sheet are real <button>s: drop the UA chrome */
+.hw-filter-close > button,
+.hw-filter-foot button {
+  all: unset !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+}
+
+.hw-filter-close > button {
+  width: 16px !important;
+  height: 16px !important;
+}
+
 .hw-filter-body {
   display: flex !important;
   flex-direction: column !important;
@@ -4272,21 +4323,25 @@ body:has(.hw-rail--open .vc-focus-header-row) .cdk-overlay-pane:has(velt-comment
 
 /* Each filter group — Involved / Assigned / Created by / Status / Priority / Tagged */
 .hw-filter-group,
-.hw-filter-group > .velt-sidebar-filter {
+.hw-filter-group > .velt-filter-section {
   display: flex !important;
   flex-direction: column !important;
   align-self: stretch !important;
   width: 100% !important;
 }
 
-/* Nothing between the group and its rows may add a box: Velt puts every option */
-.hw-filter-group .velt-sidebar-filter--option {
+/* Nothing between the group and its rows may add a box */
+.hw-filter-group velt-comment-sidebar-filter-container-v2-section-field-internal,
+.hw-filter-group .velt-filter-checkbox-list,
+.hw-filter-group velt-comment-sidebar-filter-container-v2-section-option-list-internal {
   display: contents !important;
 }
 
-/* the group's heading */
-.hw-filter-group app-comment-sidebar-filter-name {
+/* the group's heading. Its slot host renders as `display: contents` and does not
+   adopt a class, so the rule goes on Velt's own label div */
+.hw-filter-group .velt-filter-section-label {
   display: block !important;
+  align-self: flex-start !important;
   padding: 8px 12px 4px !important;
   font-size: 12px !important;
   font-weight: 500 !important;
@@ -4294,11 +4349,6 @@ body:has(.hw-rail--open .vc-focus-header-row) .cdk-overlay-pane:has(velt-comment
   letter-spacing: 0.02em !important;
   text-transform: uppercase !important;
   color: #848079 !important;
-}
-
-/* an empty heading (a group whose config carries no `name`) must not reserve */
-.hw-filter-group app-comment-sidebar-filter-name:empty {
-  display: none !important;
 }
 
 /* ONE CHECKBOX ROW. The row box goes on VELT'S OWN div, not on our */
@@ -4321,6 +4371,7 @@ body:has(.hw-rail--open .vc-focus-header-row) .cdk-overlay-pane:has(velt-comment
   font-weight: 400 !important;
   line-height: 24px !important;
   color: #050505 !important;
+  outline: none !important;
 }
 
 .hw-filter-item > div:hover {
@@ -4335,16 +4386,15 @@ body:has(.hw-rail--open .vc-focus-header-row) .cdk-overlay-pane:has(velt-comment
   align-items: center !important;
 }
 
-.hw-filter-check,
-.hw-filter-check .velt-comment-sidebar-filter-item--icon-container {
+.hw-filter-check {
   flex: none !important;
   width: 16px !important;
   height: 16px !important;
   justify-content: center !important;
 }
 
-/* the CHECKED box. Velt draws it as `checkbox-checked-internal > svg > g > */
-.hw-filter-check velt-comment-sidebar-filter-item-checkbox-checked-internal rect {
+/* the CHECKED box: its first rect is painted in `currentColor` */
+.hw-filter-check svg rect[fill="currentColor"] {
   fill: #0589ff !important;
 }
 
@@ -4358,7 +4408,7 @@ body:has(.hw-rail--open .vc-focus-header-row) .cdk-overlay-pane:has(velt-comment
 
 /* the count sits hard right, in the card's secondary text */
 .hw-filter-item-count,
-.hw-filter-item-count .velt-comment-sidebar-filter-item--count-container {
+.hw-filter-item-count .velt-filter-option-count {
   flex: none !important;
   margin-left: auto !important;
   font-size: 13px !important;
@@ -4382,6 +4432,7 @@ body:has(.hw-rail--open .vc-focus-header-row) .cdk-overlay-pane:has(velt-comment
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
+  flex: 1 1 0 !important;
   gap: 6px !important;
   height: 32px !important;
   padding: 0 12px !important;
@@ -4394,6 +4445,21 @@ body:has(.hw-rail--open .vc-focus-header-row) .cdk-overlay-pane:has(velt-comment
   font-weight: 500 !important;
   line-height: 20px !important;
   color: #333333 !important;
+}
+
+/* the button inside fills the pill and centers the glyph + label */
+.hw-filter-foot button {
+  flex: 1 1 auto !important;
+  height: 20px !important;
+}
+
+.hw-filter-btn-glyph {
+  display: flex !important;
+}
+
+.hw-filter-btn-glyph svg {
+  width: 14px !important;
+  height: 14px !important;
 }
 
 .hw-filter-reset:hover,
@@ -4767,7 +4833,7 @@ html[data-vc-assign="figma"] .vc-card-inner {
 }
 
 /* The hairlines. Velt ALREADY draws them: each card sits in its own */
-html[data-vc-assign="figma"] hr.velt-sidebar--comments-hr {
+html[data-vc-assign="figma"] hr.velt-sidebar-list-item-hr {
   display: block !important;
   height: 0 !important;
   margin: 0 16px !important;

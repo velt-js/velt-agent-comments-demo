@@ -2,46 +2,32 @@
 
 import {
   VeltButtonWireframe,
-  VeltCommentsSidebarWireframe,
+  VeltCommentsSidebarV2Wireframe,
   VeltIf,
 } from "@veltdev/react";
-import type { ReactNode } from "react";
-import React from "react";
 import { EmptyIllustration } from "@/components/icons";
 import {
+  CaretLeftIcon,
+  CheckIcon,
+  CloseIcon,
+  FilterTitleIcon,
   FunnelSimpleIcon,
   MagnifyingGlassIcon,
+  ResetIcon,
   SlidersIcon,
 } from "./icons";
-import { DISPLAY_OPTIONS_BUTTON } from "./buttonIds";
+import { CLOSE_SIDEBAR_BUTTON, DISPLAY_OPTIONS_BUTTON } from "./buttonIds";
 
-type FilterGroupSlot = React.FC<{ className?: string; children?: ReactNode }> & {
-  Name: React.FC<{ className?: string }>;
-  Item: React.FC<{ className?: string; children?: ReactNode }> & {
-    Checkbox: React.FC<{ className?: string }>;
-    Name: React.FC<{ className?: string }>;
-    Count: React.FC<{ className?: string }>;
-  };
-};
-
-function FilterGroup({ group: Group }: { group: FilterGroupSlot }) {
-  return (
-    <Group className="hw-filter-group">
-      <Group.Name className="hw-filter-group-name" />
-      <Group.Item className="hw-filter-item">
-        <Group.Item.Checkbox className="hw-filter-check" />
-        <Group.Item.Name className="hw-filter-item-name" />
-        <Group.Item.Count className="hw-filter-item-count" />
-      </Group.Item>
-    </Group>
-  );
-}
+const Sidebar = VeltCommentsSidebarV2Wireframe;
+const Filter = VeltCommentsSidebarV2Wireframe.FilterContainer;
+const Section = Filter.SectionList.Section;
+const Option = Section.Field.OptionList.Option;
 
 export function VeltCommentSidebarWf() {
   return (
-    <VeltCommentsSidebarWireframe>
+    <Sidebar>
       <div className="hw-panel">
-        <VeltCommentsSidebarWireframe.Skeleton>
+        <Sidebar.Skeleton>
           <div className="hw-skeleton">
             {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
               <div className="hw-skeleton-card" key={i}>
@@ -55,12 +41,16 @@ export function VeltCommentSidebarWf() {
               </div>
             ))}
           </div>
-        </VeltCommentsSidebarWireframe.Skeleton>
+        </Sidebar.Skeleton>
 
-        <VeltCommentsSidebarWireframe.Panel>
+        <Sidebar.Panel>
           <div className="hw-panel-header">
             <h2>Comments</h2>
-            <VeltCommentsSidebarWireframe.CloseButton className="hw-panel-close" />
+            {/* V2's CloseButton hides itself in embed mode, and the drawer is ours
+                anyway, so this is our own button. The X is drawn in CSS. */}
+            <VeltButtonWireframe id={CLOSE_SIDEBAR_BUTTON} type="button" className="hw-panel-close">
+              <span />
+            </VeltButtonWireframe>
           </div>
 
           <div className="hw-panel-controls">
@@ -68,14 +58,17 @@ export function VeltCommentSidebarWf() {
               <span className="hw-search-glyph" aria-hidden="true">
                 <MagnifyingGlassIcon />
               </span>
-              <VeltCommentsSidebarWireframe.Search className="hw-search" />
+              {/* Only the input: the leading glyph is ours */}
+              <Sidebar.Search className="hw-search">
+                <Sidebar.Search.Input />
+              </Sidebar.Search>
             </div>
 
-            <VeltCommentsSidebarWireframe.FilterButton className="hw-ctl-btn">
+            <Sidebar.FilterButton className="hw-ctl-btn">
               <span className="hw-icon-btn">
                 <FunnelSimpleIcon />
               </span>
-            </VeltCommentsSidebarWireframe.FilterButton>
+            </Sidebar.FilterButton>
 
             <div className="hw-ctl-display">
               <VeltButtonWireframe
@@ -90,7 +83,7 @@ export function VeltCommentSidebarWf() {
             </div>
           </div>
 
-          <VeltCommentsSidebarWireframe.EmptyPlaceholder>
+          <Sidebar.EmptyPlaceholder>
             <div className="hw-empty">
               <EmptyIllustration />
               <VeltIf condition="{noCommentsFound}">
@@ -102,46 +95,76 @@ export function VeltCommentSidebarWf() {
                 <p>Try adjusting or clearing the filters above</p>
               </VeltIf>
             </div>
-          </VeltCommentsSidebarWireframe.EmptyPlaceholder>
+          </Sidebar.EmptyPlaceholder>
 
           <div className="hw-panel-body">
-            <VeltCommentsSidebarWireframe.List />
+            <Sidebar.List />
           </div>
 
           <div className="hw-panel-composer">
-            <VeltCommentsSidebarWireframe.PageModeComposer className="vc-composer-page" />
+            <Sidebar.PageModeComposer className="vc-composer-page" />
           </div>
-        </VeltCommentsSidebarWireframe.Panel>
+        </Sidebar.Panel>
 
-        <VeltCommentsSidebarWireframe.Filter className="hw-filter">
+        {/* One section per entry in the sidebar's `filters` prop */}
+        <Filter className="hw-filter">
           <div className="hw-filter-head">
-            <VeltCommentsSidebarWireframe.Filter.Title className="hw-filter-title" />
-            <VeltCommentsSidebarWireframe.Filter.CloseButton className="hw-filter-close" />
+            <Filter.Title className="hw-filter-title">
+              <div className="hw-filter-title-row">
+                <FilterTitleIcon />
+                Filters
+              </div>
+            </Filter.Title>
+            <Filter.CloseButton className="hw-filter-close">
+              <CloseIcon />
+            </Filter.CloseButton>
           </div>
           <div className="hw-filter-body">
-            <FilterGroup group={VeltCommentsSidebarWireframe.Filter.Involved} />
-            <FilterGroup group={VeltCommentsSidebarWireframe.Filter.Assigned} />
-            <FilterGroup group={VeltCommentsSidebarWireframe.Filter.People} />
-            <FilterGroup group={VeltCommentsSidebarWireframe.Filter.Status} />
-            <FilterGroup group={VeltCommentsSidebarWireframe.Filter.Priority} />
-            <FilterGroup group={VeltCommentsSidebarWireframe.Filter.Tagged} />
+            <Filter.SectionList>
+              <Section className="hw-filter-group">
+                <Section.Label />
+                <Section.Field>
+                  <Section.Field.OptionList>
+                    <Option className="hw-filter-item">
+                      <Option.Checkbox className="hw-filter-check" />
+                      <Option.Name className="hw-filter-item-name" />
+                      <Option.Count className="hw-filter-item-count" />
+                    </Option>
+                  </Section.Field.OptionList>
+                </Section.Field>
+              </Section>
+            </Filter.SectionList>
           </div>
           <div className="hw-filter-foot">
-            <VeltCommentsSidebarWireframe.Filter.ResetButton className="hw-filter-reset" />
-            <VeltCommentsSidebarWireframe.Filter.DoneButton className="hw-filter-done" />
+            <Filter.ResetButton className="hw-filter-reset">
+              <span className="hw-filter-btn-glyph">
+                <ResetIcon />
+              </span>
+              Reset
+            </Filter.ResetButton>
+            <Filter.ApplyButton className="hw-filter-done">
+              <span className="hw-filter-btn-glyph">
+                <CheckIcon />
+              </span>
+              Apply
+            </Filter.ApplyButton>
           </div>
-        </VeltCommentsSidebarWireframe.Filter>
+        </Filter>
 
-        <VeltCommentsSidebarWireframe.FocusedThread className="hw-focus">
+        <Sidebar.FocusedThread className="hw-focus">
           <div className="hw-focus-header">
-            <VeltCommentsSidebarWireframe.FocusedThread.BackButton className="hw-focus-back" />
+            <Sidebar.FocusedThread.BackButton className="hw-focus-back">
+              <CaretLeftIcon />
+            </Sidebar.FocusedThread.BackButton>
             <h2>Comment Thread</h2>
-            <VeltCommentsSidebarWireframe.CloseButton className="hw-focus-close" />
+            <VeltButtonWireframe id={CLOSE_SIDEBAR_BUTTON} type="button" className="hw-focus-close">
+              <span />
+            </VeltButtonWireframe>
           </div>
-          <VeltCommentsSidebarWireframe.FocusedThread.DialogContainer className="hw-focus-body" />
-        </VeltCommentsSidebarWireframe.FocusedThread>
+          <Sidebar.FocusedThread.DialogContainer className="hw-focus-body" />
+        </Sidebar.FocusedThread>
       </div>
-    </VeltCommentsSidebarWireframe>
+    </Sidebar>
   );
 }
 
