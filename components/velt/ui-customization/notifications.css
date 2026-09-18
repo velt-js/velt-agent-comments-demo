@@ -1,5 +1,5 @@
-/* Notifications tool and panel. There is no design for these, so they borrow the
-   demo's own chrome: the header's icon buttons, and the dialog/menu surface.
+/* Notifications tool and panel. The bell borrows the header's icon buttons; the
+   panel follows the "Notification" frame in the Altana Issues Figma file.
    They need `shadowDom={false}` and `panelShadowDom={false}` on the tool, and
    unstyled mode leaves them bare, so every rule here is load-bearing. */
 
@@ -55,106 +55,123 @@ velt-notifications-tool {
   box-shadow: 0 0 0 2px #ffffff !important;
 }
 
-/* The panel: the dialog's surface, anchored under the bell */
+
+/* ---- Panel: Figma "Notification" (380 wide, 4px padding, 8px radius) ---- */
+
 .velt-notifications-panel {
-  width: 400px !important;
+  --vc-notif-font: var(--font-poppins), var(--hw-font);
+  --vc-notif-body-font: var(--hw-font);
+  --vc-notif-ink: #0a0a0a;
+  --vc-notif-secondary: #666666;
+  --vc-notif-muted: #8f8f8f;
+  --vc-notif-faint: #b8b8b8;
+  --vc-notif-tile-hover: #fafafa;
+
+  width: 380px !important;
   max-width: calc(100vw - 32px) !important;
   height: auto !important;
-  max-height: min(520px, calc(100vh - 80px)) !important;
+  max-height: min(560px, calc(100vh - 80px)) !important;
   margin-top: 6px !important;
+  padding: 4px !important;
   display: flex !important;
   flex-direction: column !important;
+  gap: 2px !important;
   background: #ffffff !important;
   border: 1px solid #e6e6e6 !important;
   border-radius: 8px !important;
   box-shadow: 0px 2px 12px 8px #0000000f !important;
   overflow: hidden !important;
-  font-family: var(--hw-font) !important;
-  color: var(--hw-text) !important;
+  font-family: var(--vc-notif-font) !important;
+  color: var(--vc-notif-ink) !important;
 }
 
-/* Title row */
+/* Title row: "Notifications" and the 34px mark-all-read button */
 .velt-notification-panel--title {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
   height: auto !important;
-  padding: 12px 12px 8px 16px !important;
-  font-size: 15px !important;
-  line-height: 24px !important;
-  font-weight: 600 !important;
+  padding: 8px 12px 2px !important;
+  font-size: 14px !important;
+  line-height: normal !important;
+  font-weight: 500 !important;
 }
 
 .velt-notifications-panel--read-all-button {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  width: 24px !important;
-  height: 24px !important;
-  border-radius: 6px !important;
-  color: var(--hw-text-secondary) !important;
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 8px !important;
+  background: url("/icons/notifications/checks.svg") center / 18px 18px no-repeat !important;
   cursor: pointer !important;
   transition: background-color 120ms ease !important;
 }
 
 .velt-notifications-panel--read-all-button:hover {
-  background: var(--hw-surface-pressed) !important;
-  color: var(--hw-text) !important;
+  background-color: #f0f0f0 !important;
 }
 
+/* The design's checks icon replaces Velt's */
 .velt-notifications-panel--read-all-button svg {
-  width: 16px !important;
-  height: 16px !important;
+  display: none !important;
 }
 
-.velt-notifications-panel--read-all-button svg path {
-  fill: currentColor !important;
-}
-
-/* Tabs: text tabs with an underline on the selected one */
+/* Tabs: a segmented control, the selected tab filled dark */
 .velt-notifications-panel--header {
   height: auto !important;
-  padding: 0 16px !important;
-  border-bottom: 1px solid var(--hw-border) !important;
+  padding: 8px !important;
+  border: 0 !important;
 }
 
 .velt-notifications-panel--tabs-container {
   display: flex !important;
-  gap: 20px !important;
+  gap: 4px !important;
   height: auto !important;
+  padding: 4px !important;
+  background: #f0f0f0 !important;
+  border-radius: 8px !important;
 }
 
 .velt-notifications-panel--tabs-container > * {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
   width: auto !important;
-  flex: none !important;
 }
 
 .velt-notifications-panel--tab {
-  width: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
   height: auto !important;
-  padding: 8px 0 !important;
-  font-size: 13px !important;
-  line-height: 20px !important;
-  font-weight: 500 !important;
-  color: var(--hw-text-muted) !important;
-  background: none !important;
+  padding: 8px 12px !important;
   border: 0 !important;
+  border-radius: 4px !important;
+  background: none !important;
+  box-shadow: none !important;
+  font-family: var(--vc-notif-font) !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+  font-weight: 500 !important;
+  color: var(--vc-notif-muted) !important;
+  white-space: nowrap !important;
   cursor: pointer !important;
-  box-shadow: inset 0 -2px 0 transparent !important;
-  transition: color 120ms ease, box-shadow 120ms ease !important;
+  transition: color 120ms ease, background-color 120ms ease !important;
 }
 
 .velt-notifications-panel--tab:hover {
-  color: var(--hw-text) !important;
+  color: var(--vc-notif-ink) !important;
 }
 
 .velt-notifications-panel--tab.selected {
-  color: var(--hw-text) !important;
-  box-shadow: inset 0 -2px 0 var(--hw-text) !important;
+  background: #1b1b1b !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
 }
 
-/* One scroller: Velt's content wrapper, under the fixed title and tabs. The
-   lists inside it grow, so "Load more" is reachable at the end */
+/* One scroller: Velt's content wrapper, under the fixed title and tabs */
 velt-notifications-panel-content-internal {
   flex: 1 1 auto !important;
   min-height: 0 !important;
@@ -170,63 +187,83 @@ velt-notifications-panel-content-internal {
   overflow: visible !important;
 }
 
-/* One notification: avatar column + details, like a comment row */
+/* The lists: 8px in from the panel, 4px between tiles */
+velt-notifications-panel-content-list-internal,
+velt-notifications-panel-content-documents-list-internal,
+velt-notifications-panel-content-all-list-internal {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  padding: 8px !important;
+}
+
+/* A document's own list sits inside its tile, so no second inset */
+velt-notifications-panel-content-documents-list-item-content-internal velt-notifications-panel-content-list-internal,
+velt-notifications-panel-content-all-list-item-content-internal velt-notifications-panel-content-list-internal {
+  padding: 0 !important;
+}
+
+/* ---- Notification tile: 24px avatar, text, time ---- */
+
 .velt-notifications-panel--list-item {
   display: flex !important;
-  gap: 12px !important;
+  align-items: flex-start !important;
+  gap: 10px !important;
   height: auto !important;
-  padding: 12px 16px !important;
-  border-bottom: 1px solid var(--hw-border) !important;
-  background: #ffffff !important;
+  padding: 16px 16px 16px 12px !important;
+  border: 0 !important;
+  border-radius: 12px !important;
+  background: transparent !important;
   cursor: pointer !important;
   transition: background-color 120ms ease !important;
 }
 
 .velt-notifications-panel--list-item:hover {
-  background: var(--hw-surface) !important;
+  background: var(--vc-notif-tile-hover) !important;
 }
 
 .velt-notifications-panel--avatar-container {
   position: relative !important;
   flex: none !important;
-  width: 20px !important;
-  height: 20px !important;
-  margin-top: 2px !important;
+  width: 24px !important;
+  height: 24px !important;
 }
 
-/* The unread dot sits on the avatar's corner, in the sidebar cards' blue */
+.velt-notifications-panel--avatar-container snippyly-user-avatar,
+.velt-notifications-panel--avatar-container .velt-user-avatar {
+  width: 24px !important;
+  height: 24px !important;
+  border-radius: 72px !important;
+}
+
+/* Unread: the design's coral dot, ringed in the tile's hover grey */
 .velt-notifications-panel--list-item-unread {
   position: absolute !important;
-  top: -3px !important;
-  right: -3px !important;
-  width: 10px !important;
-  height: 10px !important;
+  top: -4px !important;
+  right: -4px !important;
+  width: 12px !important;
+  height: 12px !important;
+  background: url("/icons/notifications/avatar-dot.svg") center / 12px 12px no-repeat !important;
 }
 
 .velt-notifications-panel--list-item-unread svg {
-  width: 10px !important;
-  height: 10px !important;
-  display: block !important;
-}
-
-.velt-notifications-panel--list-item-unread circle {
-  fill: #0589ff !important;
-  stroke: #ffffff !important;
-  stroke-width: 2px !important;
+  display: none !important;
 }
 
 .velt-notifications-panel--details-container {
   display: flex !important;
   flex-direction: column !important;
-  gap: 2px !important;
+  gap: 4px !important;
   flex: 1 1 0 !important;
   min-width: 0 !important;
   height: auto !important;
+  padding: 2px 0 !important;
 }
 
+/* Headline and time share the first row; time sits 8px off the text */
 .velt-notifications-panel--headline-container {
   display: flex !important;
-  align-items: baseline !important;
+  align-items: flex-start !important;
   justify-content: space-between !important;
   gap: 8px !important;
   height: auto !important;
@@ -234,31 +271,40 @@ velt-notifications-panel-content-internal {
 
 .velt-notifications-panel--list-item-headline {
   height: auto !important;
-  font-size: 14px !important;
-  line-height: 20px !important;
-  color: var(--hw-text-secondary) !important;
   min-width: 0 !important;
+  font-family: var(--vc-notif-font) !important;
+  font-size: 14px !important;
+  line-height: normal !important;
+  font-weight: 400 !important;
+  color: var(--vc-notif-secondary) !important;
+  overflow-wrap: anywhere !important;
 }
 
 .velt-notifications-panel--list-item-headline b {
-  font-weight: 600 !important;
-  color: var(--hw-text) !important;
+  font-weight: 500 !important;
+  color: var(--vc-notif-ink) !important;
 }
 
 .velt-notifications-panel--list-item-timestamp {
   flex: none !important;
   height: auto !important;
+  font-family: var(--vc-notif-font) !important;
   font-size: 12px !important;
-  line-height: 20px !important;
-  color: var(--hw-text-muted) !important;
+  line-height: normal !important;
+  font-weight: 400 !important;
+  color: var(--vc-notif-faint) !important;
+  white-space: nowrap !important;
   font-variant-numeric: tabular-nums !important;
 }
 
+/* The quoted message: Body/SM, Inter 13/20 */
 .velt-notifications-panel--list-item-body {
   height: auto !important;
-  font-size: 14px !important;
+  font-family: var(--vc-notif-body-font) !important;
+  font-size: 13px !important;
   line-height: 20px !important;
-  color: var(--hw-text) !important;
+  font-weight: 400 !important;
+  color: var(--vc-notif-secondary) !important;
   overflow-wrap: anywhere !important;
   display: -webkit-box !important;
   -webkit-line-clamp: 2 !important;
@@ -266,9 +312,9 @@ velt-notifications-panel-content-internal {
   overflow: hidden !important;
 }
 
+/* The document name under a For You / All tile (Documents groups by it) */
 .velt-notifications-panel--details {
   height: auto !important;
-  margin-top: 4px !important;
 }
 
 .velt-notifications-panel--list-item-file-name {
@@ -277,9 +323,10 @@ velt-notifications-panel-content-internal {
   gap: 4px !important;
   height: auto !important;
   max-width: 100% !important;
+  font-family: var(--vc-notif-font) !important;
   font-size: 12px !important;
-  line-height: 16px !important;
-  color: var(--hw-text-muted) !important;
+  line-height: normal !important;
+  color: var(--vc-notif-faint) !important;
 }
 
 .velt-notifications-panel--file-name-text {
@@ -288,37 +335,183 @@ velt-notifications-panel-content-internal {
   white-space: nowrap !important;
 }
 
+/* The design's file icon (the Documents tab's), in place of Velt's filled page */
 .velt-notifications-panel--list-item-file-name svg {
+  display: none !important;
+}
+
+.velt-notifications-panel--list-item-file-name::before {
+  content: "" !important;
+  flex: none !important;
+  width: 16px !important;
+  height: 16px !important;
+  margin: 0 -2px 0 -3px !important;
+  background: url("/icons/notifications/file.svg") center / 16px 16px no-repeat !important;
+}
+
+.velt-notifications-panel--document-accordion .velt-notifications-panel--details {
+  display: none !important;
+}
+
+/* ---- Documents tab: one tile per document, opening into its notifications ---- */
+
+.velt-notifications-panel--document-accordion {
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 4px !important;
+  border-radius: 12px !important;
+  cursor: pointer !important;
+  transition: background-color 120ms ease !important;
+}
+
+.velt-notifications-panel--document-accordion:not(.velt-notifications-panel--documents-accordion-expanded):hover {
+  background: var(--vc-notif-tile-hover) !important;
+}
+
+.velt-notifications-panel--accordion-tab {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  height: auto !important;
+  padding: 8px !important;
+  border: 0 !important;
+  background: none !important;
+}
+
+.velt-notifications-panel--accordion-tab-name {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  min-width: 0 !important;
+  font-family: var(--vc-notif-font) !important;
+  font-size: 14px !important;
+  line-height: normal !important;
+  font-weight: 400 !important;
+  color: var(--vc-notif-ink) !important;
+}
+
+/* A document with new notifications has its name in Medium */
+.velt-notifications-panel--accordion-tab:has(.vc-notif-new) .velt-notifications-panel--accordion-tab-name {
+  font-weight: 500 !important;
+}
+
+.velt-notifications-panel--accordion-tab-name span {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+/* Velt's file icon is the design's tabler file, in the design's grey */
+.velt-notifications-panel--accordion-tab-icon-container {
+  position: static !important;
+  flex: none !important;
+  width: 24px !important;
+  height: 24px !important;
+  color: #919191 !important;
+}
+
+.velt-notifications-panel--accordion-tab-icon-container > svg {
+  display: block !important;
+  width: 24px !important;
+  height: 24px !important;
+}
+
+/* The unread state moves to the count ("• 2 New"), so the icon carries none */
+.velt-notifications-panel--accordion-tab-icon-container velt-notifications-panel-content-documents-list-item-unread-internal {
+  display: none !important;
+}
+
+.velt-notifications-panel--accordion-tab-count {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  flex: none !important;
+}
+
+.vc-notif-new {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  font-family: var(--vc-notif-body-font) !important;
+  font-size: 13px !important;
+  line-height: 20px !important;
+  font-weight: 400 !important;
+  color: var(--vc-notif-secondary) !important;
+  white-space: nowrap !important;
+}
+
+.vc-notif-new-dot {
   flex: none !important;
   width: 12px !important;
   height: 12px !important;
+  background: url("/icons/notifications/unread-dot.svg") center / 12px 12px no-repeat !important;
 }
 
-.velt-notifications-panel--list-item-file-name svg path {
-  fill: currentColor !important;
+/* The design's chevron replaces Velt's; it turns over when the tile is open */
+.velt-notifications-panel--accordion-tab-count > svg {
+  display: none !important;
 }
 
-/* "Load more": a quiet full-width text button under the list */
+.velt-notifications-panel--accordion-tab-count::after {
+  content: "" !important;
+  flex: none !important;
+  width: 16px !important;
+  height: 16px !important;
+  background: url("/icons/notifications/chevron-down.svg") center / 16px 16px no-repeat !important;
+  transition: transform 120ms ease !important;
+}
+
+.velt-notifications-panel--documents-accordion-expanded .velt-notifications-panel--accordion-tab-count::after {
+  transform: rotate(180deg) !important;
+}
+
+/* ---- All tab: a date above each day's tiles ---- */
+
+.velt-notifications-panel--content-all-list-item {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+}
+
+.velt-notifications-panel--content-all-list-item-label {
+  display: block !important;
+  height: auto !important;
+  padding: 8px 12px 0 !important;
+  font-family: var(--vc-notif-font) !important;
+  font-size: 12px !important;
+  line-height: normal !important;
+  font-weight: 500 !important;
+  color: var(--vc-notif-muted) !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+/* ---- End of list states ---- */
+
 .velt-notifications-panel--content-load-more {
   display: block !important;
-  width: 100% !important;
+  width: calc(100% - 16px) !important;
   height: auto !important;
-  padding: 10px 16px !important;
+  margin: 0 8px 8px !important;
+  padding: 10px 12px !important;
   border: 0 !important;
+  border-radius: 8px !important;
   background: none !important;
-  font: 500 13px/20px var(--hw-font) !important;
-  color: var(--hw-text-secondary) !important;
+  font-family: var(--vc-notif-font) !important;
+  font-size: 12px !important;
+  line-height: normal !important;
+  font-weight: 500 !important;
+  color: var(--vc-notif-secondary) !important;
   text-align: center !important;
   cursor: pointer !important;
   transition: background-color 120ms ease, color 120ms ease !important;
 }
 
 .velt-notifications-panel--content-load-more:hover {
-  color: var(--hw-text) !important;
-  background: var(--hw-surface) !important;
+  color: var(--vc-notif-ink) !important;
+  background: var(--vc-notif-tile-hover) !important;
 }
 
-/* Everything read: a short centred note, and "View all" as a bordered button */
 .velt-notifications-panel--all-read-container {
   display: flex !important;
   flex-direction: column !important;
@@ -333,147 +526,27 @@ velt-notifications-panel-content-internal {
 }
 
 .velt-notifications-panel--message {
+  font-family: var(--vc-notif-font) !important;
   font-size: 14px !important;
-  line-height: 20px !important;
+  line-height: normal !important;
   font-weight: 500 !important;
-  color: var(--hw-text) !important;
+  color: var(--vc-notif-ink) !important;
 }
 
 .velt-notifications-panel--view-all-button {
   margin-top: 12px !important;
-  padding: 6px 12px !important;
-  border: 1px solid var(--hw-border-strong) !important;
-  border-radius: 6px !important;
-  background: #ffffff !important;
-  font-size: 13px !important;
-  line-height: 20px !important;
-  font-weight: 500 !important;
-  color: var(--hw-text) !important;
+  padding: 8px 12px !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: #1b1b1b !important;
+  font-family: var(--vc-notif-font) !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+  font-weight: 600 !important;
+  color: #ffffff !important;
   cursor: pointer !important;
-  transition: background-color 120ms ease !important;
 }
 
 .velt-notifications-panel--view-all-button:hover {
-  background: var(--hw-surface) !important;
-}
-
-/* Documents tab: one row per document, opening into its notifications */
-.velt-notifications-panel--accordion-tab {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 12px !important;
-  height: auto !important;
-  padding: 12px 16px !important;
-  border-bottom: 1px solid var(--hw-border) !important;
-  cursor: pointer !important;
-  transition: background-color 120ms ease !important;
-}
-
-.velt-notifications-panel--accordion-tab:hover {
-  background: var(--hw-surface) !important;
-}
-
-.velt-notifications-panel--accordion-tab-name {
-  display: flex !important;
-  align-items: center !important;
-  gap: 8px !important;
-  min-width: 0 !important;
-  font-size: 14px !important;
-  line-height: 20px !important;
-  font-weight: 500 !important;
-  color: var(--hw-text) !important;
-}
-
-.velt-notifications-panel--accordion-tab-name span {
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  white-space: nowrap !important;
-}
-
-.velt-notifications-panel--accordion-tab-icon-container {
-  position: relative !important;
-  flex: none !important;
-  width: 20px !important;
-  height: 20px !important;
-  color: var(--hw-text-muted) !important;
-}
-
-.velt-notifications-panel--accordion-tab-icon-container > svg {
-  width: 20px !important;
-  height: 20px !important;
-}
-
-.velt-notifications-panel--accordion-tab-icon-container > svg path {
-  fill: currentColor !important;
-}
-
-/* The page glyph is 9x12 in the middle of its 20px box, so the dot goes on the
-   page's own top-right corner, with the panel's white as a ring */
-.velt-notifications-panel--accordion-tab-icon-container .velt-notifications-panel--list-item-unread {
-  top: 1px !important;
-  right: auto !important;
-  left: 11px !important;
-  width: 7px !important;
-  height: 7px !important;
-  border-radius: 50% !important;
-  background: #0589ff !important;
-  box-shadow: 0 0 0 2px #ffffff !important;
-}
-
-/* Drawn in CSS: Velt's 10px svg clips the ring at this size */
-.velt-notifications-panel--accordion-tab-icon-container .velt-notifications-panel--list-item-unread svg {
-  display: none !important;
-}
-
-/* The group's row turns grey on hover, so the ring follows it */
-.velt-notifications-panel--accordion-tab:hover .velt-notifications-panel--list-item-unread {
-  box-shadow: 0 0 0 2px var(--hw-surface) !important;
-}
-
-.velt-notifications-panel--accordion-tab-count {
-  display: flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  flex: none !important;
-  font-size: 12px !important;
-  line-height: 20px !important;
-  color: var(--hw-text-muted) !important;
-}
-
-.velt-notifications-panel--accordion-tab-count svg {
-  width: 14px !important;
-  height: 14px !important;
-}
-
-.velt-notifications-panel--accordion-tab-count svg path {
-  stroke: currentColor !important;
-}
-
-/* A document's notifications, opened: indent under its row */
-.velt-notifications-panel--document-accordion .velt-notifications-panel--list-item {
-  padding-left: 44px !important;
-  background: var(--hw-surface) !important;
-}
-
-.velt-notifications-panel--document-accordion .velt-notifications-panel--list-item:hover {
-  background: var(--hw-surface-pressed) !important;
-}
-
-/* Inside a document's group the file-name row repeats the group, and is empty */
-.velt-notifications-panel--document-accordion .velt-notifications-panel--details {
-  display: none !important;
-}
-
-/* All tab: the date that heads each day's notifications */
-.velt-notifications-panel--content-all-list-item-label {
-  display: block !important;
-  height: auto !important;
-  padding: 14px 16px 6px !important;
-  font-size: 12px !important;
-  line-height: 16px !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.02em !important;
-  color: var(--hw-text-muted) !important;
-  font-variant-numeric: tabular-nums !important;
+  background: #333333 !important;
 }

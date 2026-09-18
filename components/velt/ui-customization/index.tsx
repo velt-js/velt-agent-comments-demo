@@ -10,6 +10,7 @@ import { VeltPageModeComposerWf } from "./VeltPageModeComposerWf";
 import { VeltFocusedThreadWf } from "./VeltFocusedThreadWf";
 import { VeltVisibilityBannerWf } from "./VeltVisibilityBannerWf";
 import { VeltNotificationsToolWf } from "./VeltNotificationsToolWf";
+import { VeltNotificationsPanelWf } from "./VeltNotificationsPanelWf";
 
 export function VeltCustomization() {
   return (
@@ -22,6 +23,7 @@ export function VeltCustomization() {
       <VeltCommentToolWf />
       <VeltVisibilityBannerWf />
       <VeltNotificationsToolWf />
+      <VeltNotificationsPanelWf />
     </VeltWireframe>
   );
 }
