@@ -4127,26 +4127,8 @@ velt-comment-sidebar-list-item-v2-internal {
   box-sizing: border-box !important;
 }
 
-/* the tool's host adds no box, so its inner div is the menu's flex child */
-.hw-display-menu velt-comment-tool {
-  display: contents !important;
-}
-
-/* `.hv-menu-row` carries the products-table dropdown's own box and its 12px
-   type; inside this menu the row chrome comes from `.velt-comment-tool` */
-.hw-display-menu .hv-menu-row {
-  display: contents !important;
-  font-size: 15px !important;
-}
-
-/* label-only rows, like the comment kebab menu this menu borrows its chrome from */
-.hw-display-menu .hv-menu-row svg {
-  display: none !important;
-}
-
-/* one menu row — our own button, or the comment tool's own inner div */
-.hw-display-row,
-.hw-display-menu velt-comment-tool .velt-comment-tool {
+/* one menu row, label only, like the comment kebab menu it borrows its chrome from */
+.hw-display-row {
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
@@ -4163,8 +4145,7 @@ velt-comment-sidebar-list-item-v2-internal {
   text-align: left !important;
 }
 
-.hw-display-row:hover,
-.hw-display-menu velt-comment-tool .velt-comment-tool:hover {
+.hw-display-row:hover {
   background: #f9f9f9 !important;
 }
 

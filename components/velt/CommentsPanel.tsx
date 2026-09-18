@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   VeltCommentsSidebarV2,
-  VeltCommentTool,
   useCommentAnnotations,
   useVeltClient,
 } from "@veltdev/react";
@@ -114,12 +113,10 @@ export function CommentsPanel({
           focusedThreadDialogVariant="focusedThread"
         />
 
-        {/* Host DOM, not wireframe markup, so the menu is plain React state and
-            can host a live VeltCommentTool. The trigger stays in the control
-            band, which is templated. */}
+        {/* Host DOM, not wireframe markup, so the menu is plain React state. The
+            trigger stays in the control band, which is templated. */}
         {displayMenuOpen ? (
           <div className="hw-display-menu" role="menu">
-            <VeltCommentTool />
             <button className="hw-display-row" type="button" onClick={markAllAsRead}>
               <span className="hw-display-label">Mark all as read</span>
             </button>
