@@ -94,7 +94,7 @@ export function Header({
             </select>
           </div>
         )}
-        <VeltNotificationsTool enableCrossOrganization={true} />
+        <VeltNotificationsTool shadowDom={false} panelShadowDom={false} enableCrossOrganization={true} />
         {/* The drawer is embedded, so the host owns it. This button only opens it:
             closing is the drawer's own X */}
         <button
