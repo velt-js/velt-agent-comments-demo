@@ -4748,3 +4748,20 @@ velt-comment-dialog-action-chip-internal .velt-action-chip.velt-action-chip:focu
 .vc-send button:not([disabled]):hover {
   background: #f7f7f7 !important;
 }
+
+/* Selected state: a button keeps a deeper wash while its menu is open. Velt
+   marks an open ⋯ menu with aria-expanded on the trigger's wrapper, and the @
+   while the mention list it opened is showing in that composer */
+.v-dropdown-menu-trigger[aria-expanded="true"] > .vc-options-trigger,
+.v-dropdown-menu-trigger[aria-expanded="true"] > .vc-comment-options-trigger,
+html:has(.velt-autocomplete-panel--autocomplete.mat-mdc-autocomplete-visible) .vc-composer-field:focus-within .vc-mention-btn,
+html:has(.velt-autocomplete-panel--autocomplete.mat-mdc-autocomplete-visible) .vc-composer-page-field:focus-within .vc-mention-btn {
+  background-color: #e8e6e1 !important;
+}
+
+/* A comment's ⋯ stays up while its menu is open, after the pointer leaves */
+.vc-comment-actions:has(.v-dropdown-menu-trigger[aria-expanded="true"]) {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
