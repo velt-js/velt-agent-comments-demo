@@ -2,9 +2,10 @@
 
 import { DownloadIcon } from "./icons";
 import { ProductsTable } from "./ProductsTable";
+import type { RowOwners } from "./rowOwners";
 
 // Static stand-in for the legal document viewer behind the comments panel
-export function Body() {
+export function Body({ rowOwners }: { rowOwners: RowOwners }) {
   return (
     <div className="hv-doc">
       <div className="hv-doc-tabs">
@@ -43,7 +44,7 @@ export function Body() {
             2.3 “Active Pharmaceutical Ingredient (API)” has the meaning set forth in the Quality Agreement.
           </p>
         </div>
-        <ProductsTable />
+        <ProductsTable rowOwners={rowOwners} />
       </div>
       <div className="hv-doc-toolbar" role="toolbar" aria-label="Document controls">
         <button className="hv-tb-btn" type="button" aria-label="Previous page">‹</button>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { VeltCommentTool } from "@veltdev/react";
 import { KebabIcon } from "./icons";
+import type { RowOwner, RowOwners } from "./rowOwners";
 
 // Static Altana-style product review table (host DOM, not Velt)
 
@@ -19,7 +20,7 @@ interface Product {
   updated: string;
 }
 
-const products: Product[] = [
+export const products: Product[] = [
   {
     id: "denim-jean-patches",
     name: "Denim Jean Patches",
@@ -138,7 +139,32 @@ const reviewIcons: Record<ReviewKey, React.ReactNode> = {
 // [Velt] Popover comments live on the Name cell
 const cellId = (productId: string) => `product-name-${productId}`;
 
-export function ProductsTable() {
+// Initials for the owner avatar: "User 2" becomes "U2"
+function initials(name: string) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+}
+
+// [Velt] Host app column, filled when a comment on this row is assigned.
+// See AssignmentListener and rowOwners.ts.
+function OwnerCell({ owner }: { owner?: RowOwner }) {
+  if (!owner) return <span className="hv-owner hv-owner--empty">Unassigned</span>;
+  return (
+    // A new key on each change replays the highlight
+    <span key={owner.at} className="hv-owner" title="Set from a comment assignment">
+      <span className="hv-owner-avatar" aria-hidden="true">
+        {initials(owner.name)}
+      </span>
+      {owner.name}
+    </span>
+  );
+}
+
+export function ProductsTable({ rowOwners = {} }: { rowOwners?: RowOwners }) {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
 
   // Dismiss the kebab dropdown on outside click or Escape
@@ -170,6 +196,7 @@ export function ProductsTable() {
             </th>
             <th>Name</th>
             <th>Status</th>
+            <th>Owner</th>
             <th>Passport Review</th>
             <th>Organization</th>
             <th>HS Code</th>
@@ -212,10 +239,11 @@ export function ProductsTable() {
                   >
                     {/* Rendered by VeltCommentToolWf as an "Add comment" row.
                         `context` lands on the annotation, which is what fills the
-                        card's "Product Name" row. */}
+                        card's "Product Name" row. `productId` lets the host app
+                        find this row again when the comment is assigned. */}
                     <VeltCommentTool
                       targetElementId={cellId(product.id)}
-                      context={{ productName: product.name }}
+                      context={{ productId: product.id, productName: product.name }}
                     />
                   </div>
                 </div>
@@ -226,6 +254,9 @@ export function ProductsTable() {
                 >
                   {product.status}
                 </span>
+              </td>
+              <td>
+                <OwnerCell owner={rowOwners[product.id]} />
               </td>
               <td>
                 <div className="hv-review">

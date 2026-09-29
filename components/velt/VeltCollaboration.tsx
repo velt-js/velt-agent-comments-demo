@@ -4,6 +4,7 @@ import { VeltComments } from "@veltdev/react";
 import VeltInitializeDocument from "./VeltInitializeDocument";
 import SeedAgentComments from "./SeedAgentComments";
 import { AgentRunController } from "./AgentRunController";
+import { AssignmentListener, type AssignmentChange } from "./AssignmentListener";
 import { ContactsRegistrar } from "./ContactsRegistrar";
 import { KeepComposerFocus } from "./KeepComposerFocus";
 import { VeltCustomization } from "./ui-customization";
@@ -13,9 +14,11 @@ import { CommentsPanel } from "./CommentsPanel";
 export function VeltCollaboration({
   sidebarOpen,
   setSidebarOpen,
+  onAssigneeChanged,
 }: {
   sidebarOpen: boolean;
   setSidebarOpen: (updater: (open: boolean) => boolean) => void;
+  onAssigneeChanged: (change: AssignmentChange) => void;
 }) {
   return (
     <>
@@ -23,6 +26,7 @@ export function VeltCollaboration({
       <SeedAgentComments /> {/* Seeds the demo's agent findings */}
       <AgentRunController /> {/* Turns action-chip clicks into backend writes */}
       <ContactsRegistrar /> {/* Registers the demo's @mention contacts */}
+      <AssignmentListener onAssigneeChanged={onAssigneeChanged} /> {/* [Velt] Comment assigned → host app */}
       <KeepComposerFocus /> {/* Opening a menu leaves the composer as it was */}
       <VeltComments
         shadowDom={false}

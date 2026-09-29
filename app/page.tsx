@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { VeltProvider } from "@veltdev/react";
 import type {
   RevokeAccessOnType,
@@ -15,6 +15,8 @@ import {
   attachmentDataProvider,
 } from "@/components/velt/VeltDataProviders";
 import { evaluatePermission } from "@/components/velt/permissions";
+import type { AssignmentChange } from "@/components/velt/AssignmentListener";
+import { applyAssignment, type RowOwners } from "@/components/rowOwners";
 import { Header } from "@/components/Header";
 import { Body } from "@/components/Body";
 
@@ -54,6 +56,16 @@ export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { authProvider, user } = useVeltAuthProvider(currentUserId);
 
+  // Host app state: which user owns each product row
+  const [rowOwners, setRowOwners] = useState<RowOwners>({});
+
+  // [Velt] A comment on a row was assigned or unassigned, so update the row's owner.
+  // In a real app, also save it through your own API here so every user sees it.
+  const handleAssigneeChanged = useCallback((change: AssignmentChange) => {
+    const at = Date.now();
+    setRowOwners((prev) => applyAssignment(prev, change, at));
+  }, []);
+
   return (
     <VeltProvider
       apiKey={VELT_API_KEY}
@@ -69,10 +81,11 @@ export default function Home() {
           setSidebarOpen={setSidebarOpen}
         />
         <div className="hw-body">
-          <Body />
+          <Body rowOwners={rowOwners} />
           <VeltCollaboration
             sidebarOpen={sidebarOpen}
             setSidebarOpen={setSidebarOpen}
+            onAssigneeChanged={handleAssigneeChanged}
           />
         </div>
       </div>
