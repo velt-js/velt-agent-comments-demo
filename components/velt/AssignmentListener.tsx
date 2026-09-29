@@ -36,21 +36,35 @@ export function AssignmentListener({
     const commentElement = client?.getCommentElement();
     if (!commentElement) return;
 
-    const report = (event: AddCommentEvent | UpdateCommentEvent) => {
-      if (!event?.isAssigneeChanged) return;
-      onAssigneeChanged({
-        annotationId: event.annotationId,
-        context: event.commentAnnotation?.context,
-        assignee: event.commentAnnotation?.assignedTo,
-      });
-    };
+    const report =
+      (eventName: "addComment" | "updateComment") =>
+      (event: AddCommentEvent | UpdateCommentEvent) => {
+        // Demo logging: every add or edit, so the payload can be inspected in the console
+        console.log(`[Velt] ${eventName}`, {
+          annotationId: event?.annotationId,
+          isAssigneeChanged: event?.isAssigneeChanged,
+          event,
+        });
+        if (!event?.isAssigneeChanged) return;
+
+        const assignee = event.commentAnnotation?.assignedTo;
+        const context = event.commentAnnotation?.context;
+        // Demo logging: this event assigned someone new, or removed the assignee
+        console.log(
+          `[Velt] ${eventName}: assignee changed to`,
+          assignee ? assignee.name || assignee.email || assignee.userId : "nobody (removed)",
+          { annotationId: event.annotationId, assignee, context },
+        );
+
+        onAssigneeChanged({ annotationId: event.annotationId, context, assignee });
+      };
 
     // A new comment or reply. A new thread fires this too, right after
     // addCommentAnnotation and with the same flag, so addCommentAnnotation is left
     // out: listening to both would handle one assignment twice.
-    const added = commentElement.on("addComment").subscribe(report);
+    const added = commentElement.on("addComment").subscribe(report("addComment"));
     // An edited comment
-    const updated = commentElement.on("updateComment").subscribe(report);
+    const updated = commentElement.on("updateComment").subscribe(report("updateComment"));
 
     return () => {
       added?.unsubscribe();
