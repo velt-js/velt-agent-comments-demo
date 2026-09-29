@@ -22,6 +22,9 @@ export interface AssignmentChange {
 //
 // The event fires in the browser of the person who made the change. To show it to
 // everyone, save it through the host app's own backend in `onAssigneeChanged`.
+//
+// An assignment made on its own, outside a comment, arrives as a separate
+// `assignUser` event, which this demo does not listen to.
 export function AssignmentListener({
   onAssigneeChanged,
 }: {
@@ -42,7 +45,9 @@ export function AssignmentListener({
       });
     };
 
-    // A new comment or reply, including the first message of a new thread
+    // A new comment or reply. A new thread fires this too, right after
+    // addCommentAnnotation and with the same flag, so addCommentAnnotation is left
+    // out: listening to both would handle one assignment twice.
     const added = commentElement.on("addComment").subscribe(report);
     // An edited comment
     const updated = commentElement.on("updateComment").subscribe(report);
