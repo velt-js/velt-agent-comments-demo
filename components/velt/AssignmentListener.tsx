@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
-import { useVeltClient } from "@veltdev/react";
+import { useEffect, useEffectEvent } from "react";
+import { useCommentEventCallback } from "@veltdev/react";
 import type { AddCommentEvent, UpdateCommentEvent, User } from "@veltdev/types";
 
 // What the host app hears when a comment's assignee changes
@@ -30,33 +30,47 @@ export function AssignmentListener({
 }: {
   onAssigneeChanged: (change: AssignmentChange) => void;
 }) {
-  const { client } = useVeltClient();
+  // Each hook returns the latest event of its kind, or null before the first one.
+  // A new comment or reply. A new thread fires this too, right after
+  // addCommentAnnotation and with the same flag, so addCommentAnnotation is left
+  // out: listening to both would handle one assignment twice.
+  const addCommentEvent = useCommentEventCallback("addComment");
+  // An edited comment
+  const updateCommentEvent = useCommentEventCallback("updateComment");
+
+  // Reads the latest onAssigneeChanged without making it an effect dependency,
+  // so each event is handled exactly once
+  const handle = useEffectEvent(
+    (eventName: "addComment" | "updateComment", event: AddCommentEvent | UpdateCommentEvent) => {
+      // Demo logging: every add or edit, so the payload can be inspected in the console
+      console.log(`[Velt] ${eventName}`, {
+        annotationId: event.annotationId,
+        isAssigneeChanged: event.isAssigneeChanged,
+        event,
+      });
+      if (!event.isAssigneeChanged) return;
+
+      const assignee = event.commentAnnotation?.assignedTo;
+      const context = event.commentAnnotation?.context;
+      // Demo logging: this event assigned someone new, or removed the assignee
+      console.log(
+        `[Velt] ${eventName}: assignee changed to`,
+        assignee ? assignee.name || assignee.email || assignee.userId : "nobody (removed)",
+        { annotationId: event.annotationId, assignee, context },
+      );
+
+      onAssigneeChanged({ annotationId: event.annotationId, context, assignee });
+    },
+  );
+
+  // Runs once per new event object
+  useEffect(() => {
+    if (addCommentEvent) handle("addComment", addCommentEvent);
+  }, [addCommentEvent]);
 
   useEffect(() => {
-    const commentElement = client?.getCommentElement();
-    if (!commentElement) return;
-
-    const report = (event: AddCommentEvent | UpdateCommentEvent) => {
-      if (!event?.isAssigneeChanged) return;
-      onAssigneeChanged({
-        annotationId: event.annotationId,
-        context: event.commentAnnotation?.context,
-        assignee: event.commentAnnotation?.assignedTo,
-      });
-    };
-
-    // A new comment or reply. A new thread fires this too, right after
-    // addCommentAnnotation and with the same flag, so addCommentAnnotation is left
-    // out: listening to both would handle one assignment twice.
-    const added = commentElement.on("addComment").subscribe(report);
-    // An edited comment
-    const updated = commentElement.on("updateComment").subscribe(report);
-
-    return () => {
-      added?.unsubscribe();
-      updated?.unsubscribe();
-    };
-  }, [client, onAssigneeChanged]);
+    if (updateCommentEvent) handle("updateComment", updateCommentEvent);
+  }, [updateCommentEvent]);
 
   return null;
 }
